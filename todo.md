@@ -39,3 +39,9 @@
 - [x] Add an active seven-day intention shortcut that resumes its practice.
 - [x] Add tests for private notes, filter metadata, and user-owned updates.
 - [x] Verify the updated Saved Support experience on desktop and mobile, then save a checkpoint.
+- [x] Diagnose and fix duplicate React root initialization in the application bootstrap.
+- [x] Add keyword search across saved favorite meditations.
+- [x] Add a user-owned daily-default favorite that appears as quick access on the home screen.
+- [x] Add edit, delete, and export controls for private practice-history notes.
+- [x] Add automated coverage for bootstrap safety, daily-default ownership, note management, and favorite search.
+- [x] Verify the updated app on desktop and mobile, then save a checkpoint.

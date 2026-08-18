@@ -53,6 +53,14 @@ export const practiceFavorites = mysqlTable("practice_favorites", {
   uniqueIndex("practice_favorites_user_practice_unique").on(table.userId, table.practiceId),
 ]);
 
+/** User-owned library preferences, kept separate from the authentication provider’s user store. */
+export const userLibraryPreferences = mysqlTable("user_library_preferences", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  dailyDefaultPracticeId: varchar("dailyDefaultPracticeId", { length: 96 }),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [uniqueIndex("user_library_preferences_user_unique").on(table.userId)]);
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type PremiumEntitlement = typeof premiumEntitlements.$inferSelect;

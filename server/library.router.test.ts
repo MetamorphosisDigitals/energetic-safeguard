@@ -2,12 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TrpcContext } from "./_core/context";
 
 const database = vi.hoisted(() => ({
+  getDailyDefaultPracticeId: vi.fn(),
   getPremiumEntitlement: vi.fn(),
   listPracticeFavorites: vi.fn(),
   listPracticeHistory: vi.fn(),
   recordPracticeCompletion: vi.fn(),
   removePracticeFavorite: vi.fn(),
   savePracticeFavorite: vi.fn(),
+  setDailyDefaultPractice: vi.fn(),
   updatePracticeHistoryNote: vi.fn(),
 }));
 
@@ -42,6 +44,8 @@ describe("library router", () => {
     database.savePracticeFavorite.mockResolvedValue(undefined);
     database.removePracticeFavorite.mockResolvedValue(undefined);
     database.updatePracticeHistoryNote.mockResolvedValue(undefined);
+    database.getDailyDefaultPracticeId.mockResolvedValue(null);
+    database.setDailyDefaultPractice.mockResolvedValue(undefined);
   });
 
   it("records only the catalog practice ID under the authenticated user", async () => {
@@ -66,5 +70,19 @@ describe("library router", () => {
     const caller = appRouter.createCaller(createContext(11));
     await caller.library.updateHistoryNote({ historyId: 18, note: "I felt steadier after this." });
     expect(database.updatePracticeHistoryNote).toHaveBeenCalledWith(11, 18, "I felt steadier after this.");
+  });
+
+  it("clears a private note only under the authenticated user and history record", async () => {
+    const caller = appRouter.createCaller(createContext(11));
+    await caller.library.updateHistoryNote({ historyId: 18, note: null });
+    expect(database.updatePracticeHistoryNote).toHaveBeenCalledWith(11, 18, null);
+  });
+
+  it("reads and updates a daily default under the authenticated user", async () => {
+    const caller = appRouter.createCaller(createContext(23));
+    await caller.library.dailyDefault();
+    await caller.library.setDailyDefault({ practiceId: "emerald-rose-grounding" });
+    expect(database.getDailyDefaultPracticeId).toHaveBeenCalledWith(23);
+    expect(database.setDailyDefaultPractice).toHaveBeenCalledWith(23, "emerald-rose-grounding");
   });
 });

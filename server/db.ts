@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, practiceFavorites, practiceHistory, premiumEntitlements, users } from "../drizzle/schema";
+import { InsertUser, practiceFavorites, practiceHistory, premiumEntitlements, userLibraryPreferences, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import type { PremiumOfferKey } from "./payments/products";
 
@@ -92,6 +92,23 @@ export async function updatePracticeHistoryNote(userId: number, historyId: numbe
   await db.update(practiceHistory).set({ note }).where(and(eq(practiceHistory.id, historyId), eq(practiceHistory.userId, userId)));
 }
 
+export async function getDailyDefaultPracticeId(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select({ practiceId: userLibraryPreferences.dailyDefaultPracticeId }).from(userLibraryPreferences).where(eq(userLibraryPreferences.userId, userId)).limit(1);
+  return result[0]?.practiceId ?? null;
+}
+
+export async function setDailyDefaultPractice(userId: number, practiceId: string | null) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable while setting a daily default.");
+  if (practiceId) {
+    const favorite = await db.select({ id: practiceFavorites.id }).from(practiceFavorites).where(and(eq(practiceFavorites.userId, userId), eq(practiceFavorites.practiceId, practiceId))).limit(1);
+    if (!favorite[0]) throw new Error("A daily default must be one of your saved favorites.");
+  }
+  await db.insert(userLibraryPreferences).values({ userId, dailyDefaultPracticeId: practiceId }).onDuplicateKeyUpdate({ set: { dailyDefaultPracticeId: practiceId } });
+}
+
 export async function listPracticeFavorites(userId: number) {
   const db = await getDb();
   if (!db) return [];
@@ -107,5 +124,6 @@ export async function savePracticeFavorite(userId: number, practiceId: string) {
 export async function removePracticeFavorite(userId: number, practiceId: string) {
   const db = await getDb();
   if (!db) throw new Error("Database is unavailable while removing a favorite.");
+  await db.update(userLibraryPreferences).set({ dailyDefaultPracticeId: null }).where(and(eq(userLibraryPreferences.userId, userId), eq(userLibraryPreferences.dailyDefaultPracticeId, practiceId)));
   await db.delete(practiceFavorites).where(and(eq(practiceFavorites.userId, userId), eq(practiceFavorites.practiceId, practiceId)));
 }

@@ -4,7 +4,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { getPremiumEntitlement, listPracticeFavorites, listPracticeHistory, recordPracticeCompletion, removePracticeFavorite, savePracticeFavorite, updatePracticeHistoryNote } from "./db";
+import { getDailyDefaultPracticeId, getPremiumEntitlement, listPracticeFavorites, listPracticeHistory, recordPracticeCompletion, removePracticeFavorite, savePracticeFavorite, setDailyDefaultPractice, updatePracticeHistoryNote } from "./db";
 import { premiumOffers } from "./payments/products";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -56,6 +56,13 @@ export const appRouter = router({
       .input(z.object({ limit: z.number().int().min(1).max(50).optional() }).optional())
       .query(({ ctx, input }) => listPracticeHistory(ctx.user.id, input?.limit ?? 20)),
     favorites: protectedProcedure.query(({ ctx }) => listPracticeFavorites(ctx.user.id)),
+    dailyDefault: protectedProcedure.query(({ ctx }) => getDailyDefaultPracticeId(ctx.user.id)),
+    setDailyDefault: protectedProcedure
+      .input(z.object({ practiceId: z.string().trim().min(1).max(96).nullable() }))
+      .mutation(async ({ ctx, input }) => {
+        await setDailyDefaultPractice(ctx.user.id, input.practiceId);
+        return { success: true } as const;
+      }),
     recordCompletion: protectedProcedure
       .input(z.object({ practiceId: z.string().trim().min(1).max(96) }))
       .mutation(async ({ ctx, input }) => {

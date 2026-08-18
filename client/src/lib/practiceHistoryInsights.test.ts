@@ -1,0 +1,21 @@
+import { describe, expect, it } from "vitest";
+import { filterPracticeHistoryNotes, summarizePracticeWeek } from "./practiceHistoryInsights";
+
+const entries = [
+  { id: 1, practiceId: "a", completedAt: new Date(2026, 7, 10, 10), note: "Felt calmer after the boundary practice." },
+  { id: 2, practiceId: "b", completedAt: new Date(2026, 7, 13, 12), note: "A gentle reset." },
+  { id: 3, practiceId: "c", completedAt: new Date(2026, 7, 13, 18), note: null },
+];
+
+describe("practice history insights", () => {
+  it("filters notes by keyword and inclusive date range", () => {
+    expect(filterPracticeHistoryNotes(entries, "reset", "2026-08-12", "2026-08-13").map((entry) => entry.id)).toEqual([2]);
+  });
+
+  it("summarizes the preceding seven calendar days", () => {
+    const summary = summarizePracticeWeek(entries, new Date(2026, 7, 14));
+    expect(summary.total).toBe(3);
+    expect(summary.activeDays).toBe(2);
+    expect(summary.days.at(-2)?.total).toBe(2);
+  });
+});

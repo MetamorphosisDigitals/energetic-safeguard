@@ -45,3 +45,9 @@
 - [x] Add edit, delete, and export controls for private practice-history notes.
 - [x] Add automated coverage for bootstrap safety, daily-default ownership, note management, and favorite search.
 - [x] Verify the updated app on desktop and mobile, then save a checkpoint.
+- [x] Review existing personal-note controls and completed-practice history data.
+- [x] Add a confirmation dialog before a private note is permanently deleted.
+- [x] Add keyword search and date-range filters for personal notes.
+- [x] Add a weekly practice-summary view derived from user-owned history.
+- [x] Add tests for deletion confirmation state, history filtering, and weekly-summary calculations.
+- [x] Verify responsive history behavior and save a checkpoint.

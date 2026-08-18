@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterPracticeHistoryNotes, summarizePracticeWeek } from "./practiceHistoryInsights";
+import { filterPracticeHistoryNotes, summarizePracticeMonth, summarizePracticeWeek } from "./practiceHistoryInsights";
 
 const entries = [
   { id: 1, practiceId: "a", completedAt: new Date(2026, 7, 10, 10), note: "Felt calmer after the boundary practice." },
@@ -17,5 +17,10 @@ describe("practice history insights", () => {
     expect(summary.total).toBe(3);
     expect(summary.activeDays).toBe(2);
     expect(summary.days.at(-2)?.total).toBe(2);
+  });
+
+  it("summarizes the current calendar month", () => {
+    const summary = summarizePracticeMonth(entries, new Date(2026, 7, 14));
+    expect(summary).toEqual({ total: 3, activeDays: 2, practiceCount: 3 });
   });
 });

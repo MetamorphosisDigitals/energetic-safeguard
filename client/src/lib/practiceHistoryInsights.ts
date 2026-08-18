@@ -3,6 +3,8 @@ export type PracticeHistoryNote = {
   practiceId: string;
   completedAt: Date | string;
   note: string | null;
+  moodTag?: string | null;
+  intentionTag?: string | null;
 };
 
 function asDate(value: Date | string) {
@@ -44,4 +46,16 @@ export function summarizePracticeWeek(entries: readonly PracticeHistoryNote[], r
     activeDays: days.filter((day) => day.total > 0).length,
     days,
   };
+}
+
+export function summarizePracticeMonth(entries: readonly PracticeHistoryNote[], referenceDate = new Date()) {
+  const year = referenceDate.getFullYear();
+  const month = referenceDate.getMonth();
+  const monthEntries = entries.filter((entry) => {
+    const completed = asDate(entry.completedAt);
+    return completed.getFullYear() === year && completed.getMonth() === month;
+  });
+  const practiceCount = new Set(monthEntries.map((entry) => entry.practiceId)).size;
+  const activeDays = new Set(monthEntries.map((entry) => dayStart(asDate(entry.completedAt)).getTime())).size;
+  return { total: monthEntries.length, activeDays, practiceCount };
 }

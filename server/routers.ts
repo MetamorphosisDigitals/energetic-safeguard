@@ -4,7 +4,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { getDailyDefaultPracticeId, getPremiumEntitlement, listPracticeFavorites, listPracticeHistory, recordPracticeCompletion, removePracticeFavorite, savePracticeFavorite, setDailyDefaultPractice, updatePracticeHistoryNote } from "./db";
+import { getDailyDefaultPracticeId, getPremiumEntitlement, listPracticeFavorites, listPracticeHistory, recordPracticeCompletion, removePracticeFavorite, savePracticeFavorite, setDailyDefaultPractice, updatePracticeHistoryNote, updatePracticeHistoryReflection } from "./db";
 import { premiumOffers } from "./payments/products";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -73,6 +73,12 @@ export const appRouter = router({
       .input(z.object({ historyId: z.number().int().positive(), note: z.string().trim().max(1000).nullable() }))
       .mutation(async ({ ctx, input }) => {
         await updatePracticeHistoryNote(ctx.user.id, input.historyId, input.note || null);
+        return { success: true } as const;
+      }),
+    updateHistoryReflection: protectedProcedure
+      .input(z.object({ historyId: z.number().int().positive(), note: z.string().trim().max(1000).nullable(), moodTag: z.string().trim().max(48).nullable(), intentionTag: z.string().trim().max(64).nullable() }))
+      .mutation(async ({ ctx, input }) => {
+        await updatePracticeHistoryReflection({ userId: ctx.user.id, historyId: input.historyId, note: input.note || null, moodTag: input.moodTag || null, intentionTag: input.intentionTag || null });
         return { success: true } as const;
       }),
     saveFavorite: protectedProcedure

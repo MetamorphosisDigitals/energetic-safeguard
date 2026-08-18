@@ -11,6 +11,7 @@ const database = vi.hoisted(() => ({
   savePracticeFavorite: vi.fn(),
   setDailyDefaultPractice: vi.fn(),
   updatePracticeHistoryNote: vi.fn(),
+  updatePracticeHistoryReflection: vi.fn(),
 }));
 
 vi.mock("./db", () => database);
@@ -46,6 +47,7 @@ describe("library router", () => {
     database.updatePracticeHistoryNote.mockResolvedValue(undefined);
     database.getDailyDefaultPracticeId.mockResolvedValue(null);
     database.setDailyDefaultPractice.mockResolvedValue(undefined);
+    database.updatePracticeHistoryReflection.mockResolvedValue(undefined);
   });
 
   it("records only the catalog practice ID under the authenticated user", async () => {
@@ -84,5 +86,11 @@ describe("library router", () => {
     await caller.library.setDailyDefault({ practiceId: "emerald-rose-grounding" });
     expect(database.getDailyDefaultPracticeId).toHaveBeenCalledWith(23);
     expect(database.setDailyDefaultPractice).toHaveBeenCalledWith(23, "emerald-rose-grounding");
+  });
+
+  it("updates a tagged private reflection only under the authenticated user", async () => {
+    const caller = appRouter.createCaller(createContext(31));
+    await caller.library.updateHistoryReflection({ historyId: 9, note: "I felt more settled.", moodTag: "Grounded", intentionTag: "Return to myself" });
+    expect(database.updatePracticeHistoryReflection).toHaveBeenCalledWith({ userId: 31, historyId: 9, note: "I felt more settled.", moodTag: "Grounded", intentionTag: "Return to myself" });
   });
 });

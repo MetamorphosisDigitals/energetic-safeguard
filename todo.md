@@ -51,3 +51,9 @@
 - [x] Add a weekly practice-summary view derived from user-owned history.
 - [x] Add tests for deletion confirmation state, history filtering, and weekly-summary calculations.
 - [x] Verify responsive history behavior and save a checkpoint.
+- [x] Assess and select the weekly reflection reminder delivery model.
+- [x] Add a monthly practice-progress summary derived from user-owned history.
+- [x] Add user-owned mood and intention tags to personal practice notes.
+- [x] Add optional reminder preference controls and the selected delivery implementation.
+- [x] Add automated coverage for monthly summaries, note tags, and reminder configuration.
+- [x] Verify the expanded history experience and save a checkpoint.

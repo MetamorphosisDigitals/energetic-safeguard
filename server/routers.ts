@@ -4,7 +4,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { getPremiumEntitlement } from "./db";
+import { getPremiumEntitlement, listPracticeFavorites, listPracticeHistory, recordPracticeCompletion, removePracticeFavorite, savePracticeFavorite } from "./db";
 import { premiumOffers } from "./payments/products";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -49,6 +49,30 @@ export const appRouter = router({
         });
         if (!session.url) throw new Error("Stripe did not return a checkout URL.");
         return { alreadyPremium: false as const, checkoutUrl: session.url };
+      }),
+  }),
+  library: router({
+    history: protectedProcedure
+      .input(z.object({ limit: z.number().int().min(1).max(50).optional() }).optional())
+      .query(({ ctx, input }) => listPracticeHistory(ctx.user.id, input?.limit ?? 20)),
+    favorites: protectedProcedure.query(({ ctx }) => listPracticeFavorites(ctx.user.id)),
+    recordCompletion: protectedProcedure
+      .input(z.object({ practiceId: z.string().trim().min(1).max(96) }))
+      .mutation(async ({ ctx, input }) => {
+        await recordPracticeCompletion(ctx.user.id, input.practiceId);
+        return { success: true } as const;
+      }),
+    saveFavorite: protectedProcedure
+      .input(z.object({ practiceId: z.string().trim().min(1).max(96) }))
+      .mutation(async ({ ctx, input }) => {
+        await savePracticeFavorite(ctx.user.id, input.practiceId);
+        return { success: true } as const;
+      }),
+    removeFavorite: protectedProcedure
+      .input(z.object({ practiceId: z.string().trim().min(1).max(96) }))
+      .mutation(async ({ ctx, input }) => {
+        await removePracticeFavorite(ctx.user.id, input.practiceId);
+        return { success: true } as const;
       }),
   }),
 });

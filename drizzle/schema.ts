@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import { index, int, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 
 /** Core user table backing the authentication flow. */
 export const users = mysqlTable("users", {
@@ -31,7 +31,30 @@ export const premiumEntitlements = mysqlTable("premium_entitlements", {
   uniqueIndex("premium_entitlements_checkout_unique").on(table.stripeCheckoutSessionId),
 ]);
 
+/**
+ * A compact activity record. It stores only the completed catalog-practice ID and
+ * UTC completion time—never a user's free-text intake answers or wellness details.
+ */
+export const practiceHistory = mysqlTable("practice_history", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  practiceId: varchar("practiceId", { length: 96 }).notNull(),
+  completedAt: timestamp("completedAt").defaultNow().notNull(),
+}, (table) => [index("practice_history_user_completed_idx").on(table.userId, table.completedAt)]);
+
+/** A user-owned pointer into the practice catalog, rather than a duplicated meditation record. */
+export const practiceFavorites = mysqlTable("practice_favorites", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  practiceId: varchar("practiceId", { length: 96 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("practice_favorites_user_practice_unique").on(table.userId, table.practiceId),
+]);
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type PremiumEntitlement = typeof premiumEntitlements.$inferSelect;
 export type InsertPremiumEntitlement = typeof premiumEntitlements.$inferInsert;
+export type PracticeHistory = typeof practiceHistory.$inferSelect;
+export type PracticeFavorite = typeof practiceFavorites.$inferSelect;

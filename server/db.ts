@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, premiumEntitlements, users } from "../drizzle/schema";
+import { InsertUser, practiceFavorites, practiceHistory, premiumEntitlements, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import type { PremiumOfferKey } from "./payments/products";
 
@@ -72,4 +72,34 @@ export async function savePremiumEntitlement(input: {
       stripeCheckoutSessionId: input.stripeCheckoutSessionId,
     },
   });
+}
+
+export async function recordPracticeCompletion(userId: number, practiceId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable while recording practice history.");
+  await db.insert(practiceHistory).values({ userId, practiceId });
+}
+
+export async function listPracticeHistory(userId: number, limit = 20) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(practiceHistory).where(eq(practiceHistory.userId, userId)).orderBy(desc(practiceHistory.completedAt)).limit(limit);
+}
+
+export async function listPracticeFavorites(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(practiceFavorites).where(eq(practiceFavorites.userId, userId)).orderBy(desc(practiceFavorites.createdAt));
+}
+
+export async function savePracticeFavorite(userId: number, practiceId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable while saving a favorite.");
+  await db.insert(practiceFavorites).values({ userId, practiceId }).onDuplicateKeyUpdate({ set: { practiceId } });
+}
+
+export async function removePracticeFavorite(userId: number, practiceId: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable while removing a favorite.");
+  await db.delete(practiceFavorites).where(and(eq(practiceFavorites.userId, userId), eq(practiceFavorites.practiceId, practiceId)));
 }

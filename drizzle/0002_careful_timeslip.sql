@@ -1,0 +1,2 @@
+ALTER TABLE `practice_history` DROP INDEX `practice_history_user_completed_idx`;--> statement-breakpoint
+CREATE INDEX `practice_history_user_completed_idx` ON `practice_history` (`userId`,`completedAt`);

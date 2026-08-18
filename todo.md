@@ -26,3 +26,10 @@
 - [x] Add explicit Rose Ray and crystal metadata filters to the recommendation query and test their behavior.
 - [x] Add automated restoration tests for saved preferences, commitment, free-practice usage, and onboarding state.
 - [x] Add catalog verification for dashboard flows, practice styles, and the quick-reset practice link.
+- [x] Review the existing practice-completion and authentication flows for history and favorite integrations.
+- [x] Add secure user-owned history and favorite records with database migration and typed procedures.
+- [x] Record completed practices for signed-in users without storing sensitive intake responses.
+- [x] Add favorite controls and a signed-in library view for favorites and recent practices.
+- [x] Add tests for user-scoped history and favorites behavior.
+- [x] Verify responsive account-library behavior and save the completed update.
+- [x] Capture direct responsive verification of the account-library screen and save a new checkpoint.

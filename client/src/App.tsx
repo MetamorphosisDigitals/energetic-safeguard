@@ -10,6 +10,7 @@ import Home from "./pages/Home";
  * Design: Soft Sovereignty — a light, paper-led shell keeps the app steady and legible.
  */
 function Router() {
+  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path="/" component={Home} />

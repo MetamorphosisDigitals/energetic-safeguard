@@ -1,7 +1,8 @@
 /**
- * Design: Soft Sovereignty — deterministic, transparent selection respects the user's
- * stated access needs and provides one steady next step instead of an endless library.
+ * Deterministic scoring uses only structured practice metadata. New practices and
+ * expansion packs become recommendable through catalog data, not conditional UI code.
  */
+import { expansionPacks, type CrystalId, type RoseRayId } from "@/data/catalog";
 import { practices, type FlowCategory, type Location, type Practice, type PracticeStyle } from "@/data/practices";
 
 export interface PracticeQuery {
@@ -13,11 +14,14 @@ export interface PracticeQuery {
   location: Location;
   style: PracticeStyle | "either" | "choose";
   adjustments: string[];
+  enabledContentPackIds?: (keyof typeof expansionPacks)[];
+  preferredRoseRayId?: RoseRayId;
+  preferredCrystalId?: CrystalId;
+  requiresCrystalSupport?: boolean;
 }
 
 function isStyleCompatible(practice: Practice, preference: PracticeQuery["style"]) {
-  if (preference === "either" || preference === "choose") return true;
-  return practice.practiceStyles.includes(preference);
+  return preference === "either" || preference === "choose" || practice.practiceStyles.includes(preference);
 }
 
 function conflictsWithAdjustments(practice: Practice, adjustments: string[]) {
@@ -30,6 +34,18 @@ function conflictsWithAdjustments(practice: Practice, adjustments: string[]) {
   return false;
 }
 
+function isContentPackAvailable(practice: Practice, enabledContentPackIds: (keyof typeof expansionPacks)[]) {
+  const contentPackId = practice.contentPackId ?? "foundation";
+  return enabledContentPackIds.includes(contentPackId) && expansionPacks[contentPackId].status === "active";
+}
+
+function matchesSymbolicSupport(practice: Practice, query: PracticeQuery) {
+  if (query.preferredRoseRayId && practice.roseRayId !== query.preferredRoseRayId) return false;
+  if (query.preferredCrystalId && !practice.crystalSupportIds?.includes(query.preferredCrystalId)) return false;
+  if (query.requiresCrystalSupport && !practice.crystalSupportIds?.length) return false;
+  return true;
+}
+
 function scorePractice(practice: Practice, query: PracticeQuery) {
   let score = practice.flowCategory.includes(query.pathway) ? 60 : 0;
   if (practice.suitableLocations.includes(query.location) || practice.suitableLocations.includes("anywhere")) score += 12;
@@ -40,26 +56,25 @@ function scorePractice(practice: Practice, query: PracticeQuery) {
   score += practice.keywords.reduce((sum, keyword) => sum + (situation.includes(keyword) ? 8 : 0), 0);
   if (query.style !== "choose" && query.style !== "either" && practice.practiceStyles.includes(query.style)) score += 10;
   if (query.style === "choose" && practice.practiceStyles.includes("practical")) score += 4;
+  if (query.preferredRoseRayId === practice.roseRayId) score += 12;
+  if (query.preferredCrystalId && practice.crystalSupportIds?.includes(query.preferredCrystalId)) score += 12;
   return score;
 }
 
 export function recommendPractice(query: PracticeQuery): Practice {
-  const compatible = practices.filter(
-    (practice) =>
-      practice.active &&
-      practice.durationMinutes <= query.availableMinutes &&
-      isStyleCompatible(practice, query.style) &&
-      !conflictsWithAdjustments(practice, query.adjustments),
+  const enabledContentPackIds = query.enabledContentPackIds ?? ["foundation"];
+  const compatible = practices.filter((practice) =>
+    practice.active &&
+    isContentPackAvailable(practice, enabledContentPackIds) &&
+    practice.durationMinutes <= query.availableMinutes &&
+    isStyleCompatible(practice, query.style) &&
+    matchesSymbolicSupport(practice, query) &&
+    !conflictsWithAdjustments(practice, query.adjustments),
   );
-
   const scoped = compatible.filter((practice) => practice.flowCategory.includes(query.pathway));
   const candidates = scoped.length ? scoped : compatible;
   const fallback = practices.find((practice) => practice.id === "one-minute-emergency-reset")!;
-
-  return candidates.reduce<Practice | null>((best, practice) => {
-    if (!best || scorePractice(practice, query) > scorePractice(best, query)) return practice;
-    return best;
-  }, null) ?? fallback;
+  return candidates.reduce<Practice | null>((best, practice) => !best || scorePractice(practice, query) > scorePractice(best, query) ? practice : best, null) ?? fallback;
 }
 
 export function recommendationReason(practice: Practice, query: PracticeQuery) {
@@ -69,4 +84,3 @@ export function recommendationReason(practice: Practice, query: PracticeQuery) {
   if (query.adjustments.length) details.push("it respects the adjustments you selected");
   return `This was selected because ${details.slice(0, 2).join(" and ") || "it offers one gentle next step"}.`;
 }
-

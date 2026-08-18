@@ -1,0 +1,28 @@
+# Persistence Update
+
+- [x] Review existing preference and commitment state ownership.
+- [x] Persist practice style, reduced-motion, and text-size preferences in local storage.
+- [x] Persist the active seven-day commitment with its practice and start date.
+- [x] Restore saved state safely when the app opens.
+- [x] Verify types, visual behavior, and saved-state restoration.
+- [x] Enable the payment capability for the premium access gate.
+- [x] Persist the count of completed free practices on this device.
+- [x] Present a premium access screen after the third completed practice.
+- [x] Connect the premium screen to the configured payment flow.
+- [x] Verify free-trial, payment-gate, and saved-state behavior.
+- [x] Configure the $19 USD current-app lifetime unlock and $39 USD future-updates lifetime unlock.
+- [x] Add a three-screen onboarding flow using The Energetic Safeguard branding and save the selected practice style.
+- [x] Add a daily affirmation and a suggested-practice invitation to the dashboard.
+- [x] Make the One-Minute Reset available from every primary app view.
+- [x] Add a brief recommendation-finding state and strengthen recommendation-card context.
+- [x] Refine the completion and settings experience with future-facing placeholders.
+- [x] Verify the upgraded onboarding, quick reset, responsive UI, and trial-payment flow.
+- [x] Define data catalogs for pathways, Rose Rays, crystals, and expansion packs.
+- [x] Refactor fixed pathway prompts and dashboard cards to consume the structured catalog.
+- [x] Ensure the recommendation engine filters by structured practice, content-pack, and symbolic-support metadata.
+- [x] Document the extension path for adding practices and content packs without editing React screens.
+- [x] Verify scalable content rendering and recommendation behavior.
+- [x] Review the referenced prior application and adapt relevant visual and interaction patterns without reverting the new brand or scalable architecture.
+- [x] Add explicit Rose Ray and crystal metadata filters to the recommendation query and test their behavior.
+- [x] Add automated restoration tests for saved preferences, commitment, free-practice usage, and onboarding state.
+- [x] Add catalog verification for dashboard flows, practice styles, and the quick-reset practice link.

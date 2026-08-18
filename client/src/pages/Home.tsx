@@ -1,34 +1,31 @@
 /**
- * Design: Soft Sovereignty — an editorial apothecary interface for choice-led support.
- * Warm paper, a rose compass, generous readable spacing, and one clear next step per view.
+ * Design: Soft Sovereignty. This screen intentionally consumes catalogs and practice
+ * metadata; new practices, flows, symbolic supports, and packs do not require UI rewrites.
  */
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  ChevronRight,
-  Clock3,
-  Compass,
-  Flower2,
-  HeartHandshake,
-  Home as HomeIcon,
-  Leaf,
-  MoreHorizontal,
-  Pause,
-  Play,
-  RotateCcw,
-  Settings2,
-  ShieldCheck,
-  Sparkles,
-  SunMedium,
-  X,
+  ArrowLeft, ArrowRight, Bolt, Check, ChevronRight, Clock3, Compass, Flower2,
+  HeartHandshake, Home as HomeIcon, Leaf, Pause, Play, RotateCcw, Settings2,
+  ShieldCheck, Sparkles, SunMedium, X,
 } from "lucide-react";
-import type { FlowCategory, Location, PracticeStyle } from "@/data/practices";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { startLogin } from "@/const";
+import { trpc } from "@/lib/trpc";
+import { freePracticesRemaining as calculateFreePracticesRemaining, requiresPremiumAccess } from "@/lib/accessPolicy";
+import { dailyAffirmations, getFlow, practiceStyleOptions, roseRays, supportFlows } from "@/data/catalog";
+import { practices, type FlowCategory, type Location, type Practice, type PracticeStyle } from "@/data/practices";
 import { recommendPractice, recommendationReason, type PracticeQuery } from "@/lib/recommendPractice";
+import {
+  clearSevenDayCommitment, createSevenDayCommitment, hasCompletedOnboarding,
+  loadFreePracticeUsage, loadPreferences, loadSevenDayCommitment, recordCompletedFreePractice,
+  remainingCommitmentDays, saveOnboardingCompleted, savePreferences, saveSevenDayCommitment,
+  type SevenDayCommitment, type StoredPracticeStyle, type StoredTextSize,
+} from "@/lib/localPersistence";
+import type { PremiumOfferKey } from "../../../server/payments/products";
 
-type View = "home" | "intake" | "recommendation" | "practice" | "complete" | "safety" | "settings";
-type Pathway = { id: FlowCategory; title: string; description: string; label: string; icon: typeof SunMedium; tint: string; asset?: string };
+type View = "onboarding" | "home" | "intake" | "loading" | "recommendation" | "practice" | "complete" | "safety" | "settings" | "paywall";
+type DisplayPathway = ReturnType<typeof getFlow> & { icon: typeof SunMedium; asset?: string };
 
 const ASSETS = {
   logo: "/manus-storage/energetic-safeguard-mark_101130ee.png",
@@ -37,217 +34,75 @@ const ASSETS = {
   arrival: "/manus-storage/emerald-arrival-card_e70e9110.jpg",
 };
 
-const pathways: Pathway[] = [
-  { id: "morning", title: "Morning Check-In", description: "Begin the day with a more honest sense of your energy and capacity.", label: "START YOUR DAY", icon: SunMedium, tint: "rose", asset: ASSETS.arrival },
-  { id: "protect", title: "Protect Before an Interaction", description: "Prepare for a conversation or space that may ask a lot of you.", label: "BEFORE YOU MEET", icon: ShieldCheck, tint: "plum", asset: ASSETS.boundary },
-  { id: "reset", title: "Ground & Reset", description: "Find one gentle way to return to yourself right where you are.", label: "FOR RIGHT NOW", icon: Compass, tint: "lavender" },
-  { id: "hygiene", title: "Improve My Energy Hygiene", description: "Choose one small practice to carry with you for the next seven days.", label: "FOR A PATTERN", icon: Leaf, tint: "green" },
-  { id: "prepare", title: "Prepare for a Stressful Situation", description: "Gather your attention before something difficult, uncertain, or visible.", label: "BEFORE A MOMENT", icon: HeartHandshake, tint: "gold" },
-];
+const flowIcons: Record<string, typeof SunMedium> = { sun: SunMedium, shield: ShieldCheck, compass: Compass, leaf: Leaf, heart: HeartHandshake, bolt: Bolt };
+const adjustmentOptions = [["avoid-breath", "Avoid breath-focused practices"], ["avoid-visualization", "Avoid visualization"], ["minimal-movement", "Keep movement minimal"], ["keep-eyes-open", "Keep eyes open"], ["discreet", "Keep this discreet"]] as const;
+const makeDefaultQuery = (pathway: FlowCategory, style: PracticeQuery["style"]): PracticeQuery => ({ pathway, situation: "", intensity: 5, energy: "steady", availableMinutes: 3, location: "anywhere", style, adjustments: [], enabledContentPackIds: ["foundation"] });
 
-const prompts: Record<FlowCategory, { question: string; options: string[] }> = {
-  morning: { question: "How does your energy feel as you begin?", options: ["Scattered or foggy", "Low or depleted", "Steady, but protective", "Already carrying a lot"] },
-  protect: { question: "What kind of interaction are you preparing for?", options: ["A work meeting", "A difficult conversation", "Family or caregiving", "A crowded or demanding space"] },
-  reset: { question: "What is asking for support right now?", options: ["I feel overstimulated", "I feel emotionally full", "I feel scattered", "I feel low on energy"] },
-  hygiene: { question: "What pattern would you like to meet differently?", options: ["I overextend myself", "I carry other people’s feelings", "I struggle to transition", "I forget to check my capacity"] },
-  prepare: { question: "What are you preparing for?", options: ["A difficult conversation", "Speaking or presenting", "An appointment or interview", "A family gathering"] },
-  emergency: { question: "What support feels most available?", options: ["A quiet reset", "Eyes-open grounding", "A little more space", "One small next step"] },
-};
+function RoseMark({ compact = false }: { compact?: boolean }) { return <img src={ASSETS.logo} className={compact ? "rose-mark rose-mark--compact" : "rose-mark"} alt="The Energetic Safeguard rose compass" />; }
+function AppHeader({ onHome, onSettings }: { onHome: () => void; onSettings: () => void }) { return <header className="app-header"><button className="wordmark" onClick={onHome} aria-label="Return to home"><RoseMark compact /><span><b>Energetic</b> Safeguard</span></button><button className="icon-button" onClick={onSettings} aria-label="Open settings"><Settings2 size={20} /></button></header>; }
+function IntakeProgress({ step }: { step: number }) { return <div className="progress-dots" aria-label={`Question ${step + 1} of 3`}><i className={step >= 0 ? "active" : ""} /><i className={step >= 1 ? "active" : ""} /><i className={step >= 2 ? "active" : ""} /></div>; }
 
-const styleOptions: { id: PracticeStyle | "either" | "choose"; label: string; note: string }[] = [
-  { id: "practical", label: "Practical & Grounded", note: "Sensory and boundary-led" },
-  { id: "rose", label: "Rose Ray Support", note: "Optional symbolic imagery" },
-  { id: "rose-crystal", label: "Rose + Crystal Support", note: "Crystals always optional" },
-  { id: "either", label: "Either is fine", note: "Practical or spiritual" },
-  { id: "choose", label: "Choose for me", note: "One fit for this moment" },
-];
-
-const adjustmentOptions = [
-  ["avoid-breath", "Avoid breath-focused practices"],
-  ["avoid-visualization", "Avoid visualization"],
-  ["minimal-movement", "Keep movement minimal"],
-  ["keep-eyes-open", "Keep eyes open"],
-  ["discreet", "Keep this discreet"],
-] as const;
-
-const makeDefaultQuery = (pathway: FlowCategory, style: PracticeQuery["style"]): PracticeQuery => ({
-  pathway,
-  situation: "",
-  intensity: 5,
-  energy: "steady",
-  availableMinutes: 3,
-  location: "anywhere",
-  style,
-  adjustments: [],
-});
-
-function RoseMark({ compact = false }: { compact?: boolean }) {
-  return <img src={ASSETS.logo} className={compact ? "rose-mark rose-mark--compact" : "rose-mark"} alt="The Energetic Safeguard rose compass" />;
-}
-
-function AppHeader({ onHome, onSettings }: { onHome: () => void; onSettings: () => void }) {
-  return (
-    <header className="app-header">
-      <button className="wordmark" onClick={onHome} aria-label="Return to home">
-        <RoseMark compact />
-        <span><b>Energetic</b> Safeguard</span>
-      </button>
-      <button className="icon-button" onClick={onSettings} aria-label="Open settings"><Settings2 size={20} /></button>
-    </header>
-  );
-}
-
-function IntakeProgress({ step }: { step: number }) {
-  return <div className="progress-dots" aria-label={`Question ${step + 1} of 3`}><i className={step >= 0 ? "active" : ""} /><i className={step >= 1 ? "active" : ""} /><i className={step >= 2 ? "active" : ""} /></div>;
-}
+function dailyAffirmation() { const seed = new Date().toDateString().split("").reduce((sum, character) => sum + character.charCodeAt(0), 0); return dailyAffirmations[seed % dailyAffirmations.length]; }
 
 export default function Home() {
-  const [view, setView] = useState<View>("home");
+  const { isAuthenticated } = useAuth();
+  const premiumStatus = trpc.premium.status.useQuery(undefined, { enabled: isAuthenticated, retry: false });
+  const checkoutMutation = trpc.premium.createCheckoutSession.useMutation();
+  const [savedPreferences] = useState(() => loadPreferences());
+  const [onboarded, setOnboarded] = useState(() => hasCompletedOnboarding());
+  const [view, setView] = useState<View>(() => hasCompletedOnboarding() ? "home" : "onboarding");
+  const [onboardingStep, setOnboardingStep] = useState(0);
   const [pathway, setPathway] = useState<FlowCategory>("morning");
   const [intakeStep, setIntakeStep] = useState(0);
-  const [query, setQuery] = useState<PracticeQuery>(() => makeDefaultQuery("morning", "choose"));
-  const [settingsStyle, setSettingsStyle] = useState<PracticeQuery["style"]>("choose");
+  const [query, setQuery] = useState<PracticeQuery>(() => makeDefaultQuery("morning", savedPreferences.practiceStyle));
+  const [settingsStyle, setSettingsStyle] = useState<StoredPracticeStyle>(savedPreferences.practiceStyle);
   const [activeStep, setActiveStep] = useState(0);
   const [shortVersion, setShortVersion] = useState(false);
-  const [commitment, setCommitment] = useState(false);
-  const [textSize, setTextSize] = useState("standard");
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [forcedPracticeId, setForcedPracticeId] = useState<string | null>(null);
+  const [commitment, setCommitment] = useState<SevenDayCommitment | null>(() => loadSevenDayCommitment());
+  const [textSize, setTextSize] = useState<StoredTextSize>(savedPreferences.textSize);
+  const [reducedMotion, setReducedMotion] = useState(savedPreferences.reducedMotion);
+  const [freeUsage, setFreeUsage] = useState(() => loadFreePracticeUsage());
 
   const recommendation = useMemo(() => recommendPractice(query), [query]);
-  const visibleSteps = shortVersion ? recommendation.shortVersion : recommendation.steps;
+  const activePractice = useMemo<Practice>(() => practices.find((practice) => practice.id === forcedPracticeId) ?? recommendation, [forcedPracticeId, recommendation]);
+  const visibleSteps = shortVersion ? activePractice.shortVersion : activePractice.steps;
+  const hasPremiumAccess = premiumStatus.data?.hasAccess ?? false;
+  const freePracticesRemaining = calculateFreePracticesRemaining(freeUsage.completedCount);
+  const flow = getFlow(pathway)!;
+  const pathwayCards = useMemo(() => supportFlows.filter((item) => item.showOnDashboard).map((item) => ({ ...item, icon: flowIcons[item.iconKey], asset: item.artworkKey === "arrival" ? ASSETS.arrival : item.artworkKey === "boundary" ? ASSETS.boundary : undefined })), []);
+  const suggestedPractice = practices.find((practice) => practice.id === getFlow("morning")?.suggestedPracticeId) ?? practices[0];
+  const suggestedRoseRay = suggestedPractice.roseRayId ? roseRays[suggestedPractice.roseRayId] : undefined;
 
-  useEffect(() => {
-    document.documentElement.dataset.textSize = textSize;
-    document.documentElement.dataset.motion = reducedMotion ? "reduced" : "full";
-  }, [reducedMotion, textSize]);
+  useEffect(() => { document.documentElement.dataset.textSize = textSize; document.documentElement.dataset.motion = reducedMotion ? "reduced" : "full"; }, [reducedMotion, textSize]);
+  useEffect(() => { savePreferences({ practiceStyle: settingsStyle, reducedMotion, textSize }); }, [reducedMotion, settingsStyle, textSize]);
+  useEffect(() => { if (view !== "loading") return; const timer = window.setTimeout(() => setView("recommendation"), 650); return () => window.clearTimeout(timer); }, [view]);
+  useEffect(() => { const checkout = new URLSearchParams(window.location.search).get("checkout"); if (checkout === "success") { toast.success("Payment received. Your premium access will be available shortly."); void premiumStatus.refetch(); window.history.replaceState({}, "", window.location.pathname); } if (checkout === "cancelled") { toast.message("Checkout was cancelled. Your free practices are still available."); window.history.replaceState({}, "", window.location.pathname); } }, []);
 
-  function beginPathway(nextPathway: FlowCategory) {
-    setPathway(nextPathway);
-    setQuery(makeDefaultQuery(nextPathway, settingsStyle));
-    setIntakeStep(0);
-    setView("intake");
-  }
+  function updateQuery<K extends keyof PracticeQuery>(key: K, value: PracticeQuery[K]) { setQuery((current) => ({ ...current, [key]: value })); }
+  function canUseGuidedFlow() { if (requiresPremiumAccess(freeUsage.completedCount, hasPremiumAccess)) { setView("paywall"); return false; } return true; }
+  function beginPathway(nextPathway: FlowCategory) { if (!canUseGuidedFlow()) return; setPathway(nextPathway); setQuery(makeDefaultQuery(nextPathway, settingsStyle)); setForcedPracticeId(null); setIntakeStep(0); setView("intake"); }
+  function beginQuickReset() { const quick = getFlow("emergency")?.suggestedPracticeId; if (!quick) return; setPathway("emergency"); setQuery(makeDefaultQuery("emergency", settingsStyle)); setForcedPracticeId(quick); setShortVersion(false); setActiveStep(0); setView("practice"); }
+  function beginSuggestedPractice() { setPathway("morning"); setQuery(makeDefaultQuery("morning", settingsStyle)); setForcedPracticeId(suggestedPractice.id); setShortVersion(false); setActiveStep(0); setView("practice"); }
+  function toggleAdjustment(id: string) { setQuery((current) => ({ ...current, adjustments: current.adjustments.includes(id) ? current.adjustments.filter((item) => item !== id) : [...current.adjustments, id] })); }
+  function advanceIntake() { if (intakeStep === 0 && /danger|hurt myself|harm myself|unsafe|suicide|attack/i.test(query.situation)) { setView("safety"); return; } if (intakeStep < 2) setIntakeStep((step) => step + 1); else { setForcedPracticeId(null); setView("loading"); } }
+  function startPractice(short = false) { if (!canUseGuidedFlow()) return; setShortVersion(short); setActiveStep(0); setView("practice"); }
+  function toggleSevenDayCommitment() { if (commitment?.practiceId === activePractice.id) { clearSevenDayCommitment(); setCommitment(null); return; } const next = createSevenDayCommitment(activePractice.id, activePractice.displayName); saveSevenDayCommitment(next); setCommitment(next); }
+  function finishPractice(response: "home" | "safety") { if (response === "safety") { setView("safety"); return; } if (!hasPremiumAccess && pathway !== "emergency") { const next = recordCompletedFreePractice(freeUsage); setFreeUsage(next); if (next.completedCount >= 3) { setView("paywall"); return; } } setView("home"); }
+  function completeOnboarding() { saveOnboardingCompleted(); setOnboarded(true); setView("home"); }
+  function beginCheckout(offerKey: PremiumOfferKey) { if (!isAuthenticated) { toast.message("Sign in to keep your lifetime purchase connected to you."); startLogin(); return; } checkoutMutation.mutate({ offerKey }, { onSuccess: (result) => { if (result.alreadyPremium) { toast.success("Your account already has premium access."); void premiumStatus.refetch(); } else if (result.checkoutUrl) { toast.message("Opening secure checkout in a new tab."); window.open(result.checkoutUrl, "_blank", "noopener,noreferrer"); } }, onError: () => toast.error("We could not open checkout. Please try again.") }); }
 
-  function updateQuery<K extends keyof PracticeQuery>(key: K, value: PracticeQuery[K]) {
-    setQuery((current) => ({ ...current, [key]: value }));
-  }
-
-  function toggleAdjustment(id: string) {
-    setQuery((current) => ({ ...current, adjustments: current.adjustments.includes(id) ? current.adjustments.filter((item) => item !== id) : [...current.adjustments, id] }));
-  }
-
-  function safetyCheck(value: string) {
-    if (/danger|hurt myself|harm myself|unsafe|suicide|attack/i.test(value)) {
-      setView("safety");
-      return true;
-    }
-    return false;
-  }
-
-  function advanceIntake() {
-    if (intakeStep === 0 && safetyCheck(query.situation)) return;
-    if (intakeStep < 2) setIntakeStep((step) => step + 1);
-    else setView("recommendation");
-  }
-
-  function startPractice() {
-    setShortVersion(false);
-    setActiveStep(0);
-    setView("practice");
-  }
-
-  const pathwayInfo = pathways.find((item) => item.id === pathway) ?? pathways[0];
-  const PathwayIcon = pathwayInfo.icon;
-
-  return (
-    <div className="app-shell">
-      <div className="paper-grain" />
-      {view === "home" && (
-        <main className="home-screen">
-          <AppHeader onHome={() => setView("home")} onSettings={() => setView("settings")} />
-          <section className="home-hero">
-            <div className="hero-copy">
-              <p className="eyebrow">A GUIDE FOR THIS MOMENT</p>
-              <h1>Ground your energy.<br /><em>Protect your peace.</em><br />Return to yourself.</h1>
-              <p className="hero-description">Answer a few simple questions and receive one clear practice to help you ground, protect your capacity, or reset.</p>
-              <button className="primary-button" onClick={() => beginPathway("reset")}>Find support for right now <ArrowRight size={18} /></button>
-            </div>
-            <div className="hero-art" aria-hidden="true"><img src={ASSETS.roseField} alt="" /><div className="hero-art__overlay"><RoseMark /></div></div>
-          </section>
-
-          <section className="pathways-section">
-            <div className="section-heading"><div><p className="eyebrow">CHOOSE A PATHWAY</p><h2>What would feel supportive?</h2></div><span className="section-number">01 — 05</span></div>
-            <div className="pathway-list">
-              {pathways.map((item, index) => {
-                const Icon = item.icon;
-                return <button key={item.id} className={`pathway-card pathway-card--${item.tint} ${item.asset ? "has-art" : ""}`} onClick={() => beginPathway(item.id)}>
-                  {item.asset && <img className="pathway-art" src={item.asset} alt="" />}
-                  <div className="pathway-card__inner"><span className="card-number">0{index + 1}</span><div className="card-icon"><Icon size={23} /></div><p className="pathway-label">{item.label}</p><h3>{item.title}</h3><p>{item.description}</p><span className="card-arrow"><ChevronRight size={21} /></span></div>
-                </button>;
-              })}
-            </div>
-          </section>
-
-          <button className="one-minute-bar" onClick={() => beginPathway("emergency")}><span className="mini-compass"><Compass size={18} /></span><span><b>One-Minute Reset</b><small>For when you need one small next step.</small></span><ArrowRight size={19} /></button>
-          <footer className="home-footer">The Energetic Safeguard is a general wellness and spiritual support tool. It does not diagnose or treat health conditions.</footer>
-        </main>
-      )}
-
-      {view === "intake" && (
-        <main className="flow-screen">
-          <AppHeader onHome={() => setView("home")} onSettings={() => setView("settings")} />
-          <div className="flow-topline"><button className="back-button" onClick={() => intakeStep ? setIntakeStep((step) => step - 1) : setView("home")}><ArrowLeft size={18} /> Back</button><IntakeProgress step={intakeStep} /><span>{intakeStep + 1} / 3</span></div>
-          <section className="intake-card">
-            <div className="intake-context"><span className={`context-icon context-icon--${pathwayInfo.tint}`}><PathwayIcon size={21} /></span><div><p className="eyebrow">{pathwayInfo.label}</p><h2>{pathwayInfo.title}</h2></div></div>
-            {intakeStep === 0 && <div className="intake-step"><h1>{prompts[pathway].question}</h1><div className="option-stack">{prompts[pathway].options.map((option) => <button key={option} className={`choice-row ${query.situation === option ? "selected" : ""}`} onClick={() => updateQuery("situation", option)}><span>{option}</span><i>{query.situation === option && <Check size={16} />}</i></button>)}</div><label className="quiet-label">Or describe it in your own words<textarea value={query.situation} onChange={(event) => updateQuery("situation", event.target.value)} placeholder="Only share what feels comfortable." rows={2} /></label></div>}
-            {intakeStep === 1 && <div className="intake-step"><h1>How much is this asking of you?</h1><div className="intensity-readout"><strong>{query.intensity}</strong><span>out of 10</span></div><input className="range-input" type="range" min="1" max="10" value={query.intensity} onChange={(event) => updateQuery("intensity", Number(event.target.value))} /><div className="range-captions"><span>Lightly present</span><span>Very intense</span></div><div className="question-split"><div><p className="form-label">Energy available</p><div className="segmented">{(["low", "steady", "high"] as const).map((level) => <button key={level} className={query.energy === level ? "active" : ""} onClick={() => updateQuery("energy", level)}>{level}</button>)}</div></div><div><p className="form-label">Time you have</p><div className="segmented">{([1, 3, 5] as const).map((minutes) => <button key={minutes} className={query.availableMinutes === minutes ? "active" : ""} onClick={() => updateQuery("availableMinutes", minutes)}>{minutes}m</button>)}</div></div></div><p className="form-label form-label--space">Where are you?</p><div className="location-row">{(["anywhere", "home", "work", "public", "outdoors"] as Location[]).map((location) => <button key={location} className={query.location === location ? "active" : ""} onClick={() => updateQuery("location", location)}>{location === "anywhere" ? "Anywhere" : location}</button>)}</div></div>}
-            {intakeStep === 2 && <div className="intake-step"><h1>Would you like to make any adjustments?</h1><p className="lead-copy">You can choose what feels supportive, or leave everything as it is.</p><div className="adjustment-stack">{adjustmentOptions.map(([id, label]) => <button key={id} className={`check-row ${query.adjustments.includes(id) ? "selected" : ""}`} onClick={() => toggleAdjustment(id)}><i>{query.adjustments.includes(id) && <Check size={15} />}</i><span>{label}</span></button>)}</div><p className="form-label form-label--space">Practice style for this moment</p><div className="style-list">{styleOptions.slice(0, 4).map((style) => <button key={style.id} className={`style-option ${query.style === style.id ? "selected" : ""}`} onClick={() => updateQuery("style", style.id)}><span><b>{style.label}</b><small>{style.note}</small></span><i>{query.style === style.id && <Check size={15} />}</i></button>)}</div></div>}
-            <button className="primary-button intake-continue" disabled={intakeStep === 0 && !query.situation.trim()} onClick={advanceIntake}>{intakeStep === 2 ? "Show my practice" : "Continue"}<ArrowRight size={18} /></button>
-          </section>
-        </main>
-      )}
-
-      {view === "recommendation" && (
-        <main className="flow-screen recommendation-screen">
-          <AppHeader onHome={() => setView("home")} onSettings={() => setView("settings")} />
-          <button className="back-button recommendation-back" onClick={() => setView("intake")}><ArrowLeft size={18} /> Adjust answers</button>
-          <section className="recommendation-card">
-            <div className="recommendation-orb"><RoseMark /></div>
-            <p className="eyebrow">YOUR ONE CLEAR NEXT STEP</p><h1>{recommendation.displayName}</h1><p className="recommendation-result">{recommendation.intendedResult}</p>
-            <div className="hearing-box"><span><HeartHandshake size={19} /></span><div><p className="eyebrow">WHAT I’M HEARING</p><p>It sounds like this moment feels <b>{query.intensity >= 7 ? "especially intense" : query.intensity >= 4 ? "somewhat demanding" : "present"}</b>, and you have <b>{query.availableMinutes} {query.availableMinutes === 1 ? "minute" : "minutes"}</b> available.</p></div></div>
-            <div className="practice-meta"><span><Clock3 size={17} /> About {recommendation.durationMinutes} {recommendation.durationMinutes === 1 ? "minute" : "minutes"}</span><span><Sparkles size={17} /> {recommendation.preferredModality[0]}</span></div>
-            <div className="why-box"><p className="eyebrow">WHY THIS ONE</p><p>{recommendationReason(recommendation, query)}</p>{recommendation.roseRay && <small>{recommendation.roseRay}. Symbolic support only.</small>}</div>
-            <button className="primary-button primary-button--wide" onClick={startPractice}><Play size={17} fill="currentColor" /> Begin this practice</button>
-            {recommendation.shortVersion.length > 0 && <button className="text-button" onClick={() => { setShortVersion(true); setActiveStep(0); setView("practice"); }}>Show a shorter option</button>}
-          </section>
-        </main>
-      )}
-
-      {view === "practice" && (
-        <main className="flow-screen practice-screen">
-          <AppHeader onHome={() => setView("home")} onSettings={() => setView("settings")} />
-          <div className="practice-header"><button className="back-button" onClick={() => setView("recommendation")}><ArrowLeft size={18} /> Back</button><span>{shortVersion ? "SHORT OPTION" : `STEP ${activeStep + 1} OF ${visibleSteps.length}`}</span><button className="stop-button" onClick={() => setView("recommendation")}><Pause size={15} /> Stop for now</button></div>
-          <section className="guided-card">
-            <div className="guided-orb"><span className="orb-ring orb-ring--one" /><span className="orb-ring orb-ring--two" /><RoseMark /></div><p className="eyebrow">{recommendation.displayName}</p><h1>{visibleSteps[activeStep].title}</h1><p className="guided-instruction">{visibleSteps[activeStep].instruction}</p>
-            <div className="step-progress"><span style={{ width: `${((activeStep + 1) / visibleSteps.length) * 100}%` }} /></div>
-            <div className="practice-controls"><button className="secondary-button" disabled={activeStep === 0} onClick={() => setActiveStep((step) => Math.max(0, step - 1))}>Previous</button><button className="primary-button" onClick={() => activeStep < visibleSteps.length - 1 ? setActiveStep((step) => step + 1) : setView("complete")}>{activeStep < visibleSteps.length - 1 ? "Next step" : "I completed this"}<ArrowRight size={18} /></button></div>
-            <button className="overwhelmed-button" onClick={() => setView("safety")}>I feel more overwhelmed</button>
-          </section>
-        </main>
-      )}
-
-      {view === "complete" && (
-        <main className="flow-screen complete-screen"><AppHeader onHome={() => setView("home")} onSettings={() => setView("settings")} /><section className="complete-card"><div className="completion-flower"><Flower2 size={39} /></div><p className="eyebrow">PRACTICE COMPLETE</p><h1>How do you feel now?</h1><p>{recommendation.closingCheckIn}</p><div className="completion-options"><button onClick={() => setView("home")}>More grounded</button><button onClick={() => setView("home")}>About the same</button><button onClick={() => setView("safety")}>More overwhelmed</button><button onClick={() => setView("home")}>I’m not sure</button></div>{pathway === "hygiene" && <div className="commitment-box"><div><b>A seven-day intention</b><span>Repeat this practice when the pattern appears.</span></div><button className={commitment ? "commitment-active" : ""} onClick={() => setCommitment((value) => !value)}>{commitment ? <Check size={16} /> : "Choose this"}</button></div>}<button className="text-button" onClick={() => setView("home")}>Return home</button></section></main>
-      )}
-
-      {view === "safety" && (
-        <main className="safety-screen"><AppHeader onHome={() => setView("home")} onSettings={() => setView("settings")} /><section className="safety-card"><div className="safety-symbol"><ShieldCheck size={34} /></div><p className="eyebrow">PAUSE HERE</p><h1>You can stop this practice.</h1><p>This is a general wellness and spiritual support tool. It cannot assess what you need in an emergency.</p><div className="orientation-note"><b>For this moment</b><span>With your eyes open, notice one stable object and one point of support beneath or beside you.</span></div><p>If you feel physically unsafe, in immediate danger, or unable to stay safe, please move toward a safer place and contact appropriate personal, professional, medical, crisis, or emergency support.</p><button className="primary-button primary-button--wide" onClick={() => beginPathway("emergency")}>Try a one-minute orientation <ArrowRight size={18} /></button><button className="text-button" onClick={() => setView("home")}>Return home</button></section></main>
-      )}
-
-      {view === "settings" && (
-        <main className="flow-screen settings-screen"><AppHeader onHome={() => setView("home")} onSettings={() => setView("settings")} /><section className="settings-card"><div className="settings-heading"><div><p className="eyebrow">YOUR PREFERENCES</p><h1>Settings</h1></div><button className="icon-button" onClick={() => setView("home")}><X size={20} /></button></div><div className="setting-group"><h2>Practice style preference</h2>{styleOptions.map((style) => <button key={style.id} className={`setting-choice ${settingsStyle === style.id ? "selected" : ""}`} onClick={() => setSettingsStyle(style.id)}><span><b>{style.label}</b><small>{style.note}</small></span><i>{settingsStyle === style.id && <Check size={16} />}</i></button>)}</div><div className="setting-group"><h2>Accessibility</h2><label className="switch-row"><span><b>Reduced motion</b><small>Keep transitions subtle and still.</small></span><input checked={reducedMotion} onChange={(event) => setReducedMotion(event.target.checked)} type="checkbox" /><i /></label><div className="text-size-row"><span><b>Text size</b><small>Choose a comfortable reading size.</small></span><div className="segmented"><button className={textSize === "standard" ? "active" : ""} onClick={() => setTextSize("standard")}>A</button><button className={textSize === "large" ? "active" : ""} onClick={() => setTextSize("large")}>A+</button></div></div></div><div className="wellness-note"><Sparkles size={19} /><p><b>Wellness &amp; safety</b>This app supports grounding and reflection. It does not diagnose, treat, or replace professional care.</p></div><button className="secondary-button secondary-button--wide" onClick={() => setView("home")}><HomeIcon size={17} /> Back to home</button></section></main>
-      )}
-    </div>
-  );
+  return <div className="app-shell"><div className="paper-grain" />
+    {view === "onboarding" && <main className="onboarding-screen"><header className="onboarding-header"><div className="wordmark"><RoseMark compact /><span><b>Energetic</b> Safeguard</span></div><button className="text-button" onClick={completeOnboarding}>Skip</button></header><section className="onboarding-card">{onboardingStep === 0 && <><div className="onboarding-orb"><RoseMark /></div><p className="eyebrow">WELCOME</p><h1>Welcome to The Energetic Safeguard</h1><p className="onboarding-tagline"><em>Ground your energy.</em><em>Protect your peace.</em><em>Return to yourself.</em></p></>}{onboardingStep === 1 && <><div className="onboarding-orb"><Compass size={29} /></div><p className="eyebrow">ONE CLEAR NEXT STEP</p><h1>One supportive practice, chosen for right now.</h1><p className="onboarding-copy">The app considers the parts of a moment that shape what could feel supportive.</p><div className="onboarding-factors">{["How you’re feeling", "Your situation", "Your available time", "Your preferences"].map((factor) => <span key={factor}><Sparkles size={14} />{factor}</span>)}</div></>}{onboardingStep === 2 && <><p className="eyebrow">YOUR DEFAULT</p><h1>Choose your practice style.</h1><p className="onboarding-copy">You can change this any time in Settings, or for one practice inside a pathway.</p><div className="onboarding-styles">{practiceStyleOptions.map((style) => <button key={style.id} className={`style-option ${settingsStyle === style.id ? "selected" : ""}`} onClick={() => setSettingsStyle(style.id)}><span><b>{style.label}</b><small>{style.note}</small></span><i>{settingsStyle === style.id && <Check size={15} />}</i></button>)}</div><p className="onboarding-note">A physical crystal is never required for any practice.</p></>}<div className="onboarding-controls"><button className="secondary-button" onClick={() => onboardingStep ? setOnboardingStep((step) => step - 1) : completeOnboarding()}>{onboardingStep ? "Back" : "Skip"}</button><IntakeProgress step={onboardingStep} /><button className="primary-button" onClick={() => onboardingStep < 2 ? setOnboardingStep((step) => step + 1) : completeOnboarding()}>{onboardingStep < 2 ? "Continue" : "Begin"}<ArrowRight size={17} /></button></div></section></main>}
+    {view === "home" && <main className="home-screen"><AppHeader onHome={() => setView("home")} onSettings={() => setView("settings")} /><section className="home-hero"><div className="hero-copy"><p className="eyebrow">A GUIDE FOR THIS MOMENT</p><h1>Ground your energy.<br /><em>Protect your peace.</em><br />Return to yourself.</h1><p className="hero-description">Answer a few simple questions and receive one clear practice to help you ground, protect your capacity, or reset.</p><button className="primary-button" onClick={() => beginPathway("reset")}>Find support for right now <ArrowRight size={18} /></button></div><div className="hero-art" aria-hidden="true"><img src={ASSETS.roseField} alt="" /><div className="hero-art__overlay"><RoseMark /></div></div></section>{!hasPremiumAccess && <div className="free-practice-note"><span><Sparkles size={15} /></span><p><b>{freePracticesRemaining} of 3 free practices remaining</b><small>Complete a guided practice to use one. Your One-Minute Reset remains here whenever you need it.</small></p></div>}<section className="daily-guidance"><p className="eyebrow">A GENTLE REMINDER</p><blockquote>“{dailyAffirmation()}”</blockquote><div className="suggested-practice"><div><p className="eyebrow">TODAY’S SUGGESTED PRACTICE</p><h3>{suggestedPractice.displayName}</h3><p>{suggestedPractice.intendedResult}</p><small><Clock3 size={13} /> {suggestedPractice.durationMinutes} minutes{suggestedRoseRay ? ` · ${suggestedRoseRay.name}` : ""}</small></div><button className="secondary-button" onClick={beginSuggestedPractice}>Begin <Play size={15} fill="currentColor" /></button></div></section><section className="pathways-section"><div className="section-heading"><div><p className="eyebrow">CHOOSE A PATHWAY</p><h2>What would feel supportive?</h2></div><span className="section-number">01 — 05</span></div><div className="pathway-list">{pathwayCards.map((item, index) => { const Icon = item.icon; return <button key={item.id} className={`pathway-card pathway-card--${item.tint} ${item.asset ? "has-art" : ""}`} onClick={() => beginPathway(item.id)}>{item.asset && <img className="pathway-art" src={item.asset} alt="" />}<div className="pathway-card__inner"><span className="card-number">0{index + 1}</span><div className="card-icon"><Icon size={23} /></div><p className="pathway-label">{item.dashboardLabel}</p><h3>{item.title}</h3><p>{item.description}</p><span className="card-arrow"><ChevronRight size={21} /></span></div></button>; })}</div></section>{commitment && <section className="remembered-commitment"><span className="commitment-mark"><RotateCcw size={18} /></span><div><p className="eyebrow">YOUR SEVEN-DAY INTENTION</p><b>{commitment.practiceName}</b><small>{remainingCommitmentDays(commitment)} {remainingCommitmentDays(commitment) === 1 ? "day" : "days"} remaining. Return when the pattern appears.</small></div><button onClick={() => { clearSevenDayCommitment(); setCommitment(null); }}>End commitment</button></section>}<footer className="home-footer">The Energetic Safeguard is a general wellness and spiritual support tool. It does not diagnose or treat health conditions.</footer></main>}
+    {view === "intake" && <main className="flow-screen"><AppHeader onHome={() => setView("home")} onSettings={() => setView("settings")} /><div className="flow-topline"><button className="back-button" onClick={() => intakeStep ? setIntakeStep((step) => step - 1) : setView("home")}><ArrowLeft size={18} /> Back</button><IntakeProgress step={intakeStep} /><span>{intakeStep + 1} / 3</span></div><section className="intake-card"><div className="intake-context"><span className={`context-icon context-icon--${flow.tint}`}>{(() => { const Icon = flowIcons[flow.iconKey]; return <Icon size={21} />; })()}</span><div><p className="eyebrow">{flow.dashboardLabel}</p><h2>{flow.title}</h2></div></div>{intakeStep === 0 && <div className="intake-step"><h1>{flow.intake.question}</h1><div className="option-stack">{flow.intake.options.map((option) => <button key={option} className={`choice-row ${query.situation === option ? "selected" : ""}`} onClick={() => updateQuery("situation", option)}><span>{option}</span><i>{query.situation === option && <Check size={16} />}</i></button>)}</div><label className="quiet-label">Or describe it in your own words<textarea value={query.situation} onChange={(event) => updateQuery("situation", event.target.value)} placeholder="Only share what feels comfortable." rows={2} /></label></div>}{intakeStep === 1 && <div className="intake-step"><h1>How much is this asking of you?</h1><div className="intensity-readout"><strong>{query.intensity}</strong><span>out of 10</span></div><input className="range-input" type="range" min="1" max="10" value={query.intensity} onChange={(event) => updateQuery("intensity", Number(event.target.value))} /><div className="range-captions"><span>Lightly present</span><span>Very intense</span></div><div className="question-split"><div><p className="form-label">Energy available</p><div className="segmented">{(["low", "steady", "high"] as const).map((level) => <button key={level} className={query.energy === level ? "active" : ""} onClick={() => updateQuery("energy", level)}>{level}</button>)}</div></div><div><p className="form-label">Time you have</p><div className="segmented">{([1, 3, 5] as const).map((minutes) => <button key={minutes} className={query.availableMinutes === minutes ? "active" : ""} onClick={() => updateQuery("availableMinutes", minutes)}>{minutes}m</button>)}</div></div></div><p className="form-label form-label--space">Where are you?</p><div className="location-row">{(["anywhere", "home", "work", "public", "outdoors"] as Location[]).map((location) => <button key={location} className={query.location === location ? "active" : ""} onClick={() => updateQuery("location", location)}>{location === "anywhere" ? "Anywhere" : location}</button>)}</div></div>}{intakeStep === 2 && <div className="intake-step"><h1>Would you like to make any adjustments?</h1><p className="lead-copy">You can choose what feels supportive, or leave everything as it is.</p><div className="adjustment-stack">{adjustmentOptions.map(([id, label]) => <button key={id} className={`check-row ${query.adjustments.includes(id) ? "selected" : ""}`} onClick={() => toggleAdjustment(id)}><i>{query.adjustments.includes(id) && <Check size={15} />}</i><span>{label}</span></button>)}</div><p className="form-label form-label--space">Practice style for this moment</p><div className="style-list">{practiceStyleOptions.map((style) => <button key={style.id} className={`style-option ${query.style === style.id ? "selected" : ""}`} onClick={() => updateQuery("style", style.id)}><span><b>{style.label}</b><small>{style.note}</small></span><i>{query.style === style.id && <Check size={15} />}</i></button>)}</div></div>}<button className="primary-button intake-continue" disabled={intakeStep === 0 && !query.situation.trim()} onClick={advanceIntake}>{intakeStep === 2 ? "Find my practice" : "Continue"}<ArrowRight size={18} /></button></section></main>}
+    {view === "loading" && <main className="loading-screen"><RoseMark /><p className="eyebrow">A MOMENT OF CARE</p><h1>Finding your best support…</h1><span className="loading-line" /></main>}
+    {view === "recommendation" && <main className="flow-screen recommendation-screen"><AppHeader onHome={() => setView("home")} onSettings={() => setView("settings")} /><button className="back-button recommendation-back" onClick={() => setView("intake")}><ArrowLeft size={18} /> Adjust answers</button><section className="recommendation-card"><div className="recommendation-orb"><RoseMark /></div><p className="eyebrow">TODAY’S RECOMMENDATION</p><h1>{activePractice.displayName}</h1><p className="recommendation-result">{activePractice.intendedResult}</p><div className="hearing-box"><span><HeartHandshake size={19} /></span><div><p className="eyebrow">WHY THIS WAS CHOSEN</p><p>You shared that this moment feels <b>{query.intensity >= 7 ? "especially intense" : query.intensity >= 4 ? "somewhat demanding" : "present"}</b>, with <b>{query.availableMinutes} {query.availableMinutes === 1 ? "minute" : "minutes"}</b> available. {recommendationReason(activePractice, query)}</p></div></div><div className="practice-meta"><span><Clock3 size={17} /> About {activePractice.durationMinutes} {activePractice.durationMinutes === 1 ? "minute" : "minutes"}</span><span><Sparkles size={17} /> Best for {query.situation || "this moment"}</span></div>{activePractice.roseRayId && <div className="why-box"><p className="eyebrow">OPTIONAL SYMBOLIC SUPPORT</p><p>{roseRays[activePractice.roseRayId].name} — {roseRays[activePractice.roseRayId].symbolicTheme}.</p><small>You may imagine, sense, or simply use this as an intention.</small></div>}<button className="primary-button primary-button--wide" onClick={() => startPractice()}><Play size={17} fill="currentColor" /> Begin practice</button>{activePractice.shortVersion.length > 0 && <button className="text-button" onClick={() => startPractice(true)}>Show a shorter option</button>}</section></main>}
+    {view === "practice" && <main className="flow-screen practice-screen"><AppHeader onHome={() => setView("home")} onSettings={() => setView("settings")} /><div className="practice-header"><button className="back-button" onClick={() => setView("recommendation")}><ArrowLeft size={18} /> Back</button><span>{shortVersion ? "SHORT OPTION" : `STEP ${activeStep + 1} OF ${visibleSteps.length}`}</span><button className="stop-button" onClick={() => setView("recommendation")}><Pause size={15} /> Stop for now</button></div><section className="guided-card"><div className="guided-orb"><span className="orb-ring orb-ring--one" /><span className="orb-ring orb-ring--two" /><RoseMark /></div><p className="eyebrow">{activePractice.displayName}</p><h1>{visibleSteps[activeStep].title}</h1><p className="guided-instruction">{visibleSteps[activeStep].instruction}</p><div className="step-progress"><span style={{ width: `${((activeStep + 1) / visibleSteps.length) * 100}%` }} /></div><div className="practice-controls"><button className="secondary-button" disabled={activeStep === 0} onClick={() => setActiveStep((step) => Math.max(0, step - 1))}>Previous</button><button className="primary-button" onClick={() => activeStep < visibleSteps.length - 1 ? setActiveStep((step) => step + 1) : setView("complete")}>{activeStep < visibleSteps.length - 1 ? "Next step" : "I completed this"}<ArrowRight size={18} /></button></div><button className="overwhelmed-button" onClick={() => setView("safety")}>I feel more overwhelmed</button></section></main>}
+    {view === "complete" && <main className="flow-screen complete-screen"><AppHeader onHome={() => setView("home")} onSettings={() => setView("settings")} /><section className="complete-card"><div className="completion-flower"><Flower2 size={39} /></div><p className="eyebrow">A PAUSE, COMPLETED</p><h1>Beautiful work.</h1><p>Even a small pause can help you reconnect with yourself. {activePractice.closingCheckIn}</p><div className="completion-options"><button onClick={() => finishPractice("home")}>More grounded</button><button onClick={() => finishPractice("home")}>About the same</button><button onClick={() => finishPractice("safety")}>More overwhelmed</button><button onClick={() => finishPractice("home")}>I’m not sure</button></div>{pathway === "hygiene" && <div className="commitment-box"><div><b>A seven-day intention</b><span>Repeat this practice when the pattern appears.</span></div><button className={commitment?.practiceId === activePractice.id ? "commitment-active" : ""} onClick={toggleSevenDayCommitment}>{commitment?.practiceId === activePractice.id ? <><Check size={16} /> Chosen</> : commitment ? "Replace" : "Choose this"}</button></div>}<button className="text-button" onClick={() => setView("home")}>Return home</button></section></main>}
+    {view === "paywall" && <main className="flow-screen paywall-screen"><AppHeader onHome={() => setView("home")} onSettings={() => setView("settings")} /><section className="paywall-card"><div className="paywall-mark"><RoseMark /></div><p className="eyebrow">YOUR THREE FREE PRACTICES ARE COMPLETE</p><h1>Continue with a lifetime of support.</h1><p className="paywall-intro">Choose the access that feels right. Both offers are one-time payments; there is no subscription.</p><div className="offer-stack"><article className="offer-card"><span className="offer-kicker">AS IT IS TODAY</span><h2>Current App Lifetime</h2><strong>$19 <small>USD</small></strong><p>Permanent access to today’s guided pathways and curated practice library.</p><button className="secondary-button secondary-button--wide" disabled={checkoutMutation.isPending} onClick={() => beginCheckout("current_app_lifetime")}>{checkoutMutation.isPending ? "Preparing checkout…" : "Choose current app"}</button></article><article className="offer-card offer-card--featured"><span className="offer-kicker">MOST COMPLETE</span><h2>Lifetime + Future Updates</h2><strong>$39 <small>USD</small></strong><p>Everything available today, plus future in-app practice and meditation content.</p><button className="primary-button primary-button--wide" disabled={checkoutMutation.isPending} onClick={() => beginCheckout("future_updates_lifetime")}>{checkoutMutation.isPending ? "Preparing checkout…" : "Choose future updates"}</button></article></div><p className="paywall-footnote">You will be asked to sign in before secure checkout so your lifetime access stays connected to you.</p><button className="text-button" onClick={() => setView("home")}>Return home</button></section></main>}
+    {view === "safety" && <main className="safety-screen"><AppHeader onHome={() => setView("home")} onSettings={() => setView("settings")} /><section className="safety-card"><div className="safety-symbol"><ShieldCheck size={34} /></div><p className="eyebrow">PAUSE HERE</p><h1>You can stop this practice.</h1><p>This is a general wellness and spiritual support tool. It cannot assess what you need in an emergency.</p><div className="orientation-note"><b>For this moment</b><span>With your eyes open, notice one stable object and one point of support beneath or beside you.</span></div><p>If you feel physically unsafe, in immediate danger, or unable to stay safe, please move toward a safer place and contact appropriate personal, professional, medical, crisis, or emergency support.</p><button className="primary-button primary-button--wide" onClick={beginQuickReset}>Try a one-minute orientation <ArrowRight size={18} /></button><button className="text-button" onClick={() => setView("home")}>Return home</button></section></main>}
+    {view === "settings" && <main className="flow-screen settings-screen"><AppHeader onHome={() => setView("home")} onSettings={() => setView("settings")} /><section className="settings-card"><div className="settings-heading"><div><p className="eyebrow">YOUR PREFERENCES</p><h1>Settings</h1></div><button className="icon-button" onClick={() => setView("home")}><X size={20} /></button></div><div className="setting-group"><h2>Practice style preference</h2>{practiceStyleOptions.map((style) => <button key={style.id} className={`setting-choice ${settingsStyle === style.id ? "selected" : ""}`} onClick={() => setSettingsStyle(style.id)}><span><b>{style.label}</b><small>{style.note}</small></span><i>{settingsStyle === style.id && <Check size={16} />}</i></button>)}</div><div className="setting-group"><h2>Accessibility</h2><label className="switch-row"><span><b>Reduced motion</b><small>Keep transitions subtle and still.</small></span><input checked={reducedMotion} onChange={(event) => setReducedMotion(event.target.checked)} type="checkbox" /><i /></label><div className="text-size-row"><span><b>Text size</b><small>Choose a comfortable reading size.</small></span><div className="segmented"><button className={textSize === "standard" ? "active" : ""} onClick={() => setTextSize("standard")}>A</button><button className={textSize === "large" ? "active" : ""} onClick={() => setTextSize("large")}>A+</button></div></div></div><div className="setting-group future-state"><p className="eyebrow">COMING SOON</p><h2>Recent practices &amp; favorites</h2><p>Your practice history and saved favorites will appear here in a future update.</p></div><div className="wellness-note"><Sparkles size={19} /><p><b>Wellness &amp; safety</b>This app supports grounding and reflection. It does not diagnose, treat, or replace professional care.</p></div><button className="secondary-button secondary-button--wide" onClick={() => setView("home")}><HomeIcon size={17} /> Back to home</button></section></main>}
+    {view !== "onboarding" && <button className="quick-reset-fab" onClick={beginQuickReset} aria-label="Open a one-minute quick reset"><Bolt size={17} /><span>Need a Quick Reset?</span></button>}
+  </div>;
 }
-

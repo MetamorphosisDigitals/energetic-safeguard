@@ -2,6 +2,8 @@
  * Design: Soft Sovereignty — structured, readable ritual content lives outside UI so
  * the interface stays calm and the recommendation system can scale without rewriting screens.
  */
+import type { ContentPackId, CrystalId, RoseRayId } from "./catalog";
+
 export type FlowCategory =
   | "morning"
   | "protect"
@@ -32,8 +34,10 @@ export interface Practice {
   requiredPrivacyLevel: PrivacyLevel;
   accessibilityTags: string[];
   practiceStyles: PracticeStyle[];
-  roseRay?: string;
-  crystalSupport?: string[];
+  /** Existing practices default to the active foundation pack; new content should set this explicitly. */
+  contentPackId?: ContentPackId;
+  roseRayId?: RoseRayId;
+  crystalSupportIds?: CrystalId[];
   keywords: string[];
   steps: PracticeStep[];
   shortVersion: PracticeStep[];
@@ -109,7 +113,7 @@ export const practices: Practice[] = [
     requiredPrivacyLevel: "discreet",
     accessibilityTags: ["eyes-open", "minimal-movement", "no-touch", "discreet"],
     practiceStyles: ["rose"],
-    roseRay: "Golden Rose — sovereignty, confidence, visibility, leadership",
+    roseRayId: "golden-rose",
     keywords: ["demanding", "meeting", "work", "people", "boundary"],
     steps: [
       step("Find your own center", "Let your gaze rest on one steady point. If imagery is supportive, imagine a small warm-gold light at your center. You may also simply use this as an intention."),
@@ -160,8 +164,8 @@ export const practices: Practice[] = [
     requiredPrivacyLevel: "some",
     accessibilityTags: ["minimal-movement", "no-touch"],
     practiceStyles: ["rose", "rose-crystal"],
-    roseRay: "Black Rose — protection, privacy, boundaries",
-    crystalSupport: ["Black Tourmaline", "Golden Obsidian"],
+    roseRayId: "black-rose",
+    crystalSupportIds: ["black-tourmaline", "golden-obsidian"],
     keywords: ["meeting", "interaction", "privacy", "drained", "protection"],
     steps: [
       step("Settle where you are", "Notice the surface supporting you. You may keep your eyes open."),
@@ -337,7 +341,7 @@ export const practices: Practice[] = [
     requiredPrivacyLevel: "discreet",
     accessibilityTags: ["eyes-open", "minimal-movement", "no-touch", "discreet"],
     practiceStyles: ["practical", "rose"],
-    roseRay: "Golden Rose — sovereignty, confidence, visibility, leadership",
+    roseRayId: "golden-rose",
     keywords: ["presentation", "interview", "visible", "speak", "performance"],
     steps: [
       step("Choose your message", "Name the one idea you want people to leave with. Let that be enough to guide you."),
@@ -363,8 +367,8 @@ export const practices: Practice[] = [
     requiredPrivacyLevel: "some",
     accessibilityTags: ["minimal-movement", "no-touch"],
     practiceStyles: ["rose", "rose-crystal"],
-    roseRay: "Black Rose — protection, privacy, boundaries",
-    crystalSupport: ["Black Tourmaline", "Golden Obsidian"],
+    roseRayId: "black-rose",
+    crystalSupportIds: ["black-tourmaline", "golden-obsidian"],
     keywords: ["protection", "privacy", "boundary", "people", "drained"],
     steps: [
       step("Create a quiet perimeter", "If it feels supportive, imagine the outline of an open Black Rose around your personal space. You can also treat this only as an intention."),
@@ -390,8 +394,8 @@ export const practices: Practice[] = [
     requiredPrivacyLevel: "open",
     accessibilityTags: ["eyes-open", "minimal-movement", "no-touch"],
     practiceStyles: ["rose", "rose-crystal"],
-    roseRay: "Emerald Rose — grounding, embodiment, wholeness",
-    crystalSupport: ["Red Jasper", "Selenite"],
+    roseRayId: "emerald-rose",
+    crystalSupportIds: ["red-jasper", "selenite"],
     keywords: ["ground", "scattered", "nature", "body", "return"],
     steps: [
       step("Notice support", "With eyes open if you like, notice where your body meets chair, floor, bed, or ground."),
@@ -430,4 +434,3 @@ export const practices: Practice[] = [
     active: true,
   },
 ];
-

@@ -8,6 +8,7 @@ const database = vi.hoisted(() => ({
   recordPracticeCompletion: vi.fn(),
   removePracticeFavorite: vi.fn(),
   savePracticeFavorite: vi.fn(),
+  updatePracticeHistoryNote: vi.fn(),
 }));
 
 vi.mock("./db", () => database);
@@ -40,6 +41,7 @@ describe("library router", () => {
     database.recordPracticeCompletion.mockResolvedValue(undefined);
     database.savePracticeFavorite.mockResolvedValue(undefined);
     database.removePracticeFavorite.mockResolvedValue(undefined);
+    database.updatePracticeHistoryNote.mockResolvedValue(undefined);
   });
 
   it("records only the catalog practice ID under the authenticated user", async () => {
@@ -58,5 +60,11 @@ describe("library router", () => {
     expect(database.listPracticeFavorites).toHaveBeenCalledWith(7);
     expect(database.savePracticeFavorite).toHaveBeenCalledWith(7, "emerald-rose-grounding");
     expect(database.removePracticeFavorite).toHaveBeenCalledWith(7, "emerald-rose-grounding");
+  });
+
+  it("updates a private note only under the authenticated user and history record", async () => {
+    const caller = appRouter.createCaller(createContext(11));
+    await caller.library.updateHistoryNote({ historyId: 18, note: "I felt steadier after this." });
+    expect(database.updatePracticeHistoryNote).toHaveBeenCalledWith(11, 18, "I felt steadier after this.");
   });
 });

@@ -86,6 +86,12 @@ export async function listPracticeHistory(userId: number, limit = 20) {
   return db.select().from(practiceHistory).where(eq(practiceHistory.userId, userId)).orderBy(desc(practiceHistory.completedAt)).limit(limit);
 }
 
+export async function updatePracticeHistoryNote(userId: number, historyId: number, note: string | null) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable while saving a private note.");
+  await db.update(practiceHistory).set({ note }).where(and(eq(practiceHistory.id, historyId), eq(practiceHistory.userId, userId)));
+}
+
 export async function listPracticeFavorites(userId: number) {
   const db = await getDb();
   if (!db) return [];

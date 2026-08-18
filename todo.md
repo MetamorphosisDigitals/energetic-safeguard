@@ -33,3 +33,9 @@
 - [x] Add tests for user-scoped history and favorites behavior.
 - [x] Verify responsive account-library behavior and save the completed update.
 - [x] Capture direct responsive verification of the account-library screen and save a new checkpoint.
+- [x] Review Saved Support, catalog metadata, history records, and seven-day commitment behavior.
+- [x] Add optional private notes to user-owned history records with a safe schema migration and typed procedures.
+- [x] Add pathway and Rose Ray filters for favorite meditations in Saved Support.
+- [x] Add an active seven-day intention shortcut that resumes its practice.
+- [x] Add tests for private notes, filter metadata, and user-owned updates.
+- [x] Verify the updated Saved Support experience on desktop and mobile, then save a checkpoint.

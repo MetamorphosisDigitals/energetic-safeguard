@@ -32,13 +32,14 @@ export const premiumEntitlements = mysqlTable("premium_entitlements", {
 ]);
 
 /**
- * A compact activity record. It stores only the completed catalog-practice ID and
- * UTC completion time—never a user's free-text intake answers or wellness details.
+ * A compact activity record. It stores only the completed catalog-practice ID,
+ * UTC completion time, and an optional user-authored private note.
  */
 export const practiceHistory = mysqlTable("practice_history", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
   practiceId: varchar("practiceId", { length: 96 }).notNull(),
+  note: text("note"),
   completedAt: timestamp("completedAt").defaultNow().notNull(),
 }, (table) => [index("practice_history_user_completed_idx").on(table.userId, table.completedAt)]);
 

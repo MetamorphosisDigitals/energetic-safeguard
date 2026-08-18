@@ -4,7 +4,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { getPremiumEntitlement, listPracticeFavorites, listPracticeHistory, recordPracticeCompletion, removePracticeFavorite, savePracticeFavorite } from "./db";
+import { getPremiumEntitlement, listPracticeFavorites, listPracticeHistory, recordPracticeCompletion, removePracticeFavorite, savePracticeFavorite, updatePracticeHistoryNote } from "./db";
 import { premiumOffers } from "./payments/products";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -60,6 +60,12 @@ export const appRouter = router({
       .input(z.object({ practiceId: z.string().trim().min(1).max(96) }))
       .mutation(async ({ ctx, input }) => {
         await recordPracticeCompletion(ctx.user.id, input.practiceId);
+        return { success: true } as const;
+      }),
+    updateHistoryNote: protectedProcedure
+      .input(z.object({ historyId: z.number().int().positive(), note: z.string().trim().max(1000).nullable() }))
+      .mutation(async ({ ctx, input }) => {
+        await updatePracticeHistoryNote(ctx.user.id, input.historyId, input.note || null);
         return { success: true } as const;
       }),
     saveFavorite: protectedProcedure

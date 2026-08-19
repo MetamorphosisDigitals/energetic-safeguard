@@ -62,6 +62,7 @@ export const userLibraryPreferences = mysqlTable("user_library_preferences", {
   userId: int("userId").notNull(),
   dailyDefaultPracticeId: varchar("dailyDefaultPracticeId", { length: 96 }),
   pinnedCustomTags: text("pinnedCustomTags"),
+  defaultSavedFilterViewId: int("defaultSavedFilterViewId"),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => [uniqueIndex("user_library_preferences_user_unique").on(table.userId)]);
 

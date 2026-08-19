@@ -75,3 +75,9 @@
 - [x] Add pinned tags and saved-view controls to the reflection interface.
 - [x] Add automated coverage for user-scoped pinned tags and saved filter views.
 - [x] Verify the refined tag and filter workflow on desktop and mobile, then save a checkpoint.
+- [x] Review saved filter storage and current Practice History filter initialization.
+- [x] Add a user-owned default saved-filter preference with safe fallback behavior.
+- [x] Add controls to set, replace, or clear the default filter view.
+- [x] Restore the default filter view when a user opens Practice History.
+- [x] Add automated coverage for user-scoped default-view behavior.
+- [x] Verify the default landing view on desktop and mobile, then save a checkpoint.

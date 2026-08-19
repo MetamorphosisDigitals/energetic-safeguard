@@ -3,6 +3,7 @@ import type { TrpcContext } from "./_core/context";
 
 const database = vi.hoisted(() => ({
   getDailyDefaultPracticeId: vi.fn(),
+  getDefaultPracticeFilterView: vi.fn(),
   getPinnedCustomTags: vi.fn(),
   getPremiumEntitlement: vi.fn(),
   listUserCustomTags: vi.fn(),
@@ -15,6 +16,7 @@ const database = vi.hoisted(() => ({
   savePracticeFavorite: vi.fn(),
   savePracticeFilterView: vi.fn(),
   setDailyDefaultPractice: vi.fn(),
+  setDefaultPracticeFilterView: vi.fn(),
   setPinnedCustomTags: vi.fn(),
   updatePracticeHistoryNote: vi.fn(),
   updatePracticeHistoryReflection: vi.fn(),
@@ -53,7 +55,9 @@ describe("library router", () => {
     database.removePracticeFavorite.mockResolvedValue(undefined);
     database.updatePracticeHistoryNote.mockResolvedValue(undefined);
     database.getDailyDefaultPracticeId.mockResolvedValue(null);
+    database.getDefaultPracticeFilterView.mockResolvedValue(null);
     database.setDailyDefaultPractice.mockResolvedValue(undefined);
+    database.setDefaultPracticeFilterView.mockResolvedValue(undefined);
     database.updatePracticeHistoryReflection.mockResolvedValue(undefined);
     database.listUserCustomTags.mockResolvedValue([]);
     database.replaceUserCustomTag.mockResolvedValue(undefined);
@@ -132,5 +136,15 @@ describe("library router", () => {
     expect(database.listSavedPracticeFilterViews).toHaveBeenCalledWith(31);
     expect(database.savePracticeFilterView).toHaveBeenCalledWith(31, { name: "Workday notes", keyword: "calm", customTag: "workday", startDate: "2026-08-01", endDate: "2026-08-31" });
     expect(database.deletePracticeFilterView).toHaveBeenCalledWith(31, 5);
+  });
+
+  it("reads, sets, and clears the default filter view only under the authenticated user", async () => {
+    const caller = appRouter.createCaller(createContext(31));
+    await caller.library.defaultFilterView();
+    await caller.library.setDefaultFilterView({ viewId: 5 });
+    await caller.library.setDefaultFilterView({ viewId: null });
+    expect(database.getDefaultPracticeFilterView).toHaveBeenCalledWith(31);
+    expect(database.setDefaultPracticeFilterView).toHaveBeenNthCalledWith(1, 31, 5);
+    expect(database.setDefaultPracticeFilterView).toHaveBeenNthCalledWith(2, 31, null);
   });
 });

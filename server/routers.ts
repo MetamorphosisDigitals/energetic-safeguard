@@ -4,7 +4,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { deletePracticeFilterView, getDailyDefaultPracticeId, getPinnedCustomTags, getPremiumEntitlement, listPracticeFavorites, listPracticeHistory, listSavedPracticeFilterViews, listUserCustomTags, recordPracticeCompletion, removePracticeFavorite, replaceUserCustomTag, savePracticeFavorite, savePracticeFilterView, setDailyDefaultPractice, setPinnedCustomTags, updatePracticeHistoryNote, updatePracticeHistoryReflection } from "./db";
+import { deletePracticeFilterView, getDailyDefaultPracticeId, getDefaultPracticeFilterView, getPinnedCustomTags, getPremiumEntitlement, listPracticeFavorites, listPracticeHistory, listSavedPracticeFilterViews, listUserCustomTags, recordPracticeCompletion, removePracticeFavorite, replaceUserCustomTag, savePracticeFavorite, savePracticeFilterView, setDailyDefaultPractice, setDefaultPracticeFilterView, setPinnedCustomTags, updatePracticeHistoryNote, updatePracticeHistoryReflection } from "./db";
 import { premiumOffers } from "./payments/products";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -93,6 +93,10 @@ export const appRouter = router({
         return { success: true } as const;
       }),
     savedFilterViews: protectedProcedure.query(({ ctx }) => listSavedPracticeFilterViews(ctx.user.id)),
+    defaultFilterView: protectedProcedure.query(({ ctx }) => getDefaultPracticeFilterView(ctx.user.id)),
+    setDefaultFilterView: protectedProcedure
+      .input(z.object({ viewId: z.number().int().positive().nullable() }))
+      .mutation(async ({ ctx, input }) => { await setDefaultPracticeFilterView(ctx.user.id, input.viewId); return { success: true } as const; }),
     saveFilterView: protectedProcedure
       .input(z.object({ name: z.string().trim().min(1).max(64), keyword: z.string().trim().max(128).nullable(), customTag: z.string().trim().max(32).nullable(), startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(), endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable() }))
       .mutation(async ({ ctx, input }) => { await savePracticeFilterView(ctx.user.id, input); return { success: true } as const; }),

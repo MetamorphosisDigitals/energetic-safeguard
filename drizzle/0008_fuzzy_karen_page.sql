@@ -1,0 +1,1 @@
+ALTER TABLE `user_library_preferences` ADD `defaultSavedFilterViewId` int;

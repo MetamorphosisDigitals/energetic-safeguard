@@ -184,7 +184,30 @@ export async function savePracticeFilterView(userId: number, input: SavedPractic
 export async function deletePracticeFilterView(userId: number, viewId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database is unavailable while deleting a filter view.");
+  await db.update(userLibraryPreferences).set({ defaultSavedFilterViewId: null }).where(and(eq(userLibraryPreferences.userId, userId), eq(userLibraryPreferences.defaultSavedFilterViewId, viewId)));
   await db.delete(practiceSavedFilterViews).where(and(eq(practiceSavedFilterViews.id, viewId), eq(practiceSavedFilterViews.userId, userId)));
+}
+
+export async function getDefaultPracticeFilterView(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const preference = await db.select({ viewId: userLibraryPreferences.defaultSavedFilterViewId }).from(userLibraryPreferences).where(eq(userLibraryPreferences.userId, userId)).limit(1);
+  const viewId = preference[0]?.viewId;
+  if (!viewId) return null;
+  const view = await db.select().from(practiceSavedFilterViews).where(and(eq(practiceSavedFilterViews.id, viewId), eq(practiceSavedFilterViews.userId, userId))).limit(1);
+  if (view[0]) return view[0];
+  await db.update(userLibraryPreferences).set({ defaultSavedFilterViewId: null }).where(eq(userLibraryPreferences.userId, userId));
+  return null;
+}
+
+export async function setDefaultPracticeFilterView(userId: number, viewId: number | null) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable while setting a default filter view.");
+  if (viewId) {
+    const view = await db.select({ id: practiceSavedFilterViews.id }).from(practiceSavedFilterViews).where(and(eq(practiceSavedFilterViews.id, viewId), eq(practiceSavedFilterViews.userId, userId))).limit(1);
+    if (!view[0]) throw new Error("The selected filter view is unavailable.");
+  }
+  await db.insert(userLibraryPreferences).values({ userId, defaultSavedFilterViewId: viewId }).onDuplicateKeyUpdate({ set: { defaultSavedFilterViewId: viewId } });
 }
 
 export async function getDailyDefaultPracticeId(userId: number) {

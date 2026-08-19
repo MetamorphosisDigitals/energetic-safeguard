@@ -57,3 +57,9 @@
 - [x] Add optional reminder preference controls and the selected delivery implementation.
 - [x] Add automated coverage for monthly summaries, note tags, and reminder configuration.
 - [x] Verify the expanded history experience and save a checkpoint.
+- [x] Review monthly summary, tagged-reflection, and existing export implementations.
+- [x] Add a printable monthly reflection export and text-file download.
+- [x] Add a current-month versus previous-month meditation comparison.
+- [x] Add user-owned custom tags to personal practice notes.
+- [x] Add automated coverage for export content, comparison calculations, and custom tags.
+- [x] Verify the expanded reflection experience on desktop and mobile, then save a checkpoint.

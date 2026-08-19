@@ -90,7 +90,7 @@ describe("library router", () => {
 
   it("updates a tagged private reflection only under the authenticated user", async () => {
     const caller = appRouter.createCaller(createContext(31));
-    await caller.library.updateHistoryReflection({ historyId: 9, note: "I felt more settled.", moodTag: "Grounded", intentionTag: "Return to myself" });
-    expect(database.updatePracticeHistoryReflection).toHaveBeenCalledWith({ userId: 31, historyId: 9, note: "I felt more settled.", moodTag: "Grounded", intentionTag: "Return to myself" });
+    await caller.library.updateHistoryReflection({ historyId: 9, note: "I felt more settled.", moodTag: "Grounded", intentionTag: "Return to myself", customTags: ["workday"] });
+    expect(database.updatePracticeHistoryReflection).toHaveBeenCalledWith({ userId: 31, historyId: 9, note: "I felt more settled.", moodTag: "Grounded", intentionTag: "Return to myself", customTags: ["workday"] });
   });
 });

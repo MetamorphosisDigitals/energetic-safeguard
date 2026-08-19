@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterPracticeHistoryNotes, summarizePracticeMonth, summarizePracticeWeek } from "./practiceHistoryInsights";
+import { comparePracticeMonths, filterPracticeHistoryNotes, summarizePracticeMonth, summarizePracticeWeek } from "./practiceHistoryInsights";
 
 const entries = [
   { id: 1, practiceId: "a", completedAt: new Date(2026, 7, 10, 10), note: "Felt calmer after the boundary practice." },
@@ -22,5 +22,12 @@ describe("practice history insights", () => {
   it("summarizes the current calendar month", () => {
     const summary = summarizePracticeMonth(entries, new Date(2026, 7, 14));
     expect(summary).toEqual({ total: 3, activeDays: 2, practiceCount: 3 });
+  });
+
+  it("compares the current month with the previous month", () => {
+    const withPrevious = [...entries, { id: 4, practiceId: "d", completedAt: new Date(2026, 6, 22), note: null }];
+    const comparison = comparePracticeMonths(withPrevious, new Date(2026, 7, 14));
+    expect(comparison.totalDifference).toBe(2);
+    expect(comparison.activeDayDifference).toBe(1);
   });
 });

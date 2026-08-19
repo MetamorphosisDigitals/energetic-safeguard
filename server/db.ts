@@ -98,10 +98,11 @@ export async function updatePracticeHistoryReflection(input: {
   note: string | null;
   moodTag: string | null;
   intentionTag: string | null;
+  customTags: string[];
 }) {
   const db = await getDb();
   if (!db) throw new Error("Database is unavailable while saving a private reflection.");
-  await db.update(practiceHistory).set({ note: input.note, moodTag: input.moodTag, intentionTag: input.intentionTag }).where(and(eq(practiceHistory.id, input.historyId), eq(practiceHistory.userId, input.userId)));
+  await db.update(practiceHistory).set({ note: input.note, moodTag: input.moodTag, intentionTag: input.intentionTag, customTags: input.customTags.length ? JSON.stringify(input.customTags) : null }).where(and(eq(practiceHistory.id, input.historyId), eq(practiceHistory.userId, input.userId)));
 }
 
 export async function getDailyDefaultPracticeId(userId: number) {

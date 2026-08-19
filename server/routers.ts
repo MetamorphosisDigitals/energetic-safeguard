@@ -76,9 +76,9 @@ export const appRouter = router({
         return { success: true } as const;
       }),
     updateHistoryReflection: protectedProcedure
-      .input(z.object({ historyId: z.number().int().positive(), note: z.string().trim().max(1000).nullable(), moodTag: z.string().trim().max(48).nullable(), intentionTag: z.string().trim().max(64).nullable() }))
+      .input(z.object({ historyId: z.number().int().positive(), note: z.string().trim().max(1000).nullable(), moodTag: z.string().trim().max(48).nullable(), intentionTag: z.string().trim().max(64).nullable(), customTags: z.array(z.string().trim().min(1).max(32)).max(12).default([]) }))
       .mutation(async ({ ctx, input }) => {
-        await updatePracticeHistoryReflection({ userId: ctx.user.id, historyId: input.historyId, note: input.note || null, moodTag: input.moodTag || null, intentionTag: input.intentionTag || null });
+        await updatePracticeHistoryReflection({ userId: ctx.user.id, historyId: input.historyId, note: input.note || null, moodTag: input.moodTag || null, intentionTag: input.intentionTag || null, customTags: Array.from(new Set(input.customTags)) });
         return { success: true } as const;
       }),
     saveFavorite: protectedProcedure

@@ -5,6 +5,7 @@ export type PracticeHistoryNote = {
   note: string | null;
   moodTag?: string | null;
   intentionTag?: string | null;
+  customTags?: string | null;
 };
 
 function asDate(value: Date | string) {
@@ -58,4 +59,16 @@ export function summarizePracticeMonth(entries: readonly PracticeHistoryNote[], 
   const practiceCount = new Set(monthEntries.map((entry) => entry.practiceId)).size;
   const activeDays = new Set(monthEntries.map((entry) => dayStart(asDate(entry.completedAt)).getTime())).size;
   return { total: monthEntries.length, activeDays, practiceCount };
+}
+
+export function comparePracticeMonths(entries: readonly PracticeHistoryNote[], referenceDate = new Date()) {
+  const current = summarizePracticeMonth(entries, referenceDate);
+  const previousReference = new Date(referenceDate.getFullYear(), referenceDate.getMonth() - 1, 1);
+  const previous = summarizePracticeMonth(entries, previousReference);
+  return {
+    current,
+    previous,
+    totalDifference: current.total - previous.total,
+    activeDayDifference: current.activeDays - previous.activeDays,
+  };
 }

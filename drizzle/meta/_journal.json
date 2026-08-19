@@ -43,6 +43,13 @@
       "when": 1787084654093,
       "tag": "0005_easy_lord_hawal",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1787151539205,
+      "tag": "0006_gorgeous_electro",
+      "breakpoints": true
     }
   ]
 }

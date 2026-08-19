@@ -42,6 +42,7 @@ export const practiceHistory = mysqlTable("practice_history", {
   note: text("note"),
   moodTag: varchar("moodTag", { length: 48 }),
   intentionTag: varchar("intentionTag", { length: 64 }),
+  customTags: text("customTags"),
   completedAt: timestamp("completedAt").defaultNow().notNull(),
 }, (table) => [index("practice_history_user_completed_idx").on(table.userId, table.completedAt)]);
 

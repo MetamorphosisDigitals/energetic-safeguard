@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { comparePracticeMonths, filterPracticeHistoryNotes, summarizePracticeMonth, summarizePracticeWeek } from "./practiceHistoryInsights";
+import { comparePracticeMonths, filterPracticeHistoryByCustomTag, filterPracticeHistoryNotes, summarizePracticeMonth, summarizePracticeWeek, summarizeThreeMonthTrend } from "./practiceHistoryInsights";
 
 const entries = [
   { id: 1, practiceId: "a", completedAt: new Date(2026, 7, 10, 10), note: "Felt calmer after the boundary practice." },
@@ -29,5 +29,15 @@ describe("practice history insights", () => {
     const comparison = comparePracticeMonths(withPrevious, new Date(2026, 7, 14));
     expect(comparison.totalDifference).toBe(2);
     expect(comparison.activeDayDifference).toBe(1);
+  });
+
+  it("builds a three-month trend in chronological order", () => {
+    const trend = summarizeThreeMonthTrend([...entries, { id: 5, practiceId: "x", completedAt: new Date(2026, 5, 9), note: null }], new Date(2026, 7, 14));
+    expect(trend.map((month) => month.total)).toEqual([1, 0, 3]);
+  });
+
+  it("filters reflections by a custom tag without case sensitivity", () => {
+    const tagged = [{ ...entries[0], customTags: '["Workday"]' }, entries[1]];
+    expect(filterPracticeHistoryByCustomTag(tagged, "workday").map((entry) => entry.id)).toEqual([1]);
   });
 });

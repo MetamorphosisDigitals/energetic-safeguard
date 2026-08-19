@@ -63,3 +63,9 @@
 - [x] Add user-owned custom tags to personal practice notes.
 - [x] Add automated coverage for export content, comparison calculations, and custom tags.
 - [x] Verify the expanded reflection experience on desktop and mobile, then save a checkpoint.
+- [x] Review current custom-tag storage, reflection filters, and monthly progress calculations.
+- [x] Add custom-tag filtering to personal practice-history notes.
+- [x] Add a three-month meditation trend visualization derived from user-owned history.
+- [x] Add a centralized user-owned custom-tag library with edit, merge, and delete operations.
+- [x] Add tests for tag filtering, tag transformations, and three-month trend metrics.
+- [x] Verify the updated history experience on desktop and mobile, then save a checkpoint.

@@ -105,6 +105,39 @@ export async function updatePracticeHistoryReflection(input: {
   await db.update(practiceHistory).set({ note: input.note, moodTag: input.moodTag, intentionTag: input.intentionTag, customTags: input.customTags.length ? JSON.stringify(input.customTags) : null }).where(and(eq(practiceHistory.id, input.historyId), eq(practiceHistory.userId, input.userId)));
 }
 
+function parseStoredCustomTags(value: string | null) {
+  try {
+    const parsed = JSON.parse(value ?? "[]");
+    return Array.isArray(parsed) ? parsed.filter((tag): tag is string => typeof tag === "string") : [];
+  } catch { return []; }
+}
+
+function uniqueTags(tags: string[]) {
+  const seen = new Set<string>();
+  return tags.filter((tag) => { const key = tag.toLocaleLowerCase(); if (seen.has(key)) return false; seen.add(key); return true; });
+}
+
+export async function listUserCustomTags(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db.select({ customTags: practiceHistory.customTags }).from(practiceHistory).where(eq(practiceHistory.userId, userId));
+  return uniqueTags(rows.flatMap((row) => parseStoredCustomTags(row.customTags))).sort((left, right) => left.localeCompare(right));
+}
+
+export async function replaceUserCustomTag(userId: number, sourceTag: string, targetTag: string | null) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable while updating custom tags.");
+  const rows = await db.select({ id: practiceHistory.id, customTags: practiceHistory.customTags }).from(practiceHistory).where(eq(practiceHistory.userId, userId));
+  const sourceKey = sourceTag.toLocaleLowerCase();
+  for (const row of rows) {
+    const original = parseStoredCustomTags(row.customTags);
+    const updated = uniqueTags(original.flatMap((tag) => tag.toLocaleLowerCase() === sourceKey ? (targetTag ? [targetTag] : []) : [tag]));
+    if (JSON.stringify(original) !== JSON.stringify(updated)) {
+      await db.update(practiceHistory).set({ customTags: updated.length ? JSON.stringify(updated) : null }).where(and(eq(practiceHistory.id, row.id), eq(practiceHistory.userId, userId)));
+    }
+  }
+}
+
 export async function getDailyDefaultPracticeId(userId: number) {
   const db = await getDb();
   if (!db) return null;

@@ -4,10 +4,12 @@ import type { TrpcContext } from "./_core/context";
 const database = vi.hoisted(() => ({
   getDailyDefaultPracticeId: vi.fn(),
   getPremiumEntitlement: vi.fn(),
+  listUserCustomTags: vi.fn(),
   listPracticeFavorites: vi.fn(),
   listPracticeHistory: vi.fn(),
   recordPracticeCompletion: vi.fn(),
   removePracticeFavorite: vi.fn(),
+  replaceUserCustomTag: vi.fn(),
   savePracticeFavorite: vi.fn(),
   setDailyDefaultPractice: vi.fn(),
   updatePracticeHistoryNote: vi.fn(),
@@ -48,6 +50,8 @@ describe("library router", () => {
     database.getDailyDefaultPracticeId.mockResolvedValue(null);
     database.setDailyDefaultPractice.mockResolvedValue(undefined);
     database.updatePracticeHistoryReflection.mockResolvedValue(undefined);
+    database.listUserCustomTags.mockResolvedValue([]);
+    database.replaceUserCustomTag.mockResolvedValue(undefined);
   });
 
   it("records only the catalog practice ID under the authenticated user", async () => {
@@ -92,5 +96,13 @@ describe("library router", () => {
     const caller = appRouter.createCaller(createContext(31));
     await caller.library.updateHistoryReflection({ historyId: 9, note: "I felt more settled.", moodTag: "Grounded", intentionTag: "Return to myself", customTags: ["workday"] });
     expect(database.updatePracticeHistoryReflection).toHaveBeenCalledWith({ userId: 31, historyId: 9, note: "I felt more settled.", moodTag: "Grounded", intentionTag: "Return to myself", customTags: ["workday"] });
+  });
+
+  it("lists and transforms custom tags only under the authenticated user", async () => {
+    const caller = appRouter.createCaller(createContext(31));
+    await caller.library.customTags();
+    await caller.library.replaceCustomTag({ sourceTag: "workday", targetTag: "office" });
+    expect(database.listUserCustomTags).toHaveBeenCalledWith(31);
+    expect(database.replaceUserCustomTag).toHaveBeenCalledWith(31, "workday", "office");
   });
 });

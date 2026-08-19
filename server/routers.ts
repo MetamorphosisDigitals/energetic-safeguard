@@ -4,7 +4,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { getDailyDefaultPracticeId, getPremiumEntitlement, listPracticeFavorites, listPracticeHistory, recordPracticeCompletion, removePracticeFavorite, savePracticeFavorite, setDailyDefaultPractice, updatePracticeHistoryNote, updatePracticeHistoryReflection } from "./db";
+import { getDailyDefaultPracticeId, getPremiumEntitlement, listPracticeFavorites, listPracticeHistory, listUserCustomTags, recordPracticeCompletion, removePracticeFavorite, replaceUserCustomTag, savePracticeFavorite, setDailyDefaultPractice, updatePracticeHistoryNote, updatePracticeHistoryReflection } from "./db";
 import { premiumOffers } from "./payments/products";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -79,6 +79,13 @@ export const appRouter = router({
       .input(z.object({ historyId: z.number().int().positive(), note: z.string().trim().max(1000).nullable(), moodTag: z.string().trim().max(48).nullable(), intentionTag: z.string().trim().max(64).nullable(), customTags: z.array(z.string().trim().min(1).max(32)).max(12).default([]) }))
       .mutation(async ({ ctx, input }) => {
         await updatePracticeHistoryReflection({ userId: ctx.user.id, historyId: input.historyId, note: input.note || null, moodTag: input.moodTag || null, intentionTag: input.intentionTag || null, customTags: Array.from(new Set(input.customTags)) });
+        return { success: true } as const;
+      }),
+    customTags: protectedProcedure.query(({ ctx }) => listUserCustomTags(ctx.user.id)),
+    replaceCustomTag: protectedProcedure
+      .input(z.object({ sourceTag: z.string().trim().min(1).max(32), targetTag: z.string().trim().min(1).max(32).nullable() }))
+      .mutation(async ({ ctx, input }) => {
+        await replaceUserCustomTag(ctx.user.id, input.sourceTag, input.targetTag || null);
         return { success: true } as const;
       }),
     saveFavorite: protectedProcedure

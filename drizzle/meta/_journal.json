@@ -50,6 +50,13 @@
       "when": 1787151539205,
       "tag": "0006_gorgeous_electro",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1787152987879,
+      "tag": "0007_numerous_major_mapleleaf",
+      "breakpoints": true
     }
   ]
 }

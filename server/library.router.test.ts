@@ -3,17 +3,22 @@ import type { TrpcContext } from "./_core/context";
 
 const database = vi.hoisted(() => ({
   getDailyDefaultPracticeId: vi.fn(),
+  getPinnedCustomTags: vi.fn(),
   getPremiumEntitlement: vi.fn(),
   listUserCustomTags: vi.fn(),
   listPracticeFavorites: vi.fn(),
   listPracticeHistory: vi.fn(),
+  listSavedPracticeFilterViews: vi.fn(),
   recordPracticeCompletion: vi.fn(),
   removePracticeFavorite: vi.fn(),
   replaceUserCustomTag: vi.fn(),
   savePracticeFavorite: vi.fn(),
+  savePracticeFilterView: vi.fn(),
   setDailyDefaultPractice: vi.fn(),
+  setPinnedCustomTags: vi.fn(),
   updatePracticeHistoryNote: vi.fn(),
   updatePracticeHistoryReflection: vi.fn(),
+  deletePracticeFilterView: vi.fn(),
 }));
 
 vi.mock("./db", () => database);
@@ -52,6 +57,11 @@ describe("library router", () => {
     database.updatePracticeHistoryReflection.mockResolvedValue(undefined);
     database.listUserCustomTags.mockResolvedValue([]);
     database.replaceUserCustomTag.mockResolvedValue(undefined);
+    database.getPinnedCustomTags.mockResolvedValue([]);
+    database.setPinnedCustomTags.mockResolvedValue([]);
+    database.listSavedPracticeFilterViews.mockResolvedValue([]);
+    database.savePracticeFilterView.mockResolvedValue(undefined);
+    database.deletePracticeFilterView.mockResolvedValue(undefined);
   });
 
   it("records only the catalog practice ID under the authenticated user", async () => {
@@ -104,5 +114,23 @@ describe("library router", () => {
     await caller.library.replaceCustomTag({ sourceTag: "workday", targetTag: "office" });
     expect(database.listUserCustomTags).toHaveBeenCalledWith(31);
     expect(database.replaceUserCustomTag).toHaveBeenCalledWith(31, "workday", "office");
+  });
+
+  it("reads and updates pinned custom tags only under the authenticated user", async () => {
+    const caller = appRouter.createCaller(createContext(31));
+    await caller.library.pinnedCustomTags();
+    await caller.library.setPinnedCustomTags({ tags: ["workday"] });
+    expect(database.getPinnedCustomTags).toHaveBeenCalledWith(31);
+    expect(database.setPinnedCustomTags).toHaveBeenCalledWith(31, ["workday"]);
+  });
+
+  it("saves, lists, and deletes reusable filter views only under the authenticated user", async () => {
+    const caller = appRouter.createCaller(createContext(31));
+    await caller.library.savedFilterViews();
+    await caller.library.saveFilterView({ name: "Workday notes", keyword: "calm", customTag: "workday", startDate: "2026-08-01", endDate: "2026-08-31" });
+    await caller.library.deleteFilterView({ viewId: 5 });
+    expect(database.listSavedPracticeFilterViews).toHaveBeenCalledWith(31);
+    expect(database.savePracticeFilterView).toHaveBeenCalledWith(31, { name: "Workday notes", keyword: "calm", customTag: "workday", startDate: "2026-08-01", endDate: "2026-08-31" });
+    expect(database.deletePracticeFilterView).toHaveBeenCalledWith(31, 5);
   });
 });

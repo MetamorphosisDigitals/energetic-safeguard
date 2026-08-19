@@ -69,3 +69,9 @@
 - [x] Add a centralized user-owned custom-tag library with edit, merge, and delete operations.
 - [x] Add tests for tag filtering, tag transformations, and three-month trend metrics.
 - [x] Verify the updated history experience on desktop and mobile, then save a checkpoint.
+- [x] Review tag management and existing history filter state for pinned and saved-view integration.
+- [x] Add user-owned pinned custom-tag preferences.
+- [x] Add user-owned saved practice-history filter views.
+- [x] Add pinned tags and saved-view controls to the reflection interface.
+- [x] Add automated coverage for user-scoped pinned tags and saved filter views.
+- [x] Verify the refined tag and filter workflow on desktop and mobile, then save a checkpoint.

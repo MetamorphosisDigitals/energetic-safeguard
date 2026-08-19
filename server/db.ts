@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, practiceFavorites, practiceHistory, premiumEntitlements, userLibraryPreferences, users } from "../drizzle/schema";
+import { InsertUser, practiceFavorites, practiceHistory, practiceSavedFilterViews, premiumEntitlements, userLibraryPreferences, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import type { PremiumOfferKey } from "./payments/products";
 
@@ -136,6 +136,55 @@ export async function replaceUserCustomTag(userId: number, sourceTag: string, ta
       await db.update(practiceHistory).set({ customTags: updated.length ? JSON.stringify(updated) : null }).where(and(eq(practiceHistory.id, row.id), eq(practiceHistory.userId, userId)));
     }
   }
+  const sourceKeyForPreferences = sourceTag.toLocaleLowerCase();
+  const preferenceRows = await db.select({ pinnedCustomTags: userLibraryPreferences.pinnedCustomTags }).from(userLibraryPreferences).where(eq(userLibraryPreferences.userId, userId)).limit(1);
+  const updatedPinnedTags = uniqueTags(parseStoredCustomTags(preferenceRows[0]?.pinnedCustomTags ?? null).flatMap((tag) => tag.toLocaleLowerCase() === sourceKeyForPreferences ? (targetTag ? [targetTag] : []) : [tag]));
+  if (preferenceRows[0]) {
+    await db.update(userLibraryPreferences).set({ pinnedCustomTags: updatedPinnedTags.length ? JSON.stringify(updatedPinnedTags) : null }).where(eq(userLibraryPreferences.userId, userId));
+  }
+  const savedViews = await db.select({ id: practiceSavedFilterViews.id, customTag: practiceSavedFilterViews.customTag }).from(practiceSavedFilterViews).where(eq(practiceSavedFilterViews.userId, userId));
+  for (const view of savedViews) {
+    if (view.customTag?.toLocaleLowerCase() === sourceKeyForPreferences) {
+      await db.update(practiceSavedFilterViews).set({ customTag: targetTag }).where(and(eq(practiceSavedFilterViews.id, view.id), eq(practiceSavedFilterViews.userId, userId)));
+    }
+  }
+}
+
+export async function getPinnedCustomTags(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const result = await db.select({ tags: userLibraryPreferences.pinnedCustomTags }).from(userLibraryPreferences).where(eq(userLibraryPreferences.userId, userId)).limit(1);
+  return uniqueTags(parseStoredCustomTags(result[0]?.tags ?? null));
+}
+
+export async function setPinnedCustomTags(userId: number, requestedTags: string[]) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable while pinning custom tags.");
+  const availableTags = await listUserCustomTags(userId);
+  const availableByKey = new Map(availableTags.map((tag) => [tag.toLocaleLowerCase(), tag]));
+  const pinnedTags = uniqueTags(requestedTags.map((tag) => availableByKey.get(tag.toLocaleLowerCase())).filter((tag): tag is string => Boolean(tag)));
+  await db.insert(userLibraryPreferences).values({ userId, pinnedCustomTags: pinnedTags.length ? JSON.stringify(pinnedTags) : null }).onDuplicateKeyUpdate({ set: { pinnedCustomTags: pinnedTags.length ? JSON.stringify(pinnedTags) : null } });
+  return pinnedTags;
+}
+
+export type SavedPracticeFilterInput = { name: string; keyword: string | null; customTag: string | null; startDate: string | null; endDate: string | null };
+
+export async function listSavedPracticeFilterViews(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(practiceSavedFilterViews).where(eq(practiceSavedFilterViews.userId, userId)).orderBy(desc(practiceSavedFilterViews.updatedAt));
+}
+
+export async function savePracticeFilterView(userId: number, input: SavedPracticeFilterInput) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable while saving a filter view.");
+  await db.insert(practiceSavedFilterViews).values({ userId, ...input }).onDuplicateKeyUpdate({ set: { keyword: input.keyword, customTag: input.customTag, startDate: input.startDate, endDate: input.endDate } });
+}
+
+export async function deletePracticeFilterView(userId: number, viewId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable while deleting a filter view.");
+  await db.delete(practiceSavedFilterViews).where(and(eq(practiceSavedFilterViews.id, viewId), eq(practiceSavedFilterViews.userId, userId)));
 }
 
 export async function getDailyDefaultPracticeId(userId: number) {

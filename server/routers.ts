@@ -4,7 +4,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { getDailyDefaultPracticeId, getPremiumEntitlement, listPracticeFavorites, listPracticeHistory, listUserCustomTags, recordPracticeCompletion, removePracticeFavorite, replaceUserCustomTag, savePracticeFavorite, setDailyDefaultPractice, updatePracticeHistoryNote, updatePracticeHistoryReflection } from "./db";
+import { deletePracticeFilterView, getDailyDefaultPracticeId, getPinnedCustomTags, getPremiumEntitlement, listPracticeFavorites, listPracticeHistory, listSavedPracticeFilterViews, listUserCustomTags, recordPracticeCompletion, removePracticeFavorite, replaceUserCustomTag, savePracticeFavorite, savePracticeFilterView, setDailyDefaultPractice, setPinnedCustomTags, updatePracticeHistoryNote, updatePracticeHistoryReflection } from "./db";
 import { premiumOffers } from "./payments/products";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -82,12 +82,23 @@ export const appRouter = router({
         return { success: true } as const;
       }),
     customTags: protectedProcedure.query(({ ctx }) => listUserCustomTags(ctx.user.id)),
+    pinnedCustomTags: protectedProcedure.query(({ ctx }) => getPinnedCustomTags(ctx.user.id)),
+    setPinnedCustomTags: protectedProcedure
+      .input(z.object({ tags: z.array(z.string().trim().min(1).max(32)).max(12) }))
+      .mutation(({ ctx, input }) => setPinnedCustomTags(ctx.user.id, input.tags)),
     replaceCustomTag: protectedProcedure
       .input(z.object({ sourceTag: z.string().trim().min(1).max(32), targetTag: z.string().trim().min(1).max(32).nullable() }))
       .mutation(async ({ ctx, input }) => {
         await replaceUserCustomTag(ctx.user.id, input.sourceTag, input.targetTag || null);
         return { success: true } as const;
       }),
+    savedFilterViews: protectedProcedure.query(({ ctx }) => listSavedPracticeFilterViews(ctx.user.id)),
+    saveFilterView: protectedProcedure
+      .input(z.object({ name: z.string().trim().min(1).max(64), keyword: z.string().trim().max(128).nullable(), customTag: z.string().trim().max(32).nullable(), startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(), endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable() }))
+      .mutation(async ({ ctx, input }) => { await savePracticeFilterView(ctx.user.id, input); return { success: true } as const; }),
+    deleteFilterView: protectedProcedure
+      .input(z.object({ viewId: z.number().int().positive() }))
+      .mutation(async ({ ctx, input }) => { await deletePracticeFilterView(ctx.user.id, input.viewId); return { success: true } as const; }),
     saveFavorite: protectedProcedure
       .input(z.object({ practiceId: z.string().trim().min(1).max(96) }))
       .mutation(async ({ ctx, input }) => {

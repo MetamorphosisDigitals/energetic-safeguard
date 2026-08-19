@@ -61,8 +61,25 @@ export const userLibraryPreferences = mysqlTable("user_library_preferences", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
   dailyDefaultPracticeId: varchar("dailyDefaultPracticeId", { length: 96 }),
+  pinnedCustomTags: text("pinnedCustomTags"),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => [uniqueIndex("user_library_preferences_user_unique").on(table.userId)]);
+
+/** User-owned reusable combinations of the existing note search and filter controls. */
+export const practiceSavedFilterViews = mysqlTable("practice_saved_filter_views", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 64 }).notNull(),
+  keyword: varchar("keyword", { length: 128 }),
+  customTag: varchar("customTag", { length: 32 }),
+  startDate: varchar("startDate", { length: 10 }),
+  endDate: varchar("endDate", { length: 10 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("practice_saved_filter_views_user_name_unique").on(table.userId, table.name),
+  index("practice_saved_filter_views_user_updated_idx").on(table.userId, table.updatedAt),
+]);
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;

@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Check, Clock3, Download, FileText, Printer, Search, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
-import { practices } from "@/data/practices";
+import { centralizedPracticeLibrary as practices } from "@/data/canonicalRituals";
 import { comparePracticeMonths, filterPracticeHistoryByCustomTag, filterPracticeHistoryNotes, summarizePracticeMonth, summarizePracticeWeek, type PracticeHistoryNote } from "@/lib/practiceHistoryInsights";
 import { defaultReflectionReminderPreference, isWeeklyReflectionDue, type ReflectionReminderPreference } from "@/lib/reflectionReminder";
 import { buildMonthlyReflectionPrintHtml, buildMonthlyReflectionText } from "@/lib/monthlyReflectionExport";

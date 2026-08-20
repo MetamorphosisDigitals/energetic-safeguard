@@ -106,6 +106,16 @@ describe("library router", () => {
     expect(database.setDailyDefaultPractice).toHaveBeenCalledWith(23, "emerald-rose-grounding");
   });
 
+  it("persists canonical energy-hygiene ritual IDs across history, favorites, and daily default", async () => {
+    const caller = appRouter.createCaller(createContext(29));
+    await caller.library.recordCompletion({ practiceId: "transition-pause" });
+    await caller.library.saveFavorite({ practiceId: "transition-pause" });
+    await caller.library.setDailyDefault({ practiceId: "transition-pause" });
+    expect(database.recordPracticeCompletion).toHaveBeenCalledWith(29, "transition-pause");
+    expect(database.savePracticeFavorite).toHaveBeenCalledWith(29, "transition-pause");
+    expect(database.setDailyDefaultPractice).toHaveBeenCalledWith(29, "transition-pause");
+  });
+
   it("updates a tagged private reflection only under the authenticated user", async () => {
     const caller = appRouter.createCaller(createContext(31));
     await caller.library.updateHistoryReflection({ historyId: 9, note: "I felt more settled.", moodTag: "Grounded", intentionTag: "Return to myself", customTags: ["workday"] });

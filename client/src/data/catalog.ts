@@ -49,7 +49,7 @@ export const energyHygieneMoments: EnergyHygieneMoment[] = [
     introduction: "This gentle reset makes room to notice what belongs to you, choose a clear line, and return to your next choice without rushing yourself.",
     ctaLabel: "Begin a restoration reset",
     situation: "I want to restore my energy after an interaction",
-    suggestedPracticeId: "personal-boundary-reset",
+    suggestedPracticeId: "transition-pause",
   },
   {
     id: "daily-hygiene",
@@ -59,7 +59,7 @@ export const energyHygieneMoments: EnergyHygieneMoment[] = [
     introduction: "A brief daily check-in can help you see what is realistic, soften one demand, and choose a pace that respects your available energy.",
     ctaLabel: "Begin today’s capacity check",
     situation: "I want a daily energy hygiene practice",
-    suggestedPracticeId: "capacity-check",
+    suggestedPracticeId: "energy-conservation-pause",
   },
 ];
 

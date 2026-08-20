@@ -22,4 +22,9 @@ describe("Saved Support filters", () => {
     const results = filterSavedPractices(favorites, { pathway: "all", roseRayId: "all", keyword: "privacy" });
     expect(results.map((item) => item.practice.id)).toEqual(["black-rose-protection"]);
   });
+
+  it("keeps canonical energy-hygiene rituals searchable in Saved Support", () => {
+    const results = filterSavedPractices([{ id: 4, practiceId: "transition-pause" }], { pathway: "hygiene", roseRayId: "all", keyword: "call" });
+    expect(results.map((item) => item.practice.displayName)).toEqual(["Transition Pause"]);
+  });
 });

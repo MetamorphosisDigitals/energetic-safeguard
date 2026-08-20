@@ -136,3 +136,20 @@
 - [x] Add a distinct daily energy-hygiene screen with its own entry content and CTA.
 - [x] Add browser-level tests proving each dedicated screen renders before its recommendation.
 - [x] Save a checkpoint containing the verified energy-hygiene screen refinement.
+- [x] Review existing home-shortcut persistence and the confirmed 18-ritual catalog mappings for energy hygiene.
+- [x] Add user-controlled home dashboard shortcuts for after-interaction restoration and daily energy hygiene.
+- [x] Centralize the two energy-hygiene practice routes in the confirmed 18-ritual library metadata.
+- [x] Replace remaining legacy-only practice lookups with the centralized ritual resolver in Saved Support, history, note export, and daily-default views.
+- [x] Verify a completed or favorited canonical energy-hygiene ritual remains visible in Saved Support and history.
+- [x] Add browser or integration coverage that verifies a canonical ritual in Saved Support, history, notes export, and daily-default UI paths.
+- [x] Replace any remaining legacy-catalog helpers used by Saved Support filtering or search with the centralized ritual library.
+- [x] Add integration coverage that verifies canonical energy-hygiene records across Saved Support, history, export, and daily-default paths.
+- [x] Implement the selected optional seven-day daily-hygiene reminder delivery model.
+- [x] Implement the selected private in-app reminder that appears only when an active seven-day hygiene plan is reopened.
+- [x] Add automated coverage and verify the shortcuts, ritual mapping, and reminder flow on desktop and mobile.
+- [x] Save a checkpoint containing the energy-hygiene shortcuts, canonical mapping, and reminder feature.
+- [x] Add an end-to-end or integration scenario that shows a canonical energy-hygiene record in Saved Support and history.
+- [x] Add coverage for canonical ritual notes export and daily-default display paths.
+- [x] Run and document desktop verification for the energy-hygiene shortcuts and in-app reminder flow.
+- [x] Assert the canonical ritual appears in both Saved Support favorites and history sections in the browser scenario.
+- [x] Assert the exported canonical note contains the ritual name and reflection content.

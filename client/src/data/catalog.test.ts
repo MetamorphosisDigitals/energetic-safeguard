@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { energyHygieneMoments, getFlow, practiceStyleOptions, supportFlows } from "./catalog";
+import { canonicalRituals } from "./canonicalRituals";
 import { practices } from "./practices";
 
 describe("support catalog", () => {
@@ -15,9 +16,9 @@ describe("support catalog", () => {
     expect(practices.some((practice) => practice.id === emergencyFlow?.suggestedPracticeId)).toBe(true);
   });
 
-  it("links restoration and daily hygiene moments to distinct library practices", () => {
+  it("links restoration and daily hygiene moments to distinct canonical rituals", () => {
     expect(energyHygieneMoments.map((moment) => moment.id)).toEqual(["after-interaction", "daily-hygiene"]);
-    expect(energyHygieneMoments.every((moment) => practices.some((practice) => practice.id === moment.suggestedPracticeId))).toBe(true);
+    expect(energyHygieneMoments.every((moment) => canonicalRituals.some((ritual) => ritual.id === moment.suggestedPracticeId))).toBe(true);
     expect(new Set(energyHygieneMoments.map((moment) => moment.suggestedPracticeId)).size).toBe(2);
   });
 });

@@ -1,5 +1,6 @@
 import { type RoseRayId } from "@/data/catalog";
-import { practices, type FlowCategory, type Practice } from "@/data/practices";
+import { centralizedPracticeLibrary as practices } from "@/data/canonicalRituals";
+import { type FlowCategory, type Practice } from "@/data/practices";
 
 export type FavoriteLibraryFilter = {
   pathway: FlowCategory | "all";

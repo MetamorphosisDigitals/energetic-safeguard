@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
-  createSevenDayCommitment, hasCompletedOnboarding, loadFreePracticeUsage, loadPreferences,
-  loadSevenDayCommitment, recordCompletedFreePractice, saveOnboardingCompleted,
-  savePreferences, saveSevenDayCommitment,
+  createDailyHygieneReminder, createSevenDayCommitment, dismissDailyHygieneReminderForToday,
+  hasCompletedOnboarding, isDailyHygieneReminderDue, loadDailyHygieneReminder, loadFreePracticeUsage,
+  loadPreferences, loadSevenDayCommitment, recordCompletedFreePractice, saveDailyHygieneReminder,
+  saveOnboardingCompleted, savePreferences, saveSevenDayCommitment,
 } from "./localPersistence";
 
 function createMemoryStorage() {
@@ -24,8 +25,8 @@ afterEach(() => {
 
 describe("local persistence", () => {
   it("restores saved style and accessibility preferences after a new read", () => {
-    savePreferences({ practiceStyle: "rose", reducedMotion: true, textSize: "large" });
-    expect(loadPreferences()).toEqual({ practiceStyle: "rose", reducedMotion: true, textSize: "large" });
+    savePreferences({ practiceStyle: "rose", reducedMotion: true, textSize: "large", energyHygieneShortcutIds: ["daily-hygiene", "after-interaction"] });
+    expect(loadPreferences()).toEqual({ practiceStyle: "rose", reducedMotion: true, textSize: "large", energyHygieneShortcutIds: ["daily-hygiene", "after-interaction"] });
   });
 
   it("restores an active seven-day commitment and caps persisted free usage at three", () => {
@@ -41,5 +42,13 @@ describe("local persistence", () => {
     expect(hasCompletedOnboarding()).toBe(false);
     saveOnboardingCompleted();
     expect(hasCompletedOnboarding()).toBe(true);
+  });
+
+  it("stores a private seven-day daily-hygiene reminder and dismisses it for the current day", () => {
+    const reminder = createDailyHygieneReminder();
+    saveDailyHygieneReminder(reminder);
+    expect(loadDailyHygieneReminder()).toEqual(reminder);
+    expect(isDailyHygieneReminderDue(reminder)).toBe(true);
+    expect(isDailyHygieneReminderDue(dismissDailyHygieneReminderForToday(reminder))).toBe(false);
   });
 });

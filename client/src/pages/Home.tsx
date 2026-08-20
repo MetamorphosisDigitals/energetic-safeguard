@@ -12,7 +12,6 @@ import {
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { freePracticesRemaining as calculateFreePracticesRemaining, requiresPremiumAccess } from "@/lib/accessPolicy";
 import { filterSavedPractices } from "@/lib/libraryFilters";
 import { PracticeHistoryTools } from "@/components/PracticeHistoryTools";
 import { dailyAffirmations, getFlow, practiceStyleOptions, roseRays, supportFlows, type RoseRayId } from "@/data/catalog";
@@ -20,7 +19,7 @@ import { practices, type FlowCategory, type Location, type Practice, type Practi
 import { recommendPractice, recommendationReason, type PracticeQuery } from "@/lib/recommendPractice";
 import {
   clearSevenDayCommitment, createSevenDayCommitment, hasCompletedOnboarding,
-  loadFreePracticeUsage, loadPreferences, loadSevenDayCommitment, recordCompletedFreePractice,
+  loadPreferences, loadSevenDayCommitment,
   remainingCommitmentDays, saveOnboardingCompleted, savePreferences, saveSevenDayCommitment,
   type SevenDayCommitment, type StoredPracticeStyle, type StoredTextSize,
 } from "@/lib/localPersistence";
@@ -76,7 +75,6 @@ export default function Home() {
   const [commitment, setCommitment] = useState<SevenDayCommitment | null>(() => loadSevenDayCommitment());
   const [textSize, setTextSize] = useState<StoredTextSize>(savedPreferences.textSize);
   const [reducedMotion, setReducedMotion] = useState(savedPreferences.reducedMotion);
-  const [freeUsage, setFreeUsage] = useState(() => loadFreePracticeUsage());
   const [favoritePathwayFilter, setFavoritePathwayFilter] = useState<FlowCategory | "all">("all");
   const [favoriteRoseRayFilter, setFavoriteRoseRayFilter] = useState<RoseRayId | "all">("all");
   const [favoriteKeyword, setFavoriteKeyword] = useState("");
@@ -86,8 +84,9 @@ export default function Home() {
   const recommendation = useMemo(() => recommendPractice(query), [query]);
   const activePractice = useMemo<Practice>(() => practices.find((practice) => practice.id === forcedPracticeId) ?? recommendation, [forcedPracticeId, recommendation]);
   const visibleSteps = shortVersion ? activePractice.shortVersion : activePractice.steps;
-  const hasPremiumAccess = premiumStatus.data?.hasAccess ?? false;
-  const freePracticesRemaining = calculateFreePracticesRemaining(freeUsage.completedCount);
+  // Guided practices are intentionally unrestricted; no trial or purchase gate is applied.
+  const hasPremiumAccess = true;
+  const freePracticesRemaining = 0;
   const activePracticeIsFavorite = practiceFavorites.data?.some((favorite) => favorite.practiceId === activePractice.id) ?? false;
   const flow = getFlow(pathway)!;
   const pathwayCards = useMemo(() => supportFlows.filter((item) => item.showOnDashboard).map((item) => ({ ...item, icon: flowIcons[item.iconKey], asset: item.artworkKey === "arrival" ? ASSETS.arrival : item.artworkKey === "boundary" ? ASSETS.boundary : undefined })), []);
@@ -103,7 +102,7 @@ export default function Home() {
   useEffect(() => { const checkout = new URLSearchParams(window.location.search).get("checkout"); if (checkout === "success") { toast.success("Payment received. Your premium access will be available shortly."); void premiumStatus.refetch(); window.history.replaceState({}, "", window.location.pathname); } if (checkout === "cancelled") { toast.message("Checkout was cancelled. Your free practices are still available."); window.history.replaceState({}, "", window.location.pathname); } }, []);
 
   function updateQuery<K extends keyof PracticeQuery>(key: K, value: PracticeQuery[K]) { setQuery((current) => ({ ...current, [key]: value })); }
-  function canUseGuidedFlow() { if (requiresPremiumAccess(freeUsage.completedCount, hasPremiumAccess)) { setView("paywall"); return false; } return true; }
+  function canUseGuidedFlow() { return true; }
   function beginPathway(nextPathway: FlowCategory) { if (!canUseGuidedFlow()) return; setPathway(nextPathway); setQuery(makeDefaultQuery(nextPathway, settingsStyle)); setForcedPracticeId(null); setIntakeStep(0); setView("intake"); }
   function beginQuickReset() { const quick = getFlow("emergency")?.suggestedPracticeId; if (!quick) return; setPathway("emergency"); setQuery(makeDefaultQuery("emergency", settingsStyle)); setForcedPracticeId(quick); setShortVersion(false); setActiveStep(0); setView("practice"); }
   function beginSuggestedPractice() { setPathway("morning"); setQuery(makeDefaultQuery("morning", settingsStyle)); setForcedPracticeId(suggestedPractice.id); setShortVersion(false); setActiveStep(0); setView("practice"); }
@@ -111,7 +110,7 @@ export default function Home() {
   function advanceIntake() { if (intakeStep === 0 && /danger|hurt myself|harm myself|unsafe|suicide|attack/i.test(query.situation)) { setView("safety"); return; } if (intakeStep < 2) setIntakeStep((step) => step + 1); else { setForcedPracticeId(null); setView("loading"); } }
   function startPractice(short = false) { if (!canUseGuidedFlow()) return; setShortVersion(short); setActiveStep(0); setView("practice"); }
   function toggleSevenDayCommitment() { if (commitment?.practiceId === activePractice.id) { clearSevenDayCommitment(); setCommitment(null); return; } const next = createSevenDayCommitment(activePractice.id, activePractice.displayName); saveSevenDayCommitment(next); setCommitment(next); }
-  function finishPractice(response: "home" | "safety") { if (response === "safety") { setView("safety"); return; } if (isAuthenticated) recordCompletion.mutate({ practiceId: activePractice.id }, { onSuccess: () => void libraryUtils.library.history.invalidate() }); if (!hasPremiumAccess && pathway !== "emergency") { const next = recordCompletedFreePractice(freeUsage); setFreeUsage(next); if (next.completedCount >= 3) { setView("paywall"); return; } } setView("home"); }
+  function finishPractice(response: "home" | "safety") { if (response === "safety") { setView("safety"); return; } if (isAuthenticated) recordCompletion.mutate({ practiceId: activePractice.id }, { onSuccess: () => void libraryUtils.library.history.invalidate() }); setView("home"); }
   function beginSavedPractice(practiceId: string) { const savedPractice = practices.find((practice) => practice.id === practiceId); if (!savedPractice) return; setPathway(savedPractice.flowCategory[0]); setQuery(makeDefaultQuery(savedPractice.flowCategory[0], settingsStyle)); setForcedPracticeId(savedPractice.id); setShortVersion(false); setActiveStep(0); setView("practice"); }
   function toggleActiveFavorite() { if (!isAuthenticated) { toast.message("Sign in to save favorites and keep them with your account."); startLogin(); return; } const input = { practiceId: activePractice.id }; const refreshFavorites = () => { void libraryUtils.library.favorites.invalidate(); void libraryUtils.library.dailyDefault.invalidate(); }; if (activePracticeIsFavorite) removeFavorite.mutate(input, { onSuccess: () => { toast.success("Removed from favorites."); refreshFavorites(); }, onError: () => toast.error("We could not update this favorite.") }); else saveFavorite.mutate(input, { onSuccess: () => { toast.success("Saved to your favorites."); refreshFavorites(); }, onError: () => toast.error("We could not save this favorite.") }); }
   function openHistoryNote(entryId: number, note: string | null) { setEditingHistoryNoteId(entryId); setHistoryNoteDraft(note ?? ""); }

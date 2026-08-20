@@ -81,3 +81,50 @@
 - [x] Restore the default filter view when a user opens Practice History.
 - [x] Add automated coverage for user-scoped default-view behavior.
 - [x] Verify the default landing view on desktop and mobile, then save a checkpoint.
+- [x] Map current practice coverage against the user-confirmed 18 distinct rituals.
+- [x] Author a complete validated JSON catalog for all 18 distinct rituals.
+- [x] Document descriptions and implementation mapping for rituals that are missing or require separation.
+- [x] Deliver the mapping and JSON catalog as downloadable files.
+- [x] Review the confirmed 18-ritual JSON and existing deterministic recommendation model.
+- [x] Define answer-based intake dimensions, eligibility constraints, and safety fallbacks for the 18 rituals.
+- [x] Create an implementation-ready scoring and tie-break specification with examples.
+- [x] Deliver the validated selection-logic design as a downloadable file.
+- [x] Reconcile the additional shared response, user journey, symbolic library, and core-practice specifications with the 18-ritual plan.
+- [x] Identify catalog, flow, and Rose Ray/crystal governance decisions needed before implementation.
+- [x] Deliver the consolidated architecture recommendation and confirm the implementation scope.
+- [x] Define the safety-aware runtime contract and decision pipeline for the 18-ritual catalog.
+- [x] Author TypeScript reference code for guarded selection, safe fallback, and safety handoff.
+- [x] Design the safety-handoff UI wireframe and interaction flow.
+- [x] Validate and deliver the engine and wireframe package.
+- [x] Deliver the validated safety-aware engine, tests, and wireframe package to the user.
+- [x] Define adversarial safety-selection inputs and their expected fallback outcomes.
+- [x] Add and run an extended test matrix for extreme, conflicting, and no-match states.
+- [x] Deliver the safety fallback validation results and remediation recommendations.
+- [x] Review the safety selection-engine hardening changes against the failed adversarial cases.
+- [x] Inspect and extend the project CI workflow to run type checks and all safety-engine tests.
+- [x] Verify the CI command path locally and deliver review findings.
+- [x] Run the complete local CI validation pipeline and report the results.
+- [x] Review the current intake and safety-handoff screen behavior for an end-to-end scenario.
+- [x] Add an end-to-end UI scenario that reaches the safety-handoff state from user intake.
+- [x] Run the scenario locally and document the validated safety-handoff path.
+- [x] Document and deliver the passing browser-level safety-handoff validation path.
+- [x] Compare the attached product specification against current flows, practice data, selection, and safety behavior.
+- [x] Identify conflicts between the confirmed 18-ritual direction and the attached core-practice list.
+- [x] Deliver a prioritized alignment and reconciliation assessment.
+- [x] Produce and deliver a written alignment audit with the 18-ritual conflict analysis.
+- [ ] Review live intake state, practice metadata, and the current safety-handoff screen contract.
+- [ ] Adapt active practice records and intake answers to the validated safety-selector contract.
+- [ ] Route live guarded-selection results to recommendation or safety-handoff UI before rendering a ritual.
+- [ ] Add integration tests for live urgent, high-intensity, transit, and standard recommendation paths.
+- [ ] Verify the live safety integration on desktop and mobile, then save a checkpoint.
+- [x] Review the current trial counter, paywall, checkout, and premium-access code paths.
+- [x] Remove payment and trial gating from all guided-practice entry points.
+- [x] Remove payment-facing UI and replace it with unrestricted-access messaging.
+- [x] Add or update tests to prove guided practices remain unrestricted.
+- [x] Verify unrestricted access on desktop and mobile, then save a checkpoint.
+- [x] Define the canonical-ritual and reusable-variant governance model.
+- [x] Map uploaded core-practice scripts, modifiers, and safeguards to the confirmed 18 rituals.
+- [x] Deliver the approved content architecture and implementation sequence.
+- [x] Reconcile the uploaded morning, protection, grounding, hygiene, and shared-response flows with the 18-ritual catalog.
+- [x] Identify the reusable shared intake, safety, result, and completion patterns for implementation.
+- [x] Deliver a unified recommendation and confirm the user’s preferred implementation scope.

@@ -37,6 +37,7 @@ export type EnergyHygieneMoment = {
   ctaLabel: string;
   situation: string;
   suggestedPracticeId: string;
+  dailyPlan?: { pickerHeading: string; pickerDescription: string; notePrompt: string; reflectionHeading: string; reflectionPrompt: string; };
 };
 
 /** Focused entry points within the hygiene pathway. They reuse the live practice catalog. */
@@ -60,6 +61,13 @@ export const energyHygieneMoments: EnergyHygieneMoment[] = [
     ctaLabel: "Begin today’s capacity check",
     situation: "I want a daily energy hygiene practice",
     suggestedPracticeId: "energy-conservation-pause",
+    dailyPlan: {
+      pickerHeading: "Choose a ritual for your seven days",
+      pickerDescription: "Choose any ritual that feels supportive to repeat gently. You can change it when you begin a new plan.",
+      notePrompt: "What would you like to remember from today?",
+      reflectionHeading: "A week of caring for your capacity.",
+      reflectionPrompt: "What did you notice about your energy, your limits, or what supported you?",
+    },
   },
 ];
 

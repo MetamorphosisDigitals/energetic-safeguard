@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { findCanonicalRitual } from "@/data/canonicalRituals";
 import { selectLiveSafetyAwarePractice } from "./liveSafetySelection";
 
 const resetQuery = {
@@ -38,5 +39,21 @@ describe("live safety selection bridge", () => {
     const result = selectLiveSafetyAwarePractice({ ...resetQuery, location: "transit" });
     expect(result.kind).toBe("ritual");
     if (result.kind === "ritual") expect(result.ritual.id).toBe("five-sense-orientation");
+  });
+
+  it("safety-checks an explicitly selected canonical daily-plan ritual before it can render", () => {
+    const selected = findCanonicalRitual("transition-pause");
+    expect(selected).toBeDefined();
+    if (!selected) return;
+
+    const result = selectLiveSafetyAwarePractice({
+      ...resetQuery,
+      pathway: selected.flowCategory[0],
+      situation: "I want a daily energy hygiene practice",
+      intensity: Math.min(selected.intensityRange[1], Math.max(selected.intensityRange[0], 5)),
+      availableMinutes: Math.max(3, selected.durationMinutes),
+    }, [selected.id]);
+
+    expect(result).toMatchObject({ kind: "ritual", ritual: { id: "transition-pause" } });
   });
 });

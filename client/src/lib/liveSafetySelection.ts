@@ -74,8 +74,11 @@ function normalizeAdjustments(adjustments: readonly string[]): Adjustment[] {
 }
 
 /** Bridges live intake data to the safety engine before a recommendation is rendered. */
-export function selectLiveSafetyAwarePractice(query: PracticeQuery) {
-  return selectSafetyAwareRitual(activeRituals.map(toSelectableRitual), {
+export function selectLiveSafetyAwarePractice(query: PracticeQuery, candidateRitualIds?: readonly string[]) {
+  const candidates = candidateRitualIds
+    ? activeRituals.filter((ritual) => candidateRitualIds.includes(ritual.id))
+    : activeRituals;
+  return selectSafetyAwareRitual(candidates.map(toSelectableRitual), {
     pathway: query.pathway,
     primaryAnswerTags: query.situation.toLocaleLowerCase().split(/[^a-z0-9]+/).filter(Boolean),
     secondaryTags: [query.energy, query.location],

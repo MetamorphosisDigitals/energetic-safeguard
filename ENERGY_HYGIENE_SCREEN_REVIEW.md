@@ -19,3 +19,9 @@ The desktop home dashboard was reviewed with both energy-hygiene shortcuts saved
 The desktop dashboard now presents the seven-day plan as a distinct, readable card with **Day 1 of 7**, a visible completed-day marker, and a short explanation of the user-controlled rhythm. The reordered daily-hygiene and after-interaction shortcuts follow it with clear **Earlier** and **Later** controls alongside native drag-and-drop behavior.
 
 At the 375 × 812 mobile breakpoint, the seven markers retain their distinction between current and completed states. The shortcuts stack into full-width cards, and the move controls remain below each card, preserving a touch-friendly and keyboard-accessible alternative to dragging.
+
+## Ritual Picker and Day 7 Reflection Review
+
+The desktop ritual picker presents all **18 confirmed rituals** as individually selectable, readable rows with duration and intended-result context. The selected plan ritual receives a clear visual state, is repeated in a summary panel, and leads to one unambiguous start action.
+
+The mobile Day 7 reflection screen keeps the selected ritual, completed-day count, any saved day note, optional closing reflection field, privacy note, and return-home action within a focused vertical sequence. The primary action remains visible without competing controls.

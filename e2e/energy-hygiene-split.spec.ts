@@ -57,7 +57,7 @@ test.describe("Energy hygiene split", () => {
     await expect(page.getByRole("heading", { name: "Would a small capacity check support you today?" })).not.toBeVisible();
   });
 
-  test("shows seven-day progress and marks today complete after the daily hygiene practice finishes", async ({ page }) => {
+  test("stores an optional completion note and marks today complete after the daily hygiene practice finishes", async ({ page }) => {
     await page.getByRole("button", { name: /Daily energy hygiene/i }).click();
     await page.getByRole("button", { name: "Start a private seven-day reminder" }).click();
     await page.getByRole("button", { name: "Return to home" }).click();
@@ -70,10 +70,62 @@ test.describe("Energy hygiene split", () => {
     await page.getByRole("button", { name: /Next step/i }).click();
     await page.getByRole("button", { name: /Next step/i }).click();
     await page.getByRole("button", { name: /I completed this/i }).click();
+    await expect(page.getByRole("heading", { name: "Keep what feels useful." })).toBeVisible();
+    await page.getByRole("textbox").fill("I paused before my next task.");
+    await page.getByRole("button", { name: "Continue" }).click();
     await page.getByRole("button", { name: "More grounded" }).click();
 
     await expect(page.getByText("1 completed")).toBeVisible();
     await expect(page.locator(".daily-hygiene-progress__day.is-complete").first()).toContainText("Day 1");
+    const completionNotes = await page.evaluate(() => JSON.parse(window.localStorage.getItem("energetic-safeguard:daily-hygiene-reminder:v1") ?? "{}").completionNotes);
+    expect(completionNotes).toMatchObject({ [new Date().toISOString().slice(0, 10)]: "I paused before my next task." });
+  });
+
+  test("lets the user select a canonical ritual for their daily-hygiene plan", async ({ page }) => {
+    await page.getByRole("button", { name: /Daily energy hygiene/i }).click();
+    await page.getByRole("button", { name: "Choose a different ritual" }).click();
+    await expect(page.getByRole("heading", { name: "Choose a ritual for your seven days" })).toBeVisible();
+    await expect(page.locator(".daily-ritual-picker-list .style-option")).toHaveCount(18);
+    await page.locator(".daily-ritual-picker-list .style-option", { hasText: "Transition Pause" }).click();
+    await page.getByRole("button", { name: "Start seven days with this ritual" }).click();
+
+    await expect(page.getByText("YOUR FOCUSED PRACTICE")).toBeVisible();
+    await expect(page.getByText("Transition Pause")).toBeVisible();
+    await page.getByRole("button", { name: /Begin today’s capacity check/i }).click();
+    await expect(page.getByRole("heading", { name: "Transition Pause" })).toBeVisible();
+  });
+
+  test("shows Day 7 reflection with saved day insights and preserves the closing reflection", async ({ page }) => {
+    await page.getByRole("button", { name: /Daily energy hygiene/i }).click();
+    await page.getByRole("button", { name: "Start a private seven-day reminder" }).click();
+    await page.getByRole("button", { name: "Return to home" }).click();
+    await page.evaluate(() => {
+      const key = "energetic-safeguard:daily-hygiene-reminder:v1";
+      const plan = JSON.parse(window.localStorage.getItem(key) ?? "{}");
+      const start = new Date(Date.now() - 6 * 86_400_000);
+      plan.startedAt = start.toISOString();
+      plan.endsAt = new Date(Date.now() + 86_400_000).toISOString();
+      plan.completedDayKeys = Array.from({ length: 6 }, (_, index) => new Date(start.getTime() + index * 86_400_000).toISOString().slice(0, 10));
+      plan.completionNotes = { [plan.completedDayKeys[0]]: "A smaller pace helped." };
+      window.localStorage.setItem(key, JSON.stringify(plan));
+    });
+    await page.reload();
+    await page.getByRole("button", { name: /Improve My Energy Hygiene/i }).click();
+    await page.getByRole("button", { name: /Daily energy hygiene/i }).click();
+    await page.getByRole("button", { name: /Begin today’s capacity check/i }).click();
+    await page.getByRole("button", { name: /Begin practice/i }).click();
+    await page.getByRole("button", { name: /Next step/i }).click();
+    await page.getByRole("button", { name: /Next step/i }).click();
+    await page.getByRole("button", { name: /I completed this/i }).click();
+    await page.getByRole("button", { name: "Skip note" }).click();
+    await page.getByRole("button", { name: "More grounded" }).click();
+
+    await expect(page.getByRole("heading", { name: "A week of caring for your capacity." })).toBeVisible();
+    await expect(page.getByText("A smaller pace helped.")).toBeVisible();
+    await page.getByRole("textbox").fill("I can return to a gentler pace.");
+    await page.getByRole("button", { name: "Save reflection and return home" }).click();
+    const reflectionNote = await page.evaluate(() => JSON.parse(window.localStorage.getItem("energetic-safeguard:daily-hygiene-reminder:v1") ?? "{}").reflectionNote);
+    expect(reflectionNote).toBe("I can return to a gentler pace.");
   });
 
   test("does not advance daily-hygiene progress after the user leaves that flow and completes an unrelated practice", async ({ page }) => {

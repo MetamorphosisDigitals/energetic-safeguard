@@ -4,7 +4,7 @@ import {
   getDailyHygienePlanProgress,
   hasCompletedOnboarding, isDailyHygieneReminderDue, loadDailyHygieneReminder, loadFreePracticeUsage,
   loadPreferences, loadSevenDayCommitment, recordCompletedFreePractice, reorderEnergyHygieneShortcuts, saveDailyHygieneReminder,
-  saveOnboardingCompleted, savePreferences, saveSevenDayCommitment,
+  saveOnboardingCompleted, savePreferences, saveSevenDayCommitment, setDailyHygieneNoteForToday, setDailyHygieneReflection,
 } from "./localPersistence";
 
 function createMemoryStorage() {
@@ -58,11 +58,20 @@ describe("local persistence", () => {
   });
 
   it("tracks a completed daily-hygiene practice once and renders its seven-day position", () => {
-    const reminder = { startedAt: "2026-08-20T09:00:00.000Z", endsAt: "2026-08-27T09:00:00.000Z", lastPromptDate: null, completedDayKeys: ["2026-08-20"] };
+    const reminder = { startedAt: "2026-08-20T09:00:00.000Z", endsAt: "2026-08-27T09:00:00.000Z", lastPromptDate: null, completedDayKeys: ["2026-08-20"], selectedPracticeId: "energy-conservation-pause", completionNotes: {}, reflectionNote: "" };
     const progress = getDailyHygienePlanProgress(reminder, new Date("2026-08-22T12:00:00.000Z"));
     expect(progress).toEqual({ currentDay: 3, completedDays: [1], completedCount: 1 });
     const completedToday = completeDailyHygieneForToday({ ...reminder, completedDayKeys: [] });
     expect(completedToday.completedDayKeys).toHaveLength(1);
     expect(completeDailyHygieneForToday(completedToday).completedDayKeys).toHaveLength(1);
+  });
+
+  it("keeps the selected ritual, optional day note, and final reflection private to the local daily plan", () => {
+    const plan = createDailyHygieneReminder("transition-pause");
+    const noted = setDailyHygieneNoteForToday(plan, "I paused before my next task.", new Date("2026-08-20T12:00:00.000Z"));
+    const reflected = setDailyHygieneReflection(noted, "A smaller pace supported me this week.");
+    expect(reflected.selectedPracticeId).toBe("transition-pause");
+    expect(reflected.completionNotes["2026-08-20"]).toBe("I paused before my next task.");
+    expect(reflected.reflectionNote).toBe("A smaller pace supported me this week.");
   });
 });

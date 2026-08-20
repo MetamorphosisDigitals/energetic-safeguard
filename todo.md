@@ -170,3 +170,12 @@
 - [x] Assert canonical ritual output in live routed recommendations after the 18-ritual migration.
 - [x] Validate the progress, reordering, canonical routes, safety handoffs, and responsive dashboard behavior.
 - [x] Save a checkpoint containing the unified 18-ritual catalog and dashboard refinements.
+- [x] Review daily-hygiene plan persistence, completion routing, and canonical ritual metadata for day-level customization.
+- [x] Add optional private completion notes for each completed day of a daily-hygiene plan.
+- [x] Add browser coverage that enters an optional daily completion note and verifies it persists in the local plan state.
+- [x] Implement and verify the Day 7 daily-reflection route before finalizing the completion-note flow.
+- [x] Add a daily-hygiene ritual picker using the confirmed 18-ritual catalog.
+- [x] Route each selected daily-hygiene ritual through the existing safety-aware practice flow.
+- [x] Add a Day 7 reflection screen summarizing progress, selected ritual, and optional day-level insights.
+- [x] Add automated coverage and verify daily notes, ritual selection, and the Day 7 reflection on desktop and mobile.
+- [x] Save a checkpoint containing the daily-hygiene plan enhancement.

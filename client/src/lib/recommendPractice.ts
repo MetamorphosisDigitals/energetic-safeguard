@@ -3,7 +3,8 @@
  * expansion packs become recommendable through catalog data, not conditional UI code.
  */
 import { expansionPacks, type CrystalId, type RoseRayId } from "@/data/catalog";
-import { practices, type FlowCategory, type Location, type Practice, type PracticeStyle } from "@/data/practices";
+import { activeRituals } from "@/data/canonicalRituals";
+import { type FlowCategory, type Location, type Practice, type PracticeStyle } from "@/data/practices";
 
 export interface PracticeQuery {
   pathway: FlowCategory;
@@ -63,7 +64,7 @@ function scorePractice(practice: Practice, query: PracticeQuery) {
 
 export function recommendPractice(query: PracticeQuery): Practice {
   const enabledContentPackIds = query.enabledContentPackIds ?? ["foundation"];
-  const compatible = practices.filter((practice) =>
+  const compatible = activeRituals.filter((practice) =>
     practice.active &&
     isContentPackAvailable(practice, enabledContentPackIds) &&
     practice.durationMinutes <= query.availableMinutes &&
@@ -73,7 +74,7 @@ export function recommendPractice(query: PracticeQuery): Practice {
   );
   const scoped = compatible.filter((practice) => practice.flowCategory.includes(query.pathway));
   const candidates = scoped.length ? scoped : compatible;
-  const fallback = practices.find((practice) => practice.id === "one-minute-emergency-reset")!;
+  const fallback = activeRituals.find((practice) => practice.id === "one-object-reset")!;
   return candidates.reduce<Practice | null>((best, practice) => !best || scorePractice(practice, query) > scorePractice(best, query) ? practice : best, null) ?? fallback;
 }
 

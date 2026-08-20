@@ -37,6 +37,6 @@ describe("live safety selection bridge", () => {
   it("selects a transit-safe ritual when the live query identifies transit", () => {
     const result = selectLiveSafetyAwarePractice({ ...resetQuery, location: "transit" });
     expect(result.kind).toBe("ritual");
-    if (result.kind === "ritual") expect(result.ritual.id).toBe("discreet-sensory-reset");
+    if (result.kind === "ritual") expect(result.ritual.id).toBe("five-sense-orientation");
   });
 });

@@ -22,8 +22,8 @@ test.describe("Safety handoff", () => {
     await expect(page.getByRole("heading", { name: /TODAY’S RECOMMENDATION/i })).not.toBeVisible();
 
     await page.getByRole("button", { name: /Try a one-minute orientation/i }).click();
-    await expect(page.getByText("One-Minute Support")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Look" })).toBeVisible();
+    await expect(page.getByText("One-Object Reset")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Choose one object" })).toBeVisible();
     await expect(page.getByRole("button", { name: /I feel more overwhelmed/i })).toBeVisible();
   });
 });

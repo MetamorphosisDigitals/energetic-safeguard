@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
-  createDailyHygieneReminder, createSevenDayCommitment, dismissDailyHygieneReminderForToday,
+  completeDailyHygieneForToday, createDailyHygieneReminder, createSevenDayCommitment, dismissDailyHygieneReminderForToday,
+  getDailyHygienePlanProgress,
   hasCompletedOnboarding, isDailyHygieneReminderDue, loadDailyHygieneReminder, loadFreePracticeUsage,
-  loadPreferences, loadSevenDayCommitment, recordCompletedFreePractice, saveDailyHygieneReminder,
+  loadPreferences, loadSevenDayCommitment, recordCompletedFreePractice, reorderEnergyHygieneShortcuts, saveDailyHygieneReminder,
   saveOnboardingCompleted, savePreferences, saveSevenDayCommitment,
 } from "./localPersistence";
 
@@ -29,6 +30,10 @@ describe("local persistence", () => {
     expect(loadPreferences()).toEqual({ practiceStyle: "rose", reducedMotion: true, textSize: "large", energyHygieneShortcutIds: ["daily-hygiene", "after-interaction"] });
   });
 
+  it("reorders saved energy-hygiene shortcuts without changing which shortcuts are stored", () => {
+    expect(reorderEnergyHygieneShortcuts(["after-interaction", "daily-hygiene"], "daily-hygiene", "after-interaction")).toEqual(["daily-hygiene", "after-interaction"]);
+  });
+
   it("restores an active seven-day commitment and caps persisted free usage at three", () => {
     const commitment = createSevenDayCommitment("emerald-rose-grounding", "Emerald Rose Grounding");
     saveSevenDayCommitment(commitment);
@@ -50,5 +55,14 @@ describe("local persistence", () => {
     expect(loadDailyHygieneReminder()).toEqual(reminder);
     expect(isDailyHygieneReminderDue(reminder)).toBe(true);
     expect(isDailyHygieneReminderDue(dismissDailyHygieneReminderForToday(reminder))).toBe(false);
+  });
+
+  it("tracks a completed daily-hygiene practice once and renders its seven-day position", () => {
+    const reminder = { startedAt: "2026-08-20T09:00:00.000Z", endsAt: "2026-08-27T09:00:00.000Z", lastPromptDate: null, completedDayKeys: ["2026-08-20"] };
+    const progress = getDailyHygienePlanProgress(reminder, new Date("2026-08-22T12:00:00.000Z"));
+    expect(progress).toEqual({ currentDay: 3, completedDays: [1], completedCount: 1 });
+    const completedToday = completeDailyHygieneForToday({ ...reminder, completedDayKeys: [] });
+    expect(completedToday.completedDayKeys).toHaveLength(1);
+    expect(completeDailyHygieneForToday(completedToday).completedDayKeys).toHaveLength(1);
   });
 });

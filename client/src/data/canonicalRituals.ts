@@ -1,16 +1,17 @@
 import sourceCatalog from "../../../rituals_18_catalog.json";
-import { practices, type Practice } from "./practices";
+import { practices as legacyPractices, type Practice } from "./practices";
 
 /**
- * Adapter for the user-confirmed 18-ritual source of truth. The broader live
- * catalog migration remains incremental, while routes that opt in can resolve
- * directly from this centralized source without duplicating ritual content.
+ * The confirmed 18 rituals are the selectable runtime library. The earlier
+ * catalog remains available only to resolve an existing user-owned record made
+ * before this migration; it is not considered for new recommendations.
  */
 export const canonicalRituals = sourceCatalog.rituals as unknown as Practice[];
-export const centralizedPracticeLibrary = [...practices, ...canonicalRituals];
+export const activeRituals = canonicalRituals;
+export const centralizedPracticeLibrary = [...canonicalRituals, ...legacyPractices];
 
 export function findCanonicalRitual(id: string | null | undefined) {
-  return canonicalRituals.find((ritual) => ritual.id === id);
+  return activeRituals.find((ritual) => ritual.id === id);
 }
 
 export function findPracticeInCentralizedLibrary(id: string | null | undefined) {

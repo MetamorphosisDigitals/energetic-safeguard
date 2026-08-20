@@ -1,4 +1,5 @@
-import { practices, type Practice } from "@/data/practices";
+import { activeRituals } from "@/data/canonicalRituals";
+import { type Practice } from "@/data/practices";
 import type { PracticeQuery } from "@/lib/recommendPractice";
 import {
   selectSafetyAwareRitual,
@@ -9,16 +10,18 @@ import {
 } from "@/lib/safetySelectionEngine";
 
 const HIGH_INTENSITY_IDS = new Set([
-  "eyes-open-orientation",
-  "discreet-sensory-reset",
-  "one-minute-emergency-reset",
-  "three-point-orientation",
+  "five-sense-arrival",
+  "pocket-anchor",
+  "five-sense-orientation",
+  "one-object-reset",
+  "energy-conservation-pause",
 ]);
 
 const TRANSIT_SAFE_IDS = new Set([
-  "discreet-sensory-reset",
-  "one-minute-emergency-reset",
-  "three-point-orientation",
+  "pocket-anchor",
+  "three-breath-boundary",
+  "five-sense-orientation",
+  "one-object-reset",
 ]);
 
 const safetyPatternMap: Array<[SafetyTrigger, RegExp]> = [
@@ -72,7 +75,7 @@ function normalizeAdjustments(adjustments: readonly string[]): Adjustment[] {
 
 /** Bridges live intake data to the safety engine before a recommendation is rendered. */
 export function selectLiveSafetyAwarePractice(query: PracticeQuery) {
-  return selectSafetyAwareRitual(practices.map(toSelectableRitual), {
+  return selectSafetyAwareRitual(activeRituals.map(toSelectableRitual), {
     pathway: query.pathway,
     primaryAnswerTags: query.situation.toLocaleLowerCase().split(/[^a-z0-9]+/).filter(Boolean),
     secondaryTags: [query.energy, query.location],

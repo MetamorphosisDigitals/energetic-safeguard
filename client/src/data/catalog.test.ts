@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { energyHygieneMoments, getFlow, practiceStyleOptions, supportFlows } from "./catalog";
-import { canonicalRituals } from "./canonicalRituals";
-import { practices } from "./practices";
+import { activeRituals, canonicalRituals } from "./canonicalRituals";
 
 describe("support catalog", () => {
   it("provides five data-driven dashboard pathways and all five practice styles", () => {
@@ -13,7 +12,7 @@ describe("support catalog", () => {
   it("links the always-available quick reset to a library practice", () => {
     const emergencyFlow = getFlow("emergency");
     expect(emergencyFlow?.suggestedPracticeId).toBeDefined();
-    expect(practices.some((practice) => practice.id === emergencyFlow?.suggestedPracticeId)).toBe(true);
+    expect(activeRituals.some((practice) => practice.id === emergencyFlow?.suggestedPracticeId)).toBe(true);
   });
 
   it("links restoration and daily hygiene moments to distinct canonical rituals", () => {

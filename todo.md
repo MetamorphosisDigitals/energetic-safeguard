@@ -153,3 +153,20 @@
 - [x] Run and document desktop verification for the energy-hygiene shortcuts and in-app reminder flow.
 - [x] Assert the canonical ritual appears in both Saved Support favorites and history sections in the browser scenario.
 - [x] Assert the exported canonical note contains the ritual name and reflection content.
+- [x] Audit daily-hygiene plan persistence, saved-shortcut ordering, and remaining active legacy-route references.
+- [x] Add a visual day-by-day progress indicator for the private seven-day daily-hygiene plan on the home dashboard.
+- [x] Reset the daily-hygiene completion session on all non-completion exits and verify unrelated practices cannot advance progress.
+- [x] Add browser coverage for dashboard progress rendering and a completed daily-hygiene practice marking the current day.
+- [x] Verify the daily-hygiene progress card on desktop and mobile.
+- [x] Add accessible drag-and-drop ordering for saved energy-hygiene dashboard shortcuts, with persistent order.
+- [x] Add browser coverage for direct drag-and-drop shortcut reordering and reload persistence.
+- [x] Verify reorderable shortcuts on desktop and mobile, including drag state and keyboard move controls.
+- [x] Verify the visible drag state and persisted reorder result in a browser scenario.
+- [x] Add desktop shortcut reorder interaction coverage and keyboard activation coverage for Earlier and Later controls.
+- [x] Add desktop keyboard coverage for both Earlier and Later shortcut controls with persistence assertions.
+- [x] Migrate all remaining active recommendation and pathway routes to the confirmed 18-ritual catalog.
+- [x] Update the safety-aware selection bridge and route tests for the fully canonical runtime catalog.
+- [x] Update and rerun live intake browser safety coverage for canonical standard, urgent, high-intensity, very-high-intensity, and transit paths.
+- [x] Assert canonical ritual output in live routed recommendations after the 18-ritual migration.
+- [x] Validate the progress, reordering, canonical routes, safety handoffs, and responsive dashboard behavior.
+- [x] Save a checkpoint containing the unified 18-ritual catalog and dashboard refinements.

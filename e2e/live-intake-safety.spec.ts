@@ -34,6 +34,7 @@ test.describe("Live safety-aware intake", () => {
     await finishIntake(page);
 
     await expect(page.getByText("TODAY’S RECOMMENDATION")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Easy Longer Exhale" })).toBeVisible();
     await expect(page.getByText("PAUSE HERE")).not.toBeVisible();
   });
 
@@ -43,6 +44,7 @@ test.describe("Live safety-aware intake", () => {
     await finishIntake(page);
 
     await expect(page.getByText("TODAY’S RECOMMENDATION")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Energy Conservation Pause" })).toBeVisible();
     await expect(page.getByText("PAUSE HERE")).not.toBeVisible();
   });
 
@@ -52,8 +54,19 @@ test.describe("Live safety-aware intake", () => {
     await finishIntake(page);
 
     await expect(page.getByText("TODAY’S RECOMMENDATION")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Discreet Sensory Reset" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Five-Sense Orientation" })).toBeVisible();
     await expect(page.getByText("PAUSE HERE")).not.toBeVisible();
+  });
+
+  test("hands off an explicit urgent message before a canonical ritual can render", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: /Find support for right now/i }).click();
+    await page.getByPlaceholder("Only share what feels comfortable.").fill("I feel unsafe and cannot stay safe");
+    await page.getByRole("button", { name: /^Continue/i }).click();
+
+    await expect(page.getByText("PAUSE HERE")).toBeVisible();
+    await expect(page.getByText(/may need more than a ritual/i)).toBeVisible();
+    await expect(page.getByText("TODAY’S RECOMMENDATION")).not.toBeVisible();
   });
 
   test("hands off very-high-intensity requests before a recommendation renders", async ({ page }) => {

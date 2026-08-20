@@ -25,3 +25,9 @@ At the 375 × 812 mobile breakpoint, the seven markers retain their distinction 
 The desktop ritual picker presents all **18 confirmed rituals** as individually selectable, readable rows with duration and intended-result context. The selected plan ritual receives a clear visual state, is repeated in a summary panel, and leads to one unambiguous start action.
 
 The mobile Day 7 reflection screen keeps the selected ritual, completed-day count, any saved day note, optional closing reflection field, privacy note, and return-home action within a focused vertical sequence. The primary action remains visible without competing controls.
+
+## Completed Plan Summary Review
+
+The desktop dashboard places the completed-plan summary after the pathway selection, preserving the app’s primary entry points while giving the finished seven-day cycle a clear close. The selected ritual, completion count, private-reflection status, and **Repeat this plan** action are visible in one calm, compact band.
+
+On mobile, repeating the plan removes the completion summary and restores a clean **Day 1 of 7** progress card with a visible private in-app prompt. The refreshed cycle preserves the ritual choice but does not carry forward prior completion dates, daily notes, or closing reflection.

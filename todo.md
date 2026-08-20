@@ -179,3 +179,8 @@
 - [x] Add a Day 7 reflection screen summarizing progress, selected ritual, and optional day-level insights.
 - [x] Add automated coverage and verify daily notes, ritual selection, and the Day 7 reflection on desktop and mobile.
 - [x] Save a checkpoint containing the daily-hygiene plan enhancement.
+- [x] Review completed daily-plan persistence and the home dashboard’s reminder/progress entry points.
+- [x] Add a gentle completed-plan summary badge on the home dashboard.
+- [x] Add an action that duplicates a completed plan into a new seven-day cycle with the same selected ritual.
+- [x] Add automated coverage and verify the completion summary and duplication flow on desktop and mobile.
+- [x] Save a checkpoint containing the completed-plan duplication refinement.

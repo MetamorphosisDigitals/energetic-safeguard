@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
-  completeDailyHygieneForToday, createDailyHygieneReminder, createSevenDayCommitment, dismissDailyHygieneReminderForToday,
+  completeDailyHygieneForToday, createDailyHygieneReminder, createSevenDayCommitment, dismissDailyHygieneReminderForToday, duplicateDailyHygienePlan,
   getDailyHygienePlanProgress,
-  hasCompletedOnboarding, isDailyHygieneReminderDue, loadDailyHygieneReminder, loadFreePracticeUsage,
+  hasCompletedDailyHygienePlan, hasCompletedOnboarding, isDailyHygieneReminderDue, loadDailyHygieneReminder, loadFreePracticeUsage,
   loadPreferences, loadSevenDayCommitment, recordCompletedFreePractice, reorderEnergyHygieneShortcuts, saveDailyHygieneReminder,
   saveOnboardingCompleted, savePreferences, saveSevenDayCommitment, setDailyHygieneNoteForToday, setDailyHygieneReflection,
 } from "./localPersistence";
@@ -73,5 +73,16 @@ describe("local persistence", () => {
     expect(reflected.selectedPracticeId).toBe("transition-pause");
     expect(reflected.completionNotes["2026-08-20"]).toBe("I paused before my next task.");
     expect(reflected.reflectionNote).toBe("A smaller pace supported me this week.");
+  });
+
+  it("recognizes a completed Day 7 plan and duplicates only its selected ritual into a fresh cycle", () => {
+    const completed = {
+      startedAt: "2026-08-14T09:00:00.000Z", endsAt: "2026-08-21T09:00:00.000Z", lastPromptDate: "2026-08-20",
+      completedDayKeys: ["2026-08-14", "2026-08-15", "2026-08-16", "2026-08-17", "2026-08-18", "2026-08-19", "2026-08-20"],
+      selectedPracticeId: "transition-pause", completionNotes: { "2026-08-14": "A quiet beginning." }, reflectionNote: "I can keep my pace gentle.",
+    };
+    expect(hasCompletedDailyHygienePlan(completed, new Date("2026-08-20T12:00:00.000Z"))).toBe(true);
+    const duplicate = duplicateDailyHygienePlan(completed);
+    expect(duplicate).toMatchObject({ selectedPracticeId: "transition-pause", completedDayKeys: [], completionNotes: {}, reflectionNote: "", lastPromptDate: null });
   });
 });

@@ -112,11 +112,11 @@
 - [x] Identify conflicts between the confirmed 18-ritual direction and the attached core-practice list.
 - [x] Deliver a prioritized alignment and reconciliation assessment.
 - [x] Produce and deliver a written alignment audit with the 18-ritual conflict analysis.
-- [ ] Review live intake state, practice metadata, and the current safety-handoff screen contract.
-- [ ] Adapt active practice records and intake answers to the validated safety-selector contract.
-- [ ] Route live guarded-selection results to recommendation or safety-handoff UI before rendering a ritual.
-- [ ] Add integration tests for live urgent, high-intensity, transit, and standard recommendation paths.
-- [ ] Verify the live safety integration on desktop and mobile, then save a checkpoint.
+- [x] Review live intake state, practice metadata, and the current safety-handoff screen contract.
+- [x] Adapt active practice records and intake answers to the validated safety-selector contract.
+- [x] Route live guarded-selection results to recommendation or safety-handoff UI before rendering a ritual.
+- [x] Add integration tests for live urgent, high-intensity, transit, and standard recommendation paths.
+- [x] Verify the live safety integration on desktop and mobile, then save a checkpoint.
 - [x] Review the current trial counter, paywall, checkout, and premium-access code paths.
 - [x] Remove payment and trial gating from all guided-practice entry points.
 - [x] Remove payment-facing UI and replace it with unrestricted-access messaging.

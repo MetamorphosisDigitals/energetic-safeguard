@@ -13,7 +13,7 @@ export type FlowCategory =
   | "emergency";
 
 export type PracticeStyle = "practical" | "rose" | "rose-crystal";
-export type Location = "anywhere" | "home" | "public" | "work" | "outdoors";
+export type Location = "anywhere" | "home" | "public" | "work" | "outdoors" | "transit";
 export type PrivacyLevel = "open" | "some" | "discreet";
 
 export interface PracticeStep {

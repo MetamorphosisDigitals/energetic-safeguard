@@ -18,7 +18,7 @@ test.describe("Safety handoff", () => {
 
     await expect(page.getByText("PAUSE HERE")).toBeVisible();
     await expect(page.getByRole("heading", { name: "You can stop this practice." })).toBeVisible();
-    await expect(page.getByText(/cannot assess what you need in an emergency/i)).toBeVisible();
+    await expect(page.getByText(/may need more than a ritual/i)).toBeVisible();
     await expect(page.getByRole("heading", { name: /TODAY’S RECOMMENDATION/i })).not.toBeVisible();
 
     await page.getByRole("button", { name: /Try a one-minute orientation/i }).click();

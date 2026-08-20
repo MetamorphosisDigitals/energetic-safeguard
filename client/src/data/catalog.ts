@@ -28,6 +28,41 @@ export const supportFlows: SupportFlowDefinition[] = [
   { id: "emergency", title: "One-Minute Reset", description: "Take one small, eyes-open step toward steadiness.", dashboardLabel: "QUICK RESET", iconKey: "bolt", tint: "lavender", intake: { question: "What support feels most available?", options: ["A quiet reset", "Eyes-open grounding", "A little more space", "One small next step"] }, suggestedPracticeId: "one-minute-emergency-reset", showOnDashboard: false },
 ];
 
+export type EnergyHygieneMoment = {
+  id: "after-interaction" | "daily-hygiene";
+  label: string;
+  heading: string;
+  description: string;
+  introduction: string;
+  ctaLabel: string;
+  situation: string;
+  suggestedPracticeId: string;
+};
+
+/** Focused entry points within the hygiene pathway. They reuse the live practice catalog. */
+export const energyHygieneMoments: EnergyHygieneMoment[] = [
+  {
+    id: "after-interaction",
+    label: "Restore after an interaction",
+    heading: "Let the interaction end with the interaction.",
+    description: "Set down what is not yours to carry and return to your own energy after a demanding conversation, meeting, or shared space.",
+    introduction: "This gentle reset makes room to notice what belongs to you, choose a clear line, and return to your next choice without rushing yourself.",
+    ctaLabel: "Begin a restoration reset",
+    situation: "I want to restore my energy after an interaction",
+    suggestedPracticeId: "personal-boundary-reset",
+  },
+  {
+    id: "daily-hygiene",
+    label: "Daily energy hygiene",
+    heading: "Care for your capacity before the day spends it.",
+    description: "Build a small, repeatable check-in that helps you notice capacity and protect it before the day asks for more.",
+    introduction: "A brief daily check-in can help you see what is realistic, soften one demand, and choose a pace that respects your available energy.",
+    ctaLabel: "Begin today’s capacity check",
+    situation: "I want a daily energy hygiene practice",
+    suggestedPracticeId: "capacity-check",
+  },
+];
+
 export const practiceStyleOptions: { id: PracticeStyle | "either" | "choose"; label: string; note: string }[] = [
   { id: "practical", label: "Practical & Grounded", note: "Sensory grounding, gentle movement, boundaries, and environmental support." },
   { id: "rose", label: "Rose Ray Support", note: "Optional symbolic Rose Ray imagery for gentle protection and reflection." },

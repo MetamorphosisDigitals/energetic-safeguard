@@ -128,3 +128,11 @@
 - [x] Reconcile the uploaded morning, protection, grounding, hygiene, and shared-response flows with the 18-ritual catalog.
 - [x] Identify the reusable shared intake, safety, result, and completion patterns for implementation.
 - [x] Deliver a unified recommendation and confirm the user’s preferred implementation scope.
+- [x] Review the current energy-hygiene pathway, practices, and shared result-screen structure.
+- [x] Add a dedicated after-interaction energy-restoration screen with a clear practice route.
+- [x] Add a separate daily energy-hygiene screen with a clear practice route.
+- [x] Verify the new energy-hygiene screens on desktop and mobile, then save a checkpoint.
+- [x] Add a distinct after-interaction restoration screen with its own entry content and CTA.
+- [x] Add a distinct daily energy-hygiene screen with its own entry content and CTA.
+- [x] Add browser-level tests proving each dedicated screen renders before its recommendation.
+- [x] Save a checkpoint containing the verified energy-hygiene screen refinement.

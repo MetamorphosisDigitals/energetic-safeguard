@@ -4,10 +4,29 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { deletePracticeFilterView, getDailyDefaultPracticeId, getDefaultPracticeFilterView, getPinnedCustomTags, getPremiumEntitlement, listPracticeFavorites, listPracticeHistory, listSavedPracticeFilterViews, listUserCustomTags, recordPracticeCompletion, removePracticeFavorite, replaceUserCustomTag, savePracticeFavorite, savePracticeFilterView, setDailyDefaultPractice, setDefaultPracticeFilterView, setPinnedCustomTags, updatePracticeHistoryNote, updatePracticeHistoryReflection } from "./db";
+import { deletePracticeFilterView, deleteRoutinePlanArchive, getDailyDefaultPracticeId, getDefaultPracticeFilterView, getPinnedCustomTags, getPremiumEntitlement, getRoutineArchiveAutoBackup, getRoutinePlanArchiveById, getRoutinePlanArchiveSummary, importRoutinePlanArchives, listPracticeFavorites, listPracticeHistory, listRoutinePlanArchives, listSavedPracticeFilterViews, listUserCustomTags, recordPracticeCompletion, removePracticeFavorite, replaceUserCustomTag, savePracticeFavorite, savePracticeFilterView, setDailyDefaultPractice, setDefaultPracticeFilterView, setPinnedCustomTags, setRoutineArchiveAutoBackup, updatePracticeHistoryNote, updatePracticeHistoryReflection } from "./db";
 import { premiumOffers } from "./payments/products";
-
+import { isCanonicalRitualId } from "@shared/canonicalRitualIds";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+const dateKeySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const routineArchiveInputSchema = z.object({
+  clientArchiveKey: z.string().trim().min(1).max(128),
+  selectedPracticeId: z.string().trim().min(1).max(96).regex(/^[a-z0-9-]+$/).refine(isCanonicalRitualId, "Choose a ritual from the confirmed library."),
+  startedAt: z.string().datetime(),
+  endsAt: z.string().datetime(),
+  archivedAt: z.string().datetime(),
+  completedDayKeys: z.array(dateKeySchema).max(7),
+  completionNotes: z.record(dateKeySchema, z.string().trim().min(1).max(1000)),
+  reflectionNote: z.string().trim().max(1200).nullable(),
+}).superRefine((archive, ctx) => {
+  if (Date.parse(archive.endsAt) < Date.parse(archive.startedAt)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["endsAt"], message: "Plan end must be on or after plan start." });
+  const completed = new Set(archive.completedDayKeys);
+  if (completed.size !== archive.completedDayKeys.length) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["completedDayKeys"], message: "Completed plan days must be unique." });
+  for (const key of Object.keys(archive.completionNotes)) {
+    if (!completed.has(key)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["completionNotes", key], message: "A note can only be saved for a completed plan day." });
+  }
+});
 
 export const appRouter = router({
   system: systemRouter,
@@ -115,6 +134,31 @@ export const appRouter = router({
         await removePracticeFavorite(ctx.user.id, input.practiceId);
         return { success: true } as const;
       }),
+  }),
+  routineHistory: router({
+    summary: protectedProcedure.query(({ ctx }) => getRoutinePlanArchiveSummary(ctx.user.id)),
+    list: protectedProcedure
+      .input(z.object({ limit: z.number().int().min(1).max(50).optional() }).optional())
+      .query(({ ctx, input }) => listRoutinePlanArchives(ctx.user.id, input?.limit ?? 20)),
+    get: protectedProcedure
+      .input(z.object({ archiveId: z.number().int().positive() }))
+      .query(({ ctx, input }) => getRoutinePlanArchiveById(ctx.user.id, input.archiveId)),
+    importLocalArchives: protectedProcedure
+      .input(z.object({ archives: z.array(routineArchiveInputSchema).min(1).max(30) }))
+      .mutation(({ ctx, input }) => importRoutinePlanArchives(ctx.user.id, input.archives.map((archive) => ({
+        ...archive,
+        startedAt: new Date(archive.startedAt),
+        endsAt: new Date(archive.endsAt),
+        archivedAt: new Date(archive.archivedAt),
+        completedDayKeys: Array.from(new Set(archive.completedDayKeys)),
+      })))),
+    autoBackup: protectedProcedure.query(({ ctx }) => getRoutineArchiveAutoBackup(ctx.user.id)),
+    setAutoBackup: protectedProcedure
+      .input(z.object({ enabled: z.boolean() }))
+      .mutation(({ ctx, input }) => setRoutineArchiveAutoBackup(ctx.user.id, input.enabled)),
+    delete: protectedProcedure
+      .input(z.object({ archiveId: z.number().int().positive() }))
+      .mutation(async ({ ctx, input }) => ({ success: await deleteRoutinePlanArchive(ctx.user.id, input.archiveId) })),
   }),
 });
 

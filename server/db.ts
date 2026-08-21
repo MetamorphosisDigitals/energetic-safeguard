@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, practiceFavorites, practiceHistory, practiceSavedFilterViews, premiumEntitlements, userLibraryPreferences, users } from "../drizzle/schema";
+import { InsertUser, practiceFavorites, practiceHistory, practiceSavedFilterViews, premiumEntitlements, routinePlanArchives, userLibraryPreferences, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import type { PremiumOfferKey } from "./payments/products";
 
@@ -244,4 +244,116 @@ export async function removePracticeFavorite(userId: number, practiceId: string)
   if (!db) throw new Error("Database is unavailable while removing a favorite.");
   await db.update(userLibraryPreferences).set({ dailyDefaultPracticeId: null }).where(and(eq(userLibraryPreferences.userId, userId), eq(userLibraryPreferences.dailyDefaultPracticeId, practiceId)));
   await db.delete(practiceFavorites).where(and(eq(practiceFavorites.userId, userId), eq(practiceFavorites.practiceId, practiceId)));
+}
+
+export type RoutinePlanArchiveBackupInput = {
+  clientArchiveKey: string;
+  selectedPracticeId: string;
+  startedAt: Date;
+  endsAt: Date;
+  archivedAt: Date;
+  completedDayKeys: string[];
+  completionNotes: Record<string, string>;
+  reflectionNote: string | null;
+};
+
+export type CloudRoutinePlanArchive = Omit<typeof routinePlanArchives.$inferSelect, "completedDayKeys" | "completionNotes"> & {
+  completedDayKeys: string[];
+  completionNotes: Record<string, string>;
+};
+
+function parseArchiveStringArray(value: string) {
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function parseArchiveNotes(value: string) {
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return Object.fromEntries(Object.entries(parsed).filter((entry): entry is [string, string] => typeof entry[1] === "string"));
+  } catch {
+    return {};
+  }
+}
+
+function hydrateRoutinePlanArchive(row: typeof routinePlanArchives.$inferSelect): CloudRoutinePlanArchive {
+  return { ...row, completedDayKeys: parseArchiveStringArray(row.completedDayKeys), completionNotes: parseArchiveNotes(row.completionNotes) };
+}
+
+export async function getRoutineArchiveAutoBackup(userId: number) {
+  const db = await getDb();
+  if (!db) return false;
+  const row = await db.select({ enabled: userLibraryPreferences.routineArchiveAutoBackup }).from(userLibraryPreferences).where(eq(userLibraryPreferences.userId, userId)).limit(1);
+  return row[0]?.enabled ?? false;
+}
+
+export async function setRoutineArchiveAutoBackup(userId: number, enabled: boolean) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable while saving your backup preference.");
+  await db.insert(userLibraryPreferences).values({ userId, routineArchiveAutoBackup: enabled }).onDuplicateKeyUpdate({ set: { routineArchiveAutoBackup: enabled } });
+  return enabled;
+}
+
+export async function listRoutinePlanArchives(userId: number, limit = 20) {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db.select().from(routinePlanArchives).where(eq(routinePlanArchives.userId, userId)).orderBy(desc(routinePlanArchives.archivedAt)).limit(limit);
+  return rows.map(hydrateRoutinePlanArchive);
+}
+
+export async function getRoutinePlanArchiveSummary(userId: number) {
+  const rows = await listRoutinePlanArchives(userId, 50);
+  const latest = rows[0];
+  return {
+    count: rows.length,
+    latest: latest ? { id: latest.id, selectedPracticeId: latest.selectedPracticeId, archivedAt: latest.archivedAt, completedCount: latest.completedDayKeys.length } : null,
+  };
+}
+
+export async function getRoutinePlanArchiveById(userId: number, archiveId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(routinePlanArchives).where(and(eq(routinePlanArchives.id, archiveId), eq(routinePlanArchives.userId, userId))).limit(1);
+  return rows[0] ? hydrateRoutinePlanArchive(rows[0]) : null;
+}
+
+export function deduplicateRoutinePlanArchiveInputs(archives: RoutinePlanArchiveBackupInput[]) {
+  return Array.from(new Map(archives.map((archive) => [archive.clientArchiveKey, archive])).values());
+}
+
+export async function importRoutinePlanArchives(userId: number, archives: RoutinePlanArchiveBackupInput[]) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable while backing up your completed plans.");
+  const uniqueArchives = deduplicateRoutinePlanArchiveInputs(archives);
+  const existingRows = await db.select({ clientArchiveKey: routinePlanArchives.clientArchiveKey }).from(routinePlanArchives).where(eq(routinePlanArchives.userId, userId));
+  const existingKeys = new Set(existingRows.map((row) => row.clientArchiveKey));
+  const missing = uniqueArchives.filter((archive) => !existingKeys.has(archive.clientArchiveKey));
+  if (missing.length) {
+    await db.insert(routinePlanArchives).values(missing.map((archive) => ({
+      userId,
+      clientArchiveKey: archive.clientArchiveKey,
+      selectedPracticeId: archive.selectedPracticeId,
+      startedAt: archive.startedAt,
+      endsAt: archive.endsAt,
+      archivedAt: archive.archivedAt,
+      completedDayKeys: JSON.stringify(archive.completedDayKeys),
+      completionNotes: JSON.stringify(archive.completionNotes),
+      reflectionNote: archive.reflectionNote,
+    })));
+  }
+  return { inserted: missing.length, existing: uniqueArchives.length - missing.length, total: existingKeys.size + missing.length };
+}
+
+export async function deleteRoutinePlanArchive(userId: number, archiveId: number) {
+  const existing = await getRoutinePlanArchiveById(userId, archiveId);
+  if (!existing) return false;
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable while deleting your archived plan.");
+  await db.delete(routinePlanArchives).where(and(eq(routinePlanArchives.id, archiveId), eq(routinePlanArchives.userId, userId)));
+  return true;
 }

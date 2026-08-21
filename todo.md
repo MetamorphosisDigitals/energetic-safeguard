@@ -204,3 +204,27 @@
 - [x] Add gentle 7-day and 14-day milestones plus a 21-day habit celebration.
 - [x] Add automated coverage and verify the three-part routine, counter, and milestones on desktop and mobile.
 - [x] Save a checkpoint containing the 21-day Daily Routine enhancement.
+- [x] Review the supplied moon and eclipse ritual material against the confirmed 18-ritual catalog and current dashboard cards.
+- [x] Assess safety, symbolic-support, accessibility, and content-governance implications of a Moon Rituals card.
+- [x] Recommend a specific Moon Rituals card scope and placement, then seek approval before implementation; implementation was declined by the user.
+- [x] Review the current routine-tracking data model, dashboard flow, safety routing, archive behavior, and tests for documentation accuracy.
+- [x] Export an updated application specification for the routine-tracking system.
+- [x] Export a code-structure reference for the routine-tracking system.
+- [x] Validate the exported documents against the implemented files and deliver them.
+- [x] Review the 7, 14, and 21-day milestone acceptance criteria and their current unit and browser coverage.
+- [x] Audit current cloud-backed versus browser-local routine and archive data boundaries.
+- [x] Outline a safe migration of archived daily-hygiene plans into the signed-in main dashboard history library.
+- [x] Export a team presentation script explaining the routine-tracking architecture, milestones, privacy, and migration plan.
+- [x] Validate and deliver the milestone review, migration plan, and presentation script.
+- [x] Review the current cloud schema, library router, database helpers, and ownership tests for routine-history design compatibility.
+- [x] Draft a user-owned completed routine-plan archive table and safe migration sequence.
+- [x] Draft protected routine-history API procedures, input validation, idempotent import, and ownership rules.
+- [x] Validate the schema and API draft against current project conventions and export it.
+- [x] Review full-stack conventions, the current cloud-backup draft, and existing local archive/dashboard flow before implementation.
+- [x] Add the routine-plan archive schema, migration, database helpers, and protected tRPC endpoints.
+- [x] Add a user-controlled automatic-backup preference scoped to completed routine-plan archives.
+- [x] Build dashboard UI for manual backup, automatic-backup preference, cloud archive summary, and recovery states.
+- [x] Add backend ownership, validation, idempotency, and automatic-backup preference tests.
+- [x] Add browser coverage for manual backup, automatic backup, signed-out recovery, and cloud archive visibility.
+- [x] Run migrations and validate the integrated feature.
+- [x] Save a checkpoint containing the routine-history cloud backup feature.

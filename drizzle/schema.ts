@@ -1,4 +1,4 @@
-import { index, int, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import { boolean, index, int, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 
 /** Core user table backing the authentication flow. */
 export const users = mysqlTable("users", {
@@ -61,10 +61,36 @@ export const userLibraryPreferences = mysqlTable("user_library_preferences", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
   dailyDefaultPracticeId: varchar("dailyDefaultPracticeId", { length: 96 }),
+  routineArchiveAutoBackup: boolean("routineArchiveAutoBackup").notNull().default(false),
   pinnedCustomTags: text("pinnedCustomTags"),
   defaultSavedFilterViewId: int("defaultSavedFilterViewId"),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => [uniqueIndex("user_library_preferences_user_unique").on(table.userId)]);
+
+/**
+ * A user-owned, opt-in cloud backup of a completed seven-day routine plan.
+ * Each browser-generated client archive key can appear once per user, making
+ * explicit and automatic backup retries idempotent.
+ */
+export const routinePlanArchives = mysqlTable("routine_plan_archives", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  clientArchiveKey: varchar("clientArchiveKey", { length: 128 }).notNull(),
+  selectedPracticeId: varchar("selectedPracticeId", { length: 96 }).notNull(),
+  startedAt: timestamp("startedAt").notNull(),
+  endsAt: timestamp("endsAt").notNull(),
+  archivedAt: timestamp("archivedAt").notNull(),
+  completedDayKeys: text("completedDayKeys").notNull(),
+  completionNotes: text("completionNotes").notNull(),
+  reflectionNote: text("reflectionNote"),
+  importedAt: timestamp("importedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("routine_plan_archives_user_client_key_unique").on(table.userId, table.clientArchiveKey),
+  index("routine_plan_archives_user_archived_idx").on(table.userId, table.archivedAt),
+  index("routine_plan_archives_user_practice_idx").on(table.userId, table.selectedPracticeId),
+]);
 
 /** User-owned reusable combinations of the existing note search and filter controls. */
 export const practiceSavedFilterViews = mysqlTable("practice_saved_filter_views", {
@@ -88,3 +114,5 @@ export type PremiumEntitlement = typeof premiumEntitlements.$inferSelect;
 export type InsertPremiumEntitlement = typeof premiumEntitlements.$inferInsert;
 export type PracticeHistory = typeof practiceHistory.$inferSelect;
 export type PracticeFavorite = typeof practiceFavorites.$inferSelect;
+export type RoutinePlanArchive = typeof routinePlanArchives.$inferSelect;
+export type InsertRoutinePlanArchive = typeof routinePlanArchives.$inferInsert;

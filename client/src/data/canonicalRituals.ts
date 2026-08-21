@@ -14,6 +14,12 @@ export function findCanonicalRitual(id: string | null | undefined) {
   return activeRituals.find((ritual) => ritual.id === id);
 }
 
+export function suggestAlternateCanonicalRitual(currentId: string | null | undefined) {
+  if (!activeRituals.length) return undefined;
+  const currentIndex = activeRituals.findIndex((ritual) => ritual.id === currentId);
+  return activeRituals[(currentIndex + 1 + activeRituals.length) % activeRituals.length];
+}
+
 export function findPracticeInCentralizedLibrary(id: string | null | undefined) {
   return centralizedPracticeLibrary.find((practice) => practice.id === id);
 }

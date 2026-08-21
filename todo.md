@@ -184,3 +184,11 @@
 - [x] Add an action that duplicates a completed plan into a new seven-day cycle with the same selected ritual.
 - [x] Add automated coverage and verify the completion summary and duplication flow on desktop and mobile.
 - [x] Save a checkpoint containing the completed-plan duplication refinement.
+- [x] Review private completed-plan data, canonical ritual metadata, and existing printable reflection export patterns.
+- [x] Add a private archive for completed seven-day daily-hygiene plans.
+- [x] Add a deterministic alternate ritual suggestion from the confirmed 18-ritual catalog after plan completion.
+- [x] Add a one-click printable summary for an archived completed plan.
+- [x] Add automated coverage and verify the archive, suggestion, and printable summary on desktop and mobile.
+- [x] Verify the printable archive popup contains the selected ritual, completion notes, and closing reflection.
+- [x] Verify the alternate ritual suggestion starts a new cycle with a different canonical ritual.
+- [x] Save a checkpoint containing the completed-plan archive enhancement.

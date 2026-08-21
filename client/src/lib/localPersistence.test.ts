@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
-  completeDailyHygieneForToday, createDailyHygieneReminder, createSevenDayCommitment, dismissDailyHygieneReminderForToday, duplicateDailyHygienePlan,
+  archiveDailyHygienePlan, completeDailyHygieneForToday, createDailyHygieneReminder, createSevenDayCommitment, dismissDailyHygieneReminderForToday, duplicateDailyHygienePlan,
   getDailyHygienePlanProgress,
-  hasCompletedDailyHygienePlan, hasCompletedOnboarding, isDailyHygieneReminderDue, loadDailyHygieneReminder, loadFreePracticeUsage,
+  hasCompletedDailyHygienePlan, hasCompletedOnboarding, isDailyHygieneReminderDue, loadArchivedDailyHygienePlans, loadDailyHygieneReminder, loadFreePracticeUsage,
   loadPreferences, loadSevenDayCommitment, recordCompletedFreePractice, reorderEnergyHygieneShortcuts, saveDailyHygieneReminder,
   saveOnboardingCompleted, savePreferences, saveSevenDayCommitment, setDailyHygieneNoteForToday, setDailyHygieneReflection,
 } from "./localPersistence";
@@ -84,5 +84,16 @@ describe("local persistence", () => {
     expect(hasCompletedDailyHygienePlan(completed, new Date("2026-08-20T12:00:00.000Z"))).toBe(true);
     const duplicate = duplicateDailyHygienePlan(completed);
     expect(duplicate).toMatchObject({ selectedPracticeId: "transition-pause", completedDayKeys: [], completionNotes: {}, reflectionNote: "", lastPromptDate: null });
+  });
+
+  it("archives completed plans privately and keeps their reflection available after the active plan changes", () => {
+    const completed = {
+      startedAt: "2026-08-14T09:00:00.000Z", endsAt: "2026-08-21T09:00:00.000Z", lastPromptDate: "2026-08-20",
+      completedDayKeys: ["2026-08-14", "2026-08-20"], selectedPracticeId: "transition-pause",
+      completionNotes: { "2026-08-20": "A calmer ending." }, reflectionNote: "I can keep what helped.",
+    };
+    const archived = archiveDailyHygienePlan(completed, new Date("2026-08-20T12:00:00.000Z"));
+    expect(archived[0]).toMatchObject({ id: "daily-plan-2026-08-14T09:00:00.000Z", selectedPracticeId: "transition-pause", reflectionNote: "I can keep what helped." });
+    expect(loadArchivedDailyHygienePlans()).toEqual(archived);
   });
 });

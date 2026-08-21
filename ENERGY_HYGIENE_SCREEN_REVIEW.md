@@ -31,3 +31,9 @@ The mobile Day 7 reflection screen keeps the selected ritual, completed-day coun
 The desktop dashboard places the completed-plan summary after the pathway selection, preserving the app’s primary entry points while giving the finished seven-day cycle a clear close. The selected ritual, completion count, private-reflection status, and **Repeat this plan** action are visible in one calm, compact band.
 
 On mobile, repeating the plan removes the completion summary and restores a clean **Day 1 of 7** progress card with a visible private in-app prompt. The refreshed cycle preserves the ritual choice but does not carry forward prior completion dates, daily notes, or closing reflection.
+
+## Completed Plan Archive Review
+
+The desktop dashboard presents the completed-plan summary before the private library, keeping the two follow-up choices clear: repeat the familiar ritual or try the deterministic alternate ritual. The archive row then provides the ritual name, completion count, saved-reflection status, and a compact **Print summary** action without competing with the primary dashboard pathways.
+
+On mobile, the repeat and alternate actions stack below the completion message, while each archived plan keeps its print action full-width and easy to reach. The private-storage message remains visible above the archive, making the browser-local scope explicit.

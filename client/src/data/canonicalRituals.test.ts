@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { energyHygieneMoments, supportFlows } from "./catalog";
-import { activeRituals, canonicalRituals, findPracticeInCentralizedLibrary } from "./canonicalRituals";
+import { activeRituals, canonicalRituals, findPracticeInCentralizedLibrary, suggestAlternateCanonicalRitual } from "./canonicalRituals";
 
 describe("canonical ritual adapter", () => {
   it("exposes the confirmed 18-ritual source of truth", () => {
@@ -19,5 +19,12 @@ describe("canonical ritual adapter", () => {
     for (const flow of supportFlows) {
       if (flow.suggestedPracticeId) expect(activeRituals.some((ritual) => ritual.id === flow.suggestedPracticeId)).toBe(true);
     }
+  });
+
+  it("suggests a different confirmed ritual after a completed plan", () => {
+    const alternative = suggestAlternateCanonicalRitual("transition-pause");
+    expect(alternative).toBeDefined();
+    expect(alternative?.id).not.toBe("transition-pause");
+    expect(activeRituals).toContainEqual(alternative);
   });
 });

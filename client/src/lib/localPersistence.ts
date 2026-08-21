@@ -11,6 +11,7 @@ export interface UserPreferences { practiceStyle: StoredPracticeStyle; reducedMo
 export interface SevenDayCommitment { practiceId: string; practiceName: string; startedAt: string; endsAt: string; }
 export interface DailyHygieneReminder { startedAt: string; endsAt: string; lastPromptDate: string | null; completedDayKeys: string[]; selectedPracticeId: string; completionNotes: Record<string, string>; reflectionNote: string; }
 export interface DailyHygienePlanProgress { currentDay: number; completedDays: number[]; completedCount: number; }
+export interface ArchivedDailyHygienePlan extends DailyHygieneReminder { id: string; archivedAt: string; }
 export interface FreePracticeUsage { completedCount: number; }
 
 const PREFERENCES_KEY = "energetic-safeguard:preferences:v1";
@@ -18,6 +19,7 @@ const COMMITMENT_KEY = "energetic-safeguard:seven-day-commitment:v1";
 const FREE_USAGE_KEY = "energetic-safeguard:free-practice-usage:v1";
 const ONBOARDING_KEY = "energetic-safeguard:onboarding-complete:v1";
 const DAILY_HYGIENE_REMINDER_KEY = "energetic-safeguard:daily-hygiene-reminder:v1";
+const DAILY_HYGIENE_ARCHIVE_KEY = "energetic-safeguard:daily-hygiene-archive:v1";
 const validStyles: StoredPracticeStyle[] = ["practical", "rose", "rose-crystal", "either", "choose"];
 const validEnergyHygieneShortcutIds: EnergyHygieneShortcutId[] = ["after-interaction", "daily-hygiene"];
 const defaults: UserPreferences = { practiceStyle: "choose", reducedMotion: false, textSize: "standard", energyHygieneShortcutIds: [] };
@@ -77,6 +79,8 @@ export function duplicateDailyHygienePlan(reminder: DailyHygieneReminder) { retu
 export function completeDailyHygieneForToday(reminder: DailyHygieneReminder): DailyHygieneReminder { const key = todayKey(); return { ...reminder, lastPromptDate: key, completedDayKeys: reminder.completedDayKeys.includes(key) ? reminder.completedDayKeys : [...reminder.completedDayKeys, key] }; }
 export function setDailyHygieneNoteForToday(reminder: DailyHygieneReminder, note: string, date = new Date()): DailyHygieneReminder { const key = todayKey(date); const normalized = note.trim().slice(0, 1000); const completionNotes = { ...reminder.completionNotes }; if (normalized) completionNotes[key] = normalized; else delete completionNotes[key]; return { ...reminder, completionNotes }; }
 export function setDailyHygieneReflection(reminder: DailyHygieneReminder, note: string): DailyHygieneReminder { return { ...reminder, reflectionNote: note.trim().slice(0, 1200) }; }
+export function loadArchivedDailyHygienePlans(): ArchivedDailyHygienePlan[] { const stored = readJson(DAILY_HYGIENE_ARCHIVE_KEY); if (!Array.isArray(stored)) return []; return stored.flatMap((value) => { if (!value || typeof value !== "object") return []; const plan = value as Partial<ArchivedDailyHygienePlan>; if (typeof plan.id !== "string" || typeof plan.archivedAt !== "string" || typeof plan.startedAt !== "string" || typeof plan.endsAt !== "string" || typeof plan.selectedPracticeId !== "string" || !Array.isArray(plan.completedDayKeys)) return []; const completionNotes = plan.completionNotes && typeof plan.completionNotes === "object" && !Array.isArray(plan.completionNotes) ? Object.fromEntries(Object.entries(plan.completionNotes).flatMap(([key, note]) => /^\d{4}-\d{2}-\d{2}$/.test(key) && typeof note === "string" && note.trim() ? [[key, note.trim().slice(0, 1000)]] : [])) : {}; return [{ id: plan.id, archivedAt: plan.archivedAt, startedAt: plan.startedAt, endsAt: plan.endsAt, lastPromptDate: typeof plan.lastPromptDate === "string" ? plan.lastPromptDate : null, completedDayKeys: Array.from(new Set(plan.completedDayKeys.filter((key): key is string => typeof key === "string" && /^\d{4}-\d{2}-\d{2}$/.test(key)))), selectedPracticeId: plan.selectedPracticeId, completionNotes, reflectionNote: typeof plan.reflectionNote === "string" ? plan.reflectionNote.slice(0, 1200) : "" }]; }).sort((left, right) => Date.parse(right.archivedAt) - Date.parse(left.archivedAt)).slice(0, 30); }
+export function archiveDailyHygienePlan(reminder: DailyHygieneReminder, archivedAt = new Date()): ArchivedDailyHygienePlan[] { const entry: ArchivedDailyHygienePlan = { ...reminder, id: `daily-plan-${reminder.startedAt}`, archivedAt: archivedAt.toISOString() }; const next = [entry, ...loadArchivedDailyHygienePlans().filter((plan) => plan.id !== entry.id)].slice(0, 30); writeJson(DAILY_HYGIENE_ARCHIVE_KEY, next); return next; }
 
 export function loadFreePracticeUsage(): FreePracticeUsage {
   const stored = readJson(FREE_USAGE_KEY) as Partial<FreePracticeUsage> | null;

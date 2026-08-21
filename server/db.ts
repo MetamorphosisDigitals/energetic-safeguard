@@ -309,8 +309,10 @@ export async function listRoutinePlanArchives(userId: number, limit = 20) {
 export async function getRoutinePlanArchiveSummary(userId: number) {
   const rows = await listRoutinePlanArchives(userId, 50);
   const latest = rows[0];
+  const lastBackupAt = rows.reduce<Date | null>((latestImport, row) => !latestImport || row.importedAt > latestImport ? row.importedAt : latestImport, null);
   return {
     count: rows.length,
+    lastBackupAt,
     latest: latest ? { id: latest.id, selectedPracticeId: latest.selectedPracticeId, archivedAt: latest.archivedAt, completedCount: latest.completedDayKeys.length } : null,
   };
 }
@@ -356,4 +358,13 @@ export async function deleteRoutinePlanArchive(userId: number, archiveId: number
   if (!db) throw new Error("Database is unavailable while deleting your archived plan.");
   await db.delete(routinePlanArchives).where(and(eq(routinePlanArchives.id, archiveId), eq(routinePlanArchives.userId, userId)));
   return true;
+}
+
+export async function updateRoutinePlanArchiveOrganization(userId: number, archiveId: number, input: { label: string | null; pinned: boolean }) {
+  const existing = await getRoutinePlanArchiveById(userId, archiveId);
+  if (!existing) return null;
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable while organizing your archived plan.");
+  await db.update(routinePlanArchives).set({ label: input.label, pinned: input.pinned }).where(and(eq(routinePlanArchives.id, archiveId), eq(routinePlanArchives.userId, userId)));
+  return getRoutinePlanArchiveById(userId, archiveId);
 }

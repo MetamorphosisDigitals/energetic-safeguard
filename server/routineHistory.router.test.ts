@@ -9,6 +9,7 @@ const database = vi.hoisted(() => ({
   listRoutinePlanArchives: vi.fn(),
   setRoutineArchiveAutoBackup: vi.fn(),
   deleteRoutinePlanArchive: vi.fn(),
+  updateRoutinePlanArchiveOrganization: vi.fn(),
 }));
 
 vi.mock("./db", () => database);
@@ -37,24 +38,27 @@ const archive = {
 describe("routineHistory router", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    database.getRoutinePlanArchiveSummary.mockResolvedValue({ count: 0, latest: null });
+    database.getRoutinePlanArchiveSummary.mockResolvedValue({ count: 0, latest: null, lastBackupAt: null });
     database.listRoutinePlanArchives.mockResolvedValue([]);
     database.getRoutinePlanArchiveById.mockResolvedValue(null);
     database.importRoutinePlanArchives.mockResolvedValue({ inserted: 1, existing: 0, total: 1 });
     database.getRoutineArchiveAutoBackup.mockResolvedValue(false);
     database.setRoutineArchiveAutoBackup.mockResolvedValue(true);
     database.deleteRoutinePlanArchive.mockResolvedValue(true);
+    database.updateRoutinePlanArchiveOrganization.mockResolvedValue(null);
   });
 
-  it("scopes archive summary, listing, reading, and deletion to the authenticated user", async () => {
+  it("scopes archive summary, listing, reading, restoration, and deletion to the authenticated user", async () => {
     const caller = appRouter.createCaller(createContext(17));
     await caller.routineHistory.summary();
     await caller.routineHistory.list({ limit: 12 });
     await caller.routineHistory.get({ archiveId: 9 });
+    await caller.routineHistory.restore({ archiveId: 9 });
     await caller.routineHistory.delete({ archiveId: 9 });
     expect(database.getRoutinePlanArchiveSummary).toHaveBeenCalledWith(17);
     expect(database.listRoutinePlanArchives).toHaveBeenCalledWith(17, 12);
     expect(database.getRoutinePlanArchiveById).toHaveBeenCalledWith(17, 9);
+    expect(database.getRoutinePlanArchiveById).toHaveBeenCalledTimes(2);
     expect(database.deleteRoutinePlanArchive).toHaveBeenCalledWith(17, 9);
   });
 
@@ -83,5 +87,12 @@ describe("routineHistory router", () => {
     await caller.routineHistory.setAutoBackup({ enabled: true });
     expect(database.getRoutineArchiveAutoBackup).toHaveBeenCalledWith(31);
     expect(database.setRoutineArchiveAutoBackup).toHaveBeenCalledWith(31, true);
+  });
+
+  it("validates and scopes cloud-plan labels and pinning under the authenticated user", async () => {
+    const caller = appRouter.createCaller(createContext(51));
+    await caller.routineHistory.organize({ archiveId: 7, label: "A calmer week", pinned: true });
+    expect(database.updateRoutinePlanArchiveOrganization).toHaveBeenCalledWith(51, 7, { label: "A calmer week", pinned: true });
+    await expect(caller.routineHistory.organize({ archiveId: 7, label: " ", pinned: false })).rejects.toThrow();
   });
 });

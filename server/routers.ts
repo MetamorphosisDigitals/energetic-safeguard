@@ -4,7 +4,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { deletePracticeFilterView, deleteRoutinePlanArchive, getDailyDefaultPracticeId, getDefaultPracticeFilterView, getPinnedCustomTags, getPremiumEntitlement, getRoutineArchiveAutoBackup, getRoutinePlanArchiveById, getRoutinePlanArchiveSummary, importRoutinePlanArchives, listPracticeFavorites, listPracticeHistory, listRoutinePlanArchives, listSavedPracticeFilterViews, listUserCustomTags, recordPracticeCompletion, removePracticeFavorite, replaceUserCustomTag, savePracticeFavorite, savePracticeFilterView, setDailyDefaultPractice, setDefaultPracticeFilterView, setPinnedCustomTags, setRoutineArchiveAutoBackup, updatePracticeHistoryNote, updatePracticeHistoryReflection } from "./db";
+import { deletePracticeFilterView, deleteRoutinePlanArchive, getDailyDefaultPracticeId, getDefaultPracticeFilterView, getPinnedCustomTags, getPremiumEntitlement, getRoutineArchiveAutoBackup, getRoutinePlanArchiveById, getRoutinePlanArchiveSummary, importRoutinePlanArchives, listPracticeFavorites, listPracticeHistory, listRoutinePlanArchives, listSavedPracticeFilterViews, listUserCustomTags, recordPracticeCompletion, removePracticeFavorite, replaceUserCustomTag, savePracticeFavorite, savePracticeFilterView, setDailyDefaultPractice, setDefaultPracticeFilterView, setPinnedCustomTags, setRoutineArchiveAutoBackup, updatePracticeHistoryNote, updatePracticeHistoryReflection, updateRoutinePlanArchiveOrganization } from "./db";
 import { premiumOffers } from "./payments/products";
 import { isCanonicalRitualId } from "@shared/canonicalRitualIds";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -143,6 +143,9 @@ export const appRouter = router({
     get: protectedProcedure
       .input(z.object({ archiveId: z.number().int().positive() }))
       .query(({ ctx, input }) => getRoutinePlanArchiveById(ctx.user.id, input.archiveId)),
+    restore: protectedProcedure
+      .input(z.object({ archiveId: z.number().int().positive() }))
+      .mutation(({ ctx, input }) => getRoutinePlanArchiveById(ctx.user.id, input.archiveId)),
     importLocalArchives: protectedProcedure
       .input(z.object({ archives: z.array(routineArchiveInputSchema).min(1).max(30) }))
       .mutation(({ ctx, input }) => importRoutinePlanArchives(ctx.user.id, input.archives.map((archive) => ({
@@ -159,6 +162,9 @@ export const appRouter = router({
     delete: protectedProcedure
       .input(z.object({ archiveId: z.number().int().positive() }))
       .mutation(async ({ ctx, input }) => ({ success: await deleteRoutinePlanArchive(ctx.user.id, input.archiveId) })),
+    organize: protectedProcedure
+      .input(z.object({ archiveId: z.number().int().positive(), label: z.string().trim().min(1).max(120).nullable(), pinned: z.boolean() }))
+      .mutation(({ ctx, input }) => updateRoutinePlanArchiveOrganization(ctx.user.id, input.archiveId, { label: input.label, pinned: input.pinned })),
   }),
 });
 

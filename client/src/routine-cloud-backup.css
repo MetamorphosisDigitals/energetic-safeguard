@@ -113,6 +113,47 @@
   margin: 0;
 }
 
+.routine-cloud-sync-status {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  width: min(100% - 2rem, 72rem);
+  margin: .75rem auto 0;
+  padding: .8rem 1rem;
+  border: 1px solid rgba(111, 137, 113, .22);
+  border-radius: 1rem;
+  color: #48684d;
+  background: rgba(236, 246, 237, .76);
+}
+
+.routine-cloud-sync-status > div { display: grid; gap: .08rem; min-width: 0; }
+.routine-cloud-sync-status b { font-size: .88rem; }
+.routine-cloud-sync-status small { color: #58755d; font-size: .76rem; }
+.routine-cloud-sync-status .text-button { margin-left: auto; white-space: nowrap; }
+
+.routine-cloud-history-screen { width: min(100% - 2rem, 52rem); margin: 0 auto; padding: 1.25rem 0 3rem; }
+.routine-cloud-history-card { display: grid; gap: 1rem; }
+.routine-cloud-history-card > p:not(.eyebrow) { color: #785f75; line-height: 1.55; }
+.routine-cloud-history-card__mark { display: grid; width: 3rem; height: 3rem; place-items: center; border-radius: 50%; color: #a46575; background: rgba(208, 156, 153, .16); }
+.routine-cloud-history-search { display: flex; align-items: center; gap: .55rem; padding: .6rem .75rem; border: 1px solid rgba(94, 59, 48, .18); border-radius: .8rem; color: #8c6d7d; background: #fffaf5; }
+.routine-cloud-history-search input, .routine-cloud-history-item__label input { width: 100%; border: 0; outline: 0; color: #4e374a; background: transparent; font: inherit; }
+.routine-cloud-history-list { display: grid; gap: .7rem; }
+.routine-cloud-history-item { display: grid; gap: .7rem; padding: .9rem; border: 1px solid rgba(94, 59, 48, .12); border-radius: 1rem; background: rgba(255, 252, 248, .72); }
+.routine-cloud-history-item.is-pinned { border-color: rgba(164, 101, 117, .36); box-shadow: 0 8px 18px rgba(137, 87, 100, .07); }
+.routine-cloud-history-item__heading { display: flex; align-items: flex-start; gap: .65rem; }
+.routine-cloud-history-item__heading > span { display: grid; width: 2rem; height: 2rem; flex: 0 0 auto; place-items: center; border-radius: 50%; color: #a46575; background: rgba(208, 156, 153, .15); }
+.routine-cloud-history-item__heading > div { display: grid; gap: .1rem; min-width: 0; }
+.routine-cloud-history-item__heading b { color: #4b3547; }
+.routine-cloud-history-item__heading small { color: #785f75; font-size: .77rem; line-height: 1.35; }
+.routine-cloud-history-item__pin { display: grid; width: 2rem; height: 2rem; place-items: center; margin-left: auto; border: 1px solid rgba(94, 59, 48, .16); border-radius: 50%; color: #8b6d7c; background: transparent; }
+.routine-cloud-history-item__pin.is-pinned { color: #a46575; border-color: rgba(164, 101, 117, .35); background: rgba(208, 156, 153, .14); }
+.routine-cloud-history-item__label { display: grid; gap: .3rem; color: #785f75; font-size: .75rem; }
+.routine-cloud-history-item__label input { padding: .5rem .6rem; border: 1px solid rgba(94, 59, 48, .14); border-radius: .65rem; background: #fffdf9; }
+.routine-cloud-history-item__actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.routine-cloud-history-item__delete { margin-left: auto; color: #a05b63; }
+.routine-cloud-history-item__delete-confirm { display: inline-flex; align-items: center; gap: .35rem; padding: .55rem .7rem; border: 0; border-radius: .65rem; color: #fff; background: #a05b63; font: inherit; font-size: .8rem; }
+.routine-cloud-history-item__warning { display: flex; align-items: center; gap: .35rem; margin: 0; color: #8b5c45; font-size: .76rem; }
+
 @media (max-width: 620px) {
   .routine-cloud-backup__recovery,
   .routine-cloud-backup__status {
@@ -124,4 +165,10 @@
   .routine-cloud-backup__status .secondary-button {
     width: 100%;
   }
+
+  .routine-cloud-sync-status { align-items: flex-start; flex-wrap: wrap; }
+  .routine-cloud-sync-status .text-button { width: 100%; margin-left: 0; justify-content: flex-start; }
+  .routine-cloud-history-screen { width: min(100% - 1.25rem, 52rem); }
+  .routine-cloud-history-item__actions .secondary-button { width: 100%; justify-content: center; }
+  .routine-cloud-history-item__delete { margin-left: 0; }
 }

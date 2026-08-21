@@ -4,7 +4,7 @@ import {
   getDailyHygienePlanProgress,
   hasCompletedDailyHygienePlan, hasCompletedOnboarding, isDailyHygieneReminderDue, loadArchivedDailyHygienePlans, loadDailyHygieneReminder, loadFreePracticeUsage,
   loadDailyRoutine, loadPreferences, loadSevenDayCommitment, recordCompletedFreePractice, recordDailyRoutineOpening, reorderEnergyHygieneShortcuts, saveDailyHygieneReminder,
-  saveDailyRoutine, saveOnboardingCompleted, savePreferences, saveSevenDayCommitment, setDailyHygieneNoteForToday, setDailyHygieneReflection, setDailyRoutineRitual,
+  restoreArchivedDailyHygienePlan, saveDailyRoutine, saveOnboardingCompleted, savePreferences, saveSevenDayCommitment, setDailyHygieneNoteForToday, setDailyHygieneReflection, setDailyRoutineRitual,
 } from "./localPersistence";
 
 function createMemoryStorage() {
@@ -95,6 +95,18 @@ describe("local persistence", () => {
     const archived = archiveDailyHygienePlan(completed, new Date("2026-08-20T12:00:00.000Z"));
     expect(archived[0]).toMatchObject({ id: "daily-plan-2026-08-14T09:00:00.000Z", selectedPracticeId: "transition-pause", reflectionNote: "I can keep what helped." });
     expect(loadArchivedDailyHygienePlans()).toEqual(archived);
+  });
+
+  it("restores a selected cloud copy into the private device archive without duplicating its archive key", () => {
+    const completed = {
+      startedAt: "2026-08-14T09:00:00.000Z", endsAt: "2026-08-21T09:00:00.000Z", lastPromptDate: "2026-08-20",
+      completedDayKeys: ["2026-08-14", "2026-08-20"], selectedPracticeId: "transition-pause",
+      completionNotes: { "2026-08-20": "A calmer ending." }, reflectionNote: "I can keep what helped.",
+    };
+    const archived = archiveDailyHygienePlan(completed, new Date("2026-08-20T12:00:00.000Z"))[0]!;
+    expect(restoreArchivedDailyHygienePlan(archived)).toHaveLength(1);
+    expect(restoreArchivedDailyHygienePlan(archived)).toHaveLength(1);
+    expect(loadArchivedDailyHygienePlans()[0]).toMatchObject({ id: archived.id, reflectionNote: archived.reflectionNote });
   });
 
   it("stores three selected routine rituals and counts daily openings through the 7, 14, and 21-day milestones", () => {

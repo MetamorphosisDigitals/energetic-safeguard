@@ -24,6 +24,9 @@ async function seedLocalArchive(page: Parameters<typeof test>[0] extends never ?
 async function mockSignedInBackupApi(page: Parameters<typeof test>[0] extends never ? never : any, automatic = false) {
   let imports = 0;
   let preferenceUpdates = 0;
+  let organizationUpdates = 0;
+  let deleted = false;
+  const cloudPlan = { id: 44, clientArchiveKey: localArchive.id, selectedPracticeId: "transition-pause", startedAt: localArchive.startedAt, endsAt: localArchive.endsAt, archivedAt: localArchive.archivedAt, importedAt: "2026-08-21T10:01:00.000Z", completedDayKeys: localArchive.completedDayKeys, completionNotes: localArchive.completionNotes, reflectionNote: localArchive.reflectionNote, label: null, pinned: false };
   await page.route("**/api/trpc/**", async (route: any) => {
     const endpoints = new URL(route.request().url()).pathname.split("/api/trpc/")[1]?.split(",") ?? [];
     const payloadFor = (endpoint: string) => {
@@ -31,8 +34,11 @@ async function mockSignedInBackupApi(page: Parameters<typeof test>[0] extends ne
       if (endpoint === "premium.status") return { hasPremiumAccess: true };
       if (endpoint === "library.history" || endpoint === "library.favorites") return [];
       if (endpoint === "library.dailyDefault") return null;
-      if (endpoint === "routineHistory.summary") return { count: 1, latest: { id: 44, selectedPracticeId: "transition-pause", archivedAt: "2026-08-21T10:00:00.000Z", completedCount: 2 } };
-      if (endpoint === "routineHistory.list") return [{ id: 44, selectedPracticeId: "transition-pause", archivedAt: "2026-08-21T10:00:00.000Z", completedDayKeys: ["2026-08-14", "2026-08-20"], completionNotes: { "2026-08-20": "A calmer ending." }, reflectionNote: "I can keep what helped." }];
+      if (endpoint === "routineHistory.summary") return { count: deleted ? 0 : 1, lastBackupAt: "2026-08-21T10:01:00.000Z", latest: deleted ? null : { id: 44, selectedPracticeId: "transition-pause", archivedAt: "2026-08-21T10:00:00.000Z", completedCount: 2 } };
+      if (endpoint === "routineHistory.list") return deleted ? [] : [cloudPlan];
+      if (endpoint === "routineHistory.restore") return cloudPlan;
+      if (endpoint === "routineHistory.organize") { organizationUpdates += 1; return cloudPlan; }
+      if (endpoint === "routineHistory.delete") { deleted = true; return { success: true }; }
       if (endpoint === "routineHistory.autoBackup") return automatic;
       if (endpoint === "routineHistory.importLocalArchives") { imports += 1; return { inserted: 1, existing: 0, total: 2 }; }
       if (endpoint === "routineHistory.setAutoBackup") { preferenceUpdates += 1; return true; }
@@ -40,7 +46,7 @@ async function mockSignedInBackupApi(page: Parameters<typeof test>[0] extends ne
     };
     await route.fulfill({ contentType: "application/json", body: JSON.stringify(endpoints.map((endpoint: string) => ({ result: { data: { json: payloadFor(endpoint) } } }))) });
   });
-  return { getImports: () => imports, getPreferenceUpdates: () => preferenceUpdates };
+  return { getImports: () => imports, getPreferenceUpdates: () => preferenceUpdates, getOrganizationUpdates: () => organizationUpdates };
 }
 
 test.describe("Routine History cloud backup", () => {
@@ -72,5 +78,29 @@ test.describe("Routine History cloud backup", () => {
     await page.goto("/");
     await expect.poll(api.getImports).toBe(1);
     await expect(page.getByRole("checkbox", { name: /Automatically back up completed plans/i })).toBeChecked();
+  });
+
+  test("shows last backup status and restores a selected cloud plan to this device", async ({ page }) => {
+    await seedLocalArchive(page);
+    await mockSignedInBackupApi(page);
+    await page.goto("/");
+    await expect(page.getByText("Last backup", { exact: false })).toBeVisible();
+    await page.getByRole("button", { name: "Manage cloud plans" }).click();
+    await expect(page.getByRole("heading", { name: "Completed plans in your account." })).toBeVisible();
+    await page.getByRole("button", { name: "Restore to this device" }).click();
+    await expect(page.getByRole("heading", { name: "Completed seven-day plans" })).toBeVisible();
+    await expect.poll(() => page.evaluate((key) => JSON.parse(window.localStorage.getItem(key) ?? "[]").length, archiveKey)).toBe(1);
+  });
+
+  test("lets a user organize and delete a specific cloud plan", async ({ page }) => {
+    await seedLocalArchive(page);
+    const api = await mockSignedInBackupApi(page);
+    await page.goto("/");
+    await page.getByRole("button", { name: "Manage cloud plans" }).click();
+    await page.getByRole("button", { name: "Pin this cloud plan" }).click();
+    await expect.poll(api.getOrganizationUpdates).toBe(1);
+    await page.getByRole("button", { name: "Delete" }).click();
+    await page.getByRole("button", { name: "Delete cloud copy" }).click();
+    await expect(page.getByText("No matching cloud plans")).toBeVisible();
   });
 });

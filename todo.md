@@ -228,3 +228,10 @@
 - [x] Add browser coverage for manual backup, automatic backup, signed-out recovery, and cloud archive visibility.
 - [x] Run migrations and validate the integrated feature.
 - [x] Save a checkpoint containing the routine-history cloud backup feature.
+- [x] Review cloud archive procedures, local archive storage, and dashboard integration points for restore and management design.
+- [x] Add ownership-scoped cloud-plan restore and sync-status API support.
+- [x] Add dashboard last-backup and sync-status indicators.
+- [x] Add a cloud routine-history management view with restore, organize, and delete controls.
+- [x] Add backend and browser coverage for cloud restore, status, organization, and deletion flows.
+- [x] Validate the integrated cloud-management feature.
+- [x] Save a checkpoint containing the cloud-management enhancement.

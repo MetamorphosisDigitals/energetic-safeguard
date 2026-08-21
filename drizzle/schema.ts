@@ -83,6 +83,8 @@ export const routinePlanArchives = mysqlTable("routine_plan_archives", {
   completedDayKeys: text("completedDayKeys").notNull(),
   completionNotes: text("completionNotes").notNull(),
   reflectionNote: text("reflectionNote"),
+  label: varchar("label", { length: 120 }),
+  pinned: boolean("pinned").notNull().default(false),
   importedAt: timestamp("importedAt").defaultNow().notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -90,6 +92,7 @@ export const routinePlanArchives = mysqlTable("routine_plan_archives", {
   uniqueIndex("routine_plan_archives_user_client_key_unique").on(table.userId, table.clientArchiveKey),
   index("routine_plan_archives_user_archived_idx").on(table.userId, table.archivedAt),
   index("routine_plan_archives_user_practice_idx").on(table.userId, table.selectedPracticeId),
+  index("routine_plan_archives_user_pinned_idx").on(table.userId, table.pinned),
 ]);
 
 /** User-owned reusable combinations of the existing note search and filter controls. */

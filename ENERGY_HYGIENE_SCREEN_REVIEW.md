@@ -37,3 +37,9 @@ On mobile, repeating the plan removes the completion summary and restores a clea
 The desktop dashboard presents the completed-plan summary before the private library, keeping the two follow-up choices clear: repeat the familiar ritual or try the deterministic alternate ritual. The archive row then provides the ritual name, completion count, saved-reflection status, and a compact **Print summary** action without competing with the primary dashboard pathways.
 
 On mobile, the repeat and alternate actions stack below the completion message, while each archived plan keeps its print action full-width and easy to reach. The private-storage message remains visible above the archive, making the browser-local scope explicit.
+
+## Daily Routine Quick Access Review
+
+The desktop dashboard now includes a persistent **Daily Routine** card immediately after the pathway choices. Its clear setup action gives users a direct route to create or resume their daily energy-hygiene rhythm without relying on a saved shortcut or reminder prompt.
+
+On mobile, the card stays fully visible beneath the pathway cards, with the primary action spanning the available width. The label, supportive copy, and one-tap setup action remain legible and distinct from the more general energy-hygiene pathway card.

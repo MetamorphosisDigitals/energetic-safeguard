@@ -192,3 +192,8 @@
 - [x] Verify the printable archive popup contains the selected ritual, completion notes, and closing reflection.
 - [x] Verify the alternate ritual suggestion starts a new cycle with a different canonical ritual.
 - [x] Save a checkpoint containing the completed-plan archive enhancement.
+- [x] Review current home-dashboard ordering and daily-hygiene route states for a persistent Daily Routine entry.
+- [x] Add an always-visible Daily Routine quick-access card to the home dashboard.
+- [x] Route the card to begin a fresh routine or resume the active daily-hygiene plan with one tap.
+- [x] Add browser coverage and verify the Daily Routine card on desktop and mobile.
+- [x] Save a checkpoint containing the Daily Routine quick-access refinement.

@@ -150,7 +150,7 @@ test.describe("Energy hygiene split", () => {
     await page.reload();
 
     await expect(page.getByRole("heading", { name: "You completed your gentle rhythm." })).toBeVisible();
-    await expect(page.getByText("Transition Pause")).toBeVisible();
+    await expect(page.getByText("Transition Pause", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Repeat this plan" }).click();
 
     await expect(page.getByRole("heading", { name: "Day 1 of 7" })).toBeVisible();

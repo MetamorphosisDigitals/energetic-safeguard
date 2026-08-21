@@ -12,6 +12,9 @@ export interface SevenDayCommitment { practiceId: string; practiceName: string; 
 export interface DailyHygieneReminder { startedAt: string; endsAt: string; lastPromptDate: string | null; completedDayKeys: string[]; selectedPracticeId: string; completionNotes: Record<string, string>; reflectionNote: string; }
 export interface DailyHygienePlanProgress { currentDay: number; completedDays: number[]; completedCount: number; }
 export interface ArchivedDailyHygienePlan extends DailyHygieneReminder { id: string; archivedAt: string; }
+export type DailyRoutineSlot = "morning" | "protection" | "evening";
+export interface DailyRoutine { selectedPracticeIds: Record<DailyRoutineSlot, string | null>; openedDayCount: number; lastOpenedDate: string | null; lastCelebratedMilestone: 7 | 14 | 21 | null; }
+export interface DailyRoutineOpening { routine: DailyRoutine; milestone: 7 | 14 | 21 | null; }
 export interface FreePracticeUsage { completedCount: number; }
 
 const PREFERENCES_KEY = "energetic-safeguard:preferences:v1";
@@ -20,6 +23,7 @@ const FREE_USAGE_KEY = "energetic-safeguard:free-practice-usage:v1";
 const ONBOARDING_KEY = "energetic-safeguard:onboarding-complete:v1";
 const DAILY_HYGIENE_REMINDER_KEY = "energetic-safeguard:daily-hygiene-reminder:v1";
 const DAILY_HYGIENE_ARCHIVE_KEY = "energetic-safeguard:daily-hygiene-archive:v1";
+const DAILY_ROUTINE_KEY = "energetic-safeguard:daily-routine:v1";
 const validStyles: StoredPracticeStyle[] = ["practical", "rose", "rose-crystal", "either", "choose"];
 const validEnergyHygieneShortcutIds: EnergyHygieneShortcutId[] = ["after-interaction", "daily-hygiene"];
 const defaults: UserPreferences = { practiceStyle: "choose", reducedMotion: false, textSize: "standard", energyHygieneShortcutIds: [] };
@@ -55,6 +59,13 @@ export function createSevenDayCommitment(practiceId: string, practiceName: strin
 export function remainingCommitmentDays(commitment: SevenDayCommitment) { return Math.max(1, Math.ceil((Date.parse(commitment.endsAt) - Date.now()) / 86_400_000)); }
 
 function todayKey(date = new Date()) { return date.toISOString().slice(0, 10); }
+const routineSlots: DailyRoutineSlot[] = ["morning", "protection", "evening"];
+const emptyDailyRoutine = (): DailyRoutine => ({ selectedPracticeIds: { morning: null, protection: null, evening: null }, openedDayCount: 0, lastOpenedDate: null, lastCelebratedMilestone: null });
+export function loadDailyRoutine(): DailyRoutine { const stored = readJson(DAILY_ROUTINE_KEY) as Partial<DailyRoutine> | null; if (!stored || !stored.selectedPracticeIds || typeof stored.selectedPracticeIds !== "object") return emptyDailyRoutine(); const selectedPracticeIds = Object.fromEntries(routineSlots.map((slot) => [slot, typeof stored.selectedPracticeIds?.[slot] === "string" && stored.selectedPracticeIds[slot] ? stored.selectedPracticeIds[slot] : null])) as Record<DailyRoutineSlot, string | null>; const openedDayCount = typeof stored.openedDayCount === "number" && Number.isInteger(stored.openedDayCount) ? Math.max(0, Math.min(21, stored.openedDayCount)) : 0; const lastOpenedDate = typeof stored.lastOpenedDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(stored.lastOpenedDate) ? stored.lastOpenedDate : null; const lastCelebratedMilestone = stored.lastCelebratedMilestone === 7 || stored.lastCelebratedMilestone === 14 || stored.lastCelebratedMilestone === 21 ? stored.lastCelebratedMilestone : null; return { selectedPracticeIds, openedDayCount, lastOpenedDate, lastCelebratedMilestone }; }
+export function saveDailyRoutine(routine: DailyRoutine) { writeJson(DAILY_ROUTINE_KEY, routine); }
+export function createDailyRoutine() { return emptyDailyRoutine(); }
+export function setDailyRoutineRitual(routine: DailyRoutine, slot: DailyRoutineSlot, practiceId: string | null): DailyRoutine { return { ...routine, selectedPracticeIds: { ...routine.selectedPracticeIds, [slot]: practiceId } }; }
+export function recordDailyRoutineOpening(routine: DailyRoutine, now = new Date()): DailyRoutineOpening { const currentDate = todayKey(now); if (routine.lastOpenedDate === currentDate) return { routine, milestone: null }; const previousDate = routine.lastOpenedDate ? Date.parse(`${routine.lastOpenedDate}T00:00:00.000Z`) : NaN; const currentTimestamp = Date.parse(`${currentDate}T00:00:00.000Z`); const dayGap = Number.isNaN(previousDate) ? null : Math.round((currentTimestamp - previousDate) / 86_400_000); const openedDayCount = dayGap === 1 ? Math.min(21, routine.openedDayCount + 1) : 1; const candidate = openedDayCount === 7 || openedDayCount === 14 || openedDayCount === 21 ? openedDayCount : null; const milestone = candidate && routine.lastCelebratedMilestone !== candidate ? candidate : null; return { routine: { ...routine, openedDayCount, lastOpenedDate: currentDate, lastCelebratedMilestone: milestone ?? routine.lastCelebratedMilestone }, milestone }; }
 export function loadDailyHygieneReminder(): DailyHygieneReminder | null {
   const stored = readJson(DAILY_HYGIENE_REMINDER_KEY) as Partial<DailyHygieneReminder> | null;
   const startedAt = stored?.startedAt;

@@ -12,16 +12,15 @@ test.describe("Daily Routine dashboard card", () => {
   });
 
   test("is always visible and opens Daily Routine setup in one tap", async ({ page }) => {
-    await expect(page.getByRole("heading", { name: "A small ritual for your energy." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Three small returns to yourself." })).toBeVisible();
     await page.getByRole("button", { name: "Set up daily routine" }).click();
-    await expect(page.getByRole("heading", { name: "Care for your capacity before the day spends it." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Choose your three gentle rituals." })).toBeVisible();
   });
 
-  test("opens an active daily plan from the card", async ({ page }) => {
-    await page.getByRole("button", { name: "Set up daily routine" }).click();
-    await page.getByRole("button", { name: "Start a private seven-day reminder" }).click();
-    await page.getByRole("button", { name: "Return to home" }).click();
+  test("opens an active three-part routine from the card", async ({ page }) => {
+    await page.evaluate(() => window.localStorage.setItem("energetic-safeguard:daily-routine:v1", JSON.stringify({ selectedPracticeIds: { morning: "feet-breath-intention", protection: "pocket-anchor", evening: "end-of-day-release" }, openedDayCount: 2, lastOpenedDate: new Date(Date.now() - 86_400_000).toISOString().slice(0, 10), lastCelebratedMilestone: null })));
+    await page.reload();
     await page.getByRole("button", { name: "Open daily routine" }).click();
-    await expect(page.getByRole("heading", { name: "Care for your capacity before the day spends it." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Choose your three gentle rituals." })).toBeVisible();
   });
 });

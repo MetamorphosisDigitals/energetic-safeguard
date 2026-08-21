@@ -43,3 +43,9 @@ On mobile, the repeat and alternate actions stack below the completion message, 
 The desktop dashboard now includes a persistent **Daily Routine** card immediately after the pathway choices. Its clear setup action gives users a direct route to create or resume their daily energy-hygiene rhythm without relying on a saved shortcut or reminder prompt.
 
 On mobile, the card stays fully visible beneath the pathway cards, with the primary action spanning the available width. The label, supportive copy, and one-tap setup action remain legible and distinct from the more general energy-hygiene pathway card.
+
+## Three-Part Daily Routine Review
+
+The desktop configuration screen groups the routine into clear **Morning Check-In**, **Energy Protection**, and **End-of-Day Cleaning** slots. Each group offers only relevant canonical rituals, while the 21-day celebration appears above the choices and the three practice-launch actions remain grouped at the end.
+
+On mobile, the routine choices stack into focused sections without truncating the ritual descriptions. The 21-day celebration appears before the selections, and the three opening actions become full-width controls, making each part of the daily rhythm easy to reach.

@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
-  archiveDailyHygienePlan, completeDailyHygieneForToday, createDailyHygieneReminder, createSevenDayCommitment, dismissDailyHygieneReminderForToday, duplicateDailyHygienePlan,
+  archiveDailyHygienePlan, completeDailyHygieneForToday, createDailyHygieneReminder, createDailyRoutine, createSevenDayCommitment, dismissDailyHygieneReminderForToday, duplicateDailyHygienePlan,
   getDailyHygienePlanProgress,
   hasCompletedDailyHygienePlan, hasCompletedOnboarding, isDailyHygieneReminderDue, loadArchivedDailyHygienePlans, loadDailyHygieneReminder, loadFreePracticeUsage,
-  loadPreferences, loadSevenDayCommitment, recordCompletedFreePractice, reorderEnergyHygieneShortcuts, saveDailyHygieneReminder,
-  saveOnboardingCompleted, savePreferences, saveSevenDayCommitment, setDailyHygieneNoteForToday, setDailyHygieneReflection,
+  loadDailyRoutine, loadPreferences, loadSevenDayCommitment, recordCompletedFreePractice, recordDailyRoutineOpening, reorderEnergyHygieneShortcuts, saveDailyHygieneReminder,
+  saveDailyRoutine, saveOnboardingCompleted, savePreferences, saveSevenDayCommitment, setDailyHygieneNoteForToday, setDailyHygieneReflection, setDailyRoutineRitual,
 } from "./localPersistence";
 
 function createMemoryStorage() {
@@ -95,5 +95,20 @@ describe("local persistence", () => {
     const archived = archiveDailyHygienePlan(completed, new Date("2026-08-20T12:00:00.000Z"));
     expect(archived[0]).toMatchObject({ id: "daily-plan-2026-08-14T09:00:00.000Z", selectedPracticeId: "transition-pause", reflectionNote: "I can keep what helped." });
     expect(loadArchivedDailyHygienePlans()).toEqual(archived);
+  });
+
+  it("stores three selected routine rituals and counts daily openings through the 7, 14, and 21-day milestones", () => {
+    let routine = setDailyRoutineRitual(createDailyRoutine(), "morning", "feet-breath-intention");
+    routine = setDailyRoutineRitual(routine, "protection", "pocket-anchor");
+    routine = setDailyRoutineRitual(routine, "evening", "end-of-day-release");
+    saveDailyRoutine(routine);
+    expect(loadDailyRoutine().selectedPracticeIds).toEqual({ morning: "feet-breath-intention", protection: "pocket-anchor", evening: "end-of-day-release" });
+    routine = { ...routine, openedDayCount: 6, lastOpenedDate: "2026-08-19", lastCelebratedMilestone: null };
+    const daySeven = recordDailyRoutineOpening(routine, new Date("2026-08-20T10:00:00.000Z"));
+    expect(daySeven).toMatchObject({ milestone: 7, routine: { openedDayCount: 7, lastOpenedDate: "2026-08-20" } });
+    const dayFourteen = recordDailyRoutineOpening({ ...daySeven.routine, openedDayCount: 13, lastOpenedDate: "2026-08-26", lastCelebratedMilestone: 7 }, new Date("2026-08-27T10:00:00.000Z"));
+    expect(dayFourteen.milestone).toBe(14);
+    const dayTwentyOne = recordDailyRoutineOpening({ ...dayFourteen.routine, openedDayCount: 20, lastOpenedDate: "2026-09-02", lastCelebratedMilestone: 14 }, new Date("2026-09-03T10:00:00.000Z"));
+    expect(dayTwentyOne).toMatchObject({ milestone: 21, routine: { openedDayCount: 21 } });
   });
 });

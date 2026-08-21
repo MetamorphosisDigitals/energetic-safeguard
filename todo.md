@@ -197,3 +197,10 @@
 - [x] Route the card to begin a fresh routine or resume the active daily-hygiene plan with one tap.
 - [x] Add browser coverage and verify the Daily Routine card on desktop and mobile.
 - [x] Save a checkpoint containing the Daily Routine quick-access refinement.
+- [x] Review Daily Routine state, canonical ritual categories, and day-opening counter behavior.
+- [x] Add user-configurable Morning Check-In, Energy Protection, and End-of-Day Cleaning ritual slots.
+- [x] Route each selected routine ritual through the existing safety-aware practice flow.
+- [x] Add an opening-based habit counter that progresses through 7, 14, and 21 days.
+- [x] Add gentle 7-day and 14-day milestones plus a 21-day habit celebration.
+- [x] Add automated coverage and verify the three-part routine, counter, and milestones on desktop and mobile.
+- [x] Save a checkpoint containing the 21-day Daily Routine enhancement.

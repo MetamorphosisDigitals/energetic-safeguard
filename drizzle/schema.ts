@@ -32,6 +32,53 @@ export const premiumEntitlements = mysqlTable("premium_entitlements", {
 ]);
 
 /**
+ * A separate subscription projection for optional continuity and habit features.
+ * This deliberately does not alter lifetime entitlements or guided-ritual access.
+ */
+export const subscriptionEntitlements = mysqlTable("subscription_entitlements", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  offerKey: varchar("offerKey", { length: 64 }).notNull(),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }).notNull(),
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }).notNull(),
+  stripePriceId: varchar("stripePriceId", { length: 255 }),
+  status: mysqlEnum("status", ["trialing", "active", "past_due", "canceled", "unpaid"]).notNull().default("trialing"),
+  currentPeriodEnd: timestamp("currentPeriodEnd"),
+  graceEndsAt: timestamp("graceEndsAt"),
+  lastInvoiceId: varchar("lastInvoiceId", { length: 255 }),
+  lastPaidAt: timestamp("lastPaidAt"),
+  canceledAt: timestamp("canceledAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("subscription_entitlements_user_unique").on(table.userId),
+  uniqueIndex("subscription_entitlements_subscription_unique").on(table.stripeSubscriptionId),
+  index("subscription_entitlements_customer_idx").on(table.stripeCustomerId),
+  index("subscription_entitlements_status_idx").on(table.status),
+]);
+
+/**
+ * A durable idempotency and audit ledger for verified payment-provider events.
+ * Payloads are intentionally not persisted: event IDs and projection outcomes are enough.
+ */
+export const billingWebhookEvents = mysqlTable("billing_webhook_events", {
+  id: int("id").autoincrement().primaryKey(),
+  providerEventId: varchar("providerEventId", { length: 255 }).notNull(),
+  eventType: varchar("eventType", { length: 128 }).notNull(),
+  userId: int("userId"),
+  outcome: mysqlEnum("outcome", ["processing", "processed", "ignored", "failed"]).notNull().default("processing"),
+  errorCode: varchar("errorCode", { length: 96 }),
+  providerCreatedAt: timestamp("providerCreatedAt"),
+  processedAt: timestamp("processedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("billing_webhook_events_provider_event_unique").on(table.providerEventId),
+  index("billing_webhook_events_type_created_idx").on(table.eventType, table.createdAt),
+  index("billing_webhook_events_user_idx").on(table.userId),
+]);
+
+/**
  * A compact activity record. It stores only the completed catalog-practice ID,
  * UTC completion time, and an optional user-authored private note.
  */
@@ -115,6 +162,8 @@ export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type PremiumEntitlement = typeof premiumEntitlements.$inferSelect;
 export type InsertPremiumEntitlement = typeof premiumEntitlements.$inferInsert;
+export type SubscriptionEntitlement = typeof subscriptionEntitlements.$inferSelect;
+export type BillingWebhookEvent = typeof billingWebhookEvents.$inferSelect;
 export type PracticeHistory = typeof practiceHistory.$inferSelect;
 export type PracticeFavorite = typeof practiceFavorites.$inferSelect;
 export type RoutinePlanArchive = typeof routinePlanArchives.$inferSelect;

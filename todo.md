@@ -262,3 +262,11 @@
 - [x] Generate a technical slide deck for the billing gateway and webhook flow.
 - [x] Validate and deliver the billing test suite and technical deck.
 - [x] Save a checkpoint containing the simulated billing webhook lifecycle suite and technical architecture deck.
+- [x] Review Stripe CLI availability, webhook configuration, current entitlement schema, and unrestricted-access policy boundaries.
+- [x] Add a durable billing event ledger and subscription entitlement projection for successful recurring payments.
+- [x] Finalize paid-feature access rules and a grace-period policy that never restricts rituals or safety handoffs.
+- [x] Add Stripe CLI sandbox contract harness and simulated signed checkout, paid invoice, failure, cancellation, and replay lifecycle tests; live delivery awaits sandbox claim and CLI authentication.
+- [x] Validate subscription lifecycle projection, grace behavior, and full billing regression coverage.
+- [x] Save a checkpoint containing the subscription lifecycle and Stripe CLI enhancement.
+- [x] Verify full application validation and write a concise live Stripe activation runbook for the claimed sandbox.
+- [x] Confirm the completed subscription lifecycle keeps all rituals and safety handoffs unrestricted in every billing state.

@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:safety-engine": "vitest run client/src/lib/safetySelectionEngine.test.ts client/src/lib/safetySelectionEngine.extended.test.ts",
     "test:e2e:safety": "playwright test e2e/safety-handoff.spec.ts",
+    "test:stripe-cli-contract": "node scripts/stripe-cli-contract.mjs",
     "ci:validate": "pnpm check && pnpm test:safety-engine && pnpm test && pnpm build",
     "db:push": "drizzle-kit generate && drizzle-kit migrate"
   },

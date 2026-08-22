@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, practiceFavorites, practiceHistory, practiceSavedFilterViews, premiumEntitlements, routinePlanArchives, userLibraryPreferences, users } from "../drizzle/schema";
+import { billingWebhookEvents, InsertUser, practiceFavorites, practiceHistory, practiceSavedFilterViews, premiumEntitlements, routinePlanArchives, subscriptionEntitlements, userLibraryPreferences, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import type { PremiumOfferKey } from "./payments/products";
 
@@ -72,6 +72,39 @@ export async function savePremiumEntitlement(input: {
       stripeCheckoutSessionId: input.stripeCheckoutSessionId,
     },
   });
+}
+
+export async function getSubscriptionEntitlementByStripeId(stripeSubscriptionId: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(subscriptionEntitlements).where(eq(subscriptionEntitlements.stripeSubscriptionId, stripeSubscriptionId)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function saveSubscriptionEntitlement(input: {
+  userId: number; offerKey: string; stripeCustomerId: string; stripeSubscriptionId: string;
+  stripePriceId: string | null; status: "trialing" | "active" | "past_due" | "canceled" | "unpaid";
+  currentPeriodEnd: Date | null; graceEndsAt: Date | null; lastInvoiceId: string | null; lastPaidAt: Date | null; canceledAt: Date | null;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable while projecting subscription state.");
+  await db.insert(subscriptionEntitlements).values(input).onDuplicateKeyUpdate({ set: input });
+}
+
+export async function claimBillingWebhookEvent(input: { providerEventId: string; eventType: string; userId: number | null; providerCreatedAt: Date | null }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is unavailable while recording the billing event.");
+  const existing = await db.select().from(billingWebhookEvents).where(eq(billingWebhookEvents.providerEventId, input.providerEventId)).limit(1);
+  if (existing[0]) return { claimed: false, event: existing[0] };
+  await db.insert(billingWebhookEvents).values({ ...input, outcome: "processing" });
+  const rows = await db.select().from(billingWebhookEvents).where(eq(billingWebhookEvents.providerEventId, input.providerEventId)).limit(1);
+  return { claimed: true, event: rows[0] };
+}
+
+export async function completeBillingWebhookEvent(providerEventId: string, outcome: "processed" | "ignored" | "failed", errorCode: string | null = null) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(billingWebhookEvents).set({ outcome, errorCode, processedAt: new Date() }).where(eq(billingWebhookEvents.providerEventId, providerEventId));
 }
 
 export async function recordPracticeCompletion(userId: number, practiceId: string) {

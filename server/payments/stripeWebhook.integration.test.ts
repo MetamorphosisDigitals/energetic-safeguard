@@ -8,6 +8,10 @@ const stripeMocks = vi.hoisted(() => ({
 }));
 const dbMocks = vi.hoisted(() => ({
   savePremiumEntitlement: vi.fn(),
+  claimBillingWebhookEvent: vi.fn(),
+  completeBillingWebhookEvent: vi.fn(),
+  getSubscriptionEntitlementByStripeId: vi.fn(),
+  saveSubscriptionEntitlement: vi.fn(),
 }));
 
 vi.mock("stripe", () => ({
@@ -18,6 +22,10 @@ vi.mock("stripe", () => ({
 
 vi.mock("../db", () => ({
   savePremiumEntitlement: dbMocks.savePremiumEntitlement,
+  claimBillingWebhookEvent: dbMocks.claimBillingWebhookEvent,
+  completeBillingWebhookEvent: dbMocks.completeBillingWebhookEvent,
+  getSubscriptionEntitlementByStripeId: dbMocks.getSubscriptionEntitlementByStripeId,
+  saveSubscriptionEntitlement: dbMocks.saveSubscriptionEntitlement,
 }));
 
 import { registerStripeWebhook } from "./stripeWebhook";
@@ -49,7 +57,15 @@ describe("Stripe webhook lifecycle integration", () => {
     process.env.STRIPE_WEBHOOK_SECRET = "whsec_simulated";
     stripeMocks.constructEvent.mockReset();
     dbMocks.savePremiumEntitlement.mockReset();
+    dbMocks.claimBillingWebhookEvent.mockReset();
+    dbMocks.completeBillingWebhookEvent.mockReset();
+    dbMocks.getSubscriptionEntitlementByStripeId.mockReset();
+    dbMocks.saveSubscriptionEntitlement.mockReset();
     dbMocks.savePremiumEntitlement.mockResolvedValue(undefined);
+    dbMocks.claimBillingWebhookEvent.mockResolvedValue({ claimed: true, event: {} });
+    dbMocks.completeBillingWebhookEvent.mockResolvedValue(undefined);
+    dbMocks.getSubscriptionEntitlementByStripeId.mockResolvedValue(null);
+    dbMocks.saveSubscriptionEntitlement.mockResolvedValue(undefined);
 
     const app = express();
     app.use("/api/stripe/webhook", express.raw({ type: "application/json" }));
@@ -106,15 +122,28 @@ describe("Stripe webhook lifecycle integration", () => {
     expect(dbMocks.savePremiumEntitlement).not.toHaveBeenCalled();
   });
 
-  it("returns a verification-only response for explicitly marked test events", async () => {
+  it("projects recurring paid invoices, grace status, and cancellation into the subscription ledger", async () => {
+    dbMocks.getSubscriptionEntitlementByStripeId
+      .mockResolvedValueOnce({ userId: 42, offerKey: "rhythm_plus_monthly", stripeCustomerId: "cus_001", stripeSubscriptionId: "sub_paid", stripePriceId: "price_old", currentPeriodEnd: null, lastPaidAt: null })
+      .mockResolvedValueOnce({ userId: 42, offerKey: "cloud_continuity_monthly", stripeCustomerId: "cus_001", stripeSubscriptionId: "sub_001", stripePriceId: "price_cloud", currentPeriodEnd: null, lastPaidAt: null })
+      .mockResolvedValueOnce({ userId: 42, offerKey: "cloud_continuity_monthly", stripeCustomerId: "cus_001", stripeSubscriptionId: "sub_cancel", stripePriceId: "price_cloud", currentPeriodEnd: null, lastInvoiceId: null, lastPaidAt: null });
+    await postSimulatedEvent({ id: "evt_live_invoice_paid_001", type: "invoice.paid", created: 1_787_422_402, data: { object: { id: "in_paid_001", subscription: "sub_paid", lines: { data: [{ price: { id: "price_rhythm" }, period: { end: 1_787_500_000 } }] } } } });
+    await postSimulatedEvent({ id: "evt_live_invoice_failed_002", type: "invoice.payment_failed", created: 1_787_422_403, data: { object: { id: "in_failed_002", subscription: "sub_001" } } });
+    await postSimulatedEvent({ id: "evt_live_cancel_001", type: "customer.subscription.deleted", created: 1_787_422_404, data: { object: { id: "sub_cancel" } } });
+    expect(dbMocks.saveSubscriptionEntitlement).toHaveBeenCalledWith(expect.objectContaining({ status: "active", stripePriceId: "price_rhythm", graceEndsAt: null }));
+    expect(dbMocks.saveSubscriptionEntitlement).toHaveBeenCalledWith(expect.objectContaining({ status: "past_due", stripeSubscriptionId: "sub_001" }));
+    expect(dbMocks.saveSubscriptionEntitlement).toHaveBeenCalledWith(expect.objectContaining({ status: "canceled", stripeSubscriptionId: "sub_cancel" }));
+  });
+
+  it("processes signed sandbox event identifiers through the same ledger path", async () => {
     const response = await postSimulatedEvent({
       ...checkoutEvent(),
       id: "evt_test_checkout_001",
     });
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ verified: true });
-    expect(dbMocks.savePremiumEntitlement).not.toHaveBeenCalled();
+    await expect(response.json()).resolves.toEqual({ received: true });
+    expect(dbMocks.savePremiumEntitlement).toHaveBeenCalledOnce();
   });
 
   it("rejects invalid webhook signatures before any entitlement side effect", async () => {
@@ -141,16 +170,17 @@ describe("Stripe webhook lifecycle integration", () => {
     expect(dbMocks.savePremiumEntitlement).not.toHaveBeenCalled();
   });
 
-  it("replays checkout deliveries through the idempotent database upsert path", async () => {
+  it("acknowledges replayed checkout deliveries without re-projecting a claimed event", async () => {
     const event = checkoutEvent({ id: "cs_live_duplicate_001" });
     const first = await postSimulatedEvent({ ...event, id: "evt_live_duplicate_001" });
+    dbMocks.claimBillingWebhookEvent.mockResolvedValueOnce({ claimed: false, event: {} });
     const second = await postSimulatedEvent({ ...event, id: "evt_live_duplicate_001" });
 
     expect(first.status).toBe(200);
     expect(second.status).toBe(200);
-    expect(dbMocks.savePremiumEntitlement).toHaveBeenCalledTimes(2);
-    expect(dbMocks.savePremiumEntitlement).toHaveBeenNthCalledWith(1, expect.objectContaining({ stripeCheckoutSessionId: "cs_live_duplicate_001" }));
-    expect(dbMocks.savePremiumEntitlement).toHaveBeenNthCalledWith(2, expect.objectContaining({ stripeCheckoutSessionId: "cs_live_duplicate_001" }));
+    await expect(second.json()).resolves.toEqual({ received: true, duplicate: true });
+    expect(dbMocks.savePremiumEntitlement).toHaveBeenCalledTimes(1);
+    expect(dbMocks.savePremiumEntitlement).toHaveBeenCalledWith(expect.objectContaining({ stripeCheckoutSessionId: "cs_live_duplicate_001" }));
   });
 
   it("returns a retryable server error when entitlement projection fails", async () => {

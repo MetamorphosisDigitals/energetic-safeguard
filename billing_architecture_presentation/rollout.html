@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F6F2EC; color: #382C49; font-family: Manrope, sans-serif; overflow: hidden; }
+    .head { padding: 50px 70px 0; display: flex; justify-content: space-between; align-items: flex-start; }
+    .eyebrow { color: #7895A2; font-size: 12px; letter-spacing: .18em; font-weight: 700; }
+    h1 { font-family: Fraunces, serif; font-size: 47px; font-weight: 300; letter-spacing: -.035em; margin-top: 12px; }
+    .sub { color: #5B4D69; font-size: 16px; margin-top: 10px; }
+    .badge { margin-top: 5px; color: #7895A2; font-size: 12px; letter-spacing: .13em; font-weight: 700; text-align: right; }
+    .timeline { position: relative; margin: 78px 95px 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 25px; }
+    .timeline:before { content: ''; position: absolute; left: 0; right: 0; top: 142px; height: 1px; background: #7895A2; }
+    .stage { min-height: 320px; position: relative; display: flex; flex-direction: column; }
+    .stage:nth-child(even) { padding-top: 79px; }
+    .stage:nth-child(odd) { padding-top: 0; }
+    .point { width: 17px; height: 17px; border-radius: 50%; background: #F6F2EC; border: 2px solid #7895A2; position: absolute; top: 134px; left: 0; z-index: 1; }
+    .stage:last-child .point { background: #7895A2; }
+    .phase { color: #7895A2; font-size: 11px; letter-spacing: .15em; font-weight: 700; }
+    .stage h2 { margin-top: 10px; font-family: Fraunces, serif; font-weight: 300; font-size: 27px; line-height: 1.08; max-width: 177px; }
+    .stage p { margin-top: 14px; color: #51435F; font-size: 14px; line-height: 1.52; max-width: 182px; }
+    .stage:nth-child(even) .phase { margin-top: 0; }
+    .gate { margin: 20px 95px 0; border-top: 1px solid #B9C9CE; padding-top: 17px; display: grid; grid-template-columns: 200px 1fr; gap: 23px; }
+    .gate b { color: #7895A2; font-size: 11px; letter-spacing: .15em; }
+    .gate p { font-family: Fraunces, serif; font-size: 22px; font-weight: 300; color: #4A3E5B; line-height: 1.25; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="head">
+      <section>
+        <div class="eyebrow">PRODUCTION RUNBOOK</div>
+        <h1>Production rollout is deliberately staged.</h1>
+        <p class="sub">Every checkpoint verifies the billing boundary before it reaches more people.</p>
+      </section>
+      <div class="badge">CONTROLLED AVAILABILITY</div>
+    </header>
+    <main class="timeline">
+      <article class="stage"><span class="point"></span><div class="phase">01 · CONFIGURE</div><h2>Claim &amp; define</h2><p>Claim the billing account, create Products and Prices, and add live secrets through the project secret manager.</p></article>
+      <article class="stage"><span class="point"></span><div class="phase">02 · SANDBOX</div><h2>Sign &amp; simulate</h2><p>Register the HTTPS webhook endpoint, forward sandbox events, and test signature and lifecycle projection.</p></article>
+      <article class="stage"><span class="point"></span><div class="phase">03 · OBSERVE</div><h2>Watch without selling</h2><p>Deploy the event ledger and reconciliation report in observe-only mode before enabling Checkout.</p></article>
+      <article class="stage"><span class="point"></span><div class="phase">04 · COHORT</div><h2>Start small</h2><p>Enable Checkout for internal accounts or a controlled cohort; monitor mismatch, latency, and support signals.</p></article>
+      <article class="stage"><span class="point"></span><div class="phase">05 · EXPAND</div><h2>Broaden with evidence</h2><p>Enable availability only after events, projections, reconciliation, and customer paths behave as intended.</p></article>
+    </main>
+    <section class="gate"><b>LAUNCH GATE</b><p>Billing may scale only after its safeguards are proven—and ritual access remains unchanged in every scenario.</p></section>
+  </div>
+</body>
+</html>

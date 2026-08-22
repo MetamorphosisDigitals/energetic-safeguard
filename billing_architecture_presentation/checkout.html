@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F6F2EC; color: #382C49; font-family: Manrope, sans-serif; overflow: hidden; }
+    .head { padding: 50px 70px 0; }
+    .eyebrow { color: #7895A2; font-size: 12px; letter-spacing: .18em; font-weight: 700; }
+    h1 { font-family: Fraunces, serif; font-size: 47px; font-weight: 300; letter-spacing: -.035em; margin-top: 12px; }
+    .sub { color: #5A4D68; font-size: 17px; margin-top: 10px; }
+    .journey { display: grid; grid-template-columns: 188px 42px 188px 42px 188px 42px 188px 42px 224px; align-items: start; justify-content: center; margin-top: 72px; }
+    .step { min-height: 255px; border-top: 2px solid #7895A2; padding-top: 16px; }
+    .step .n { color: #7895A2; font-size: 12px; letter-spacing: .15em; font-weight: 700; }
+    .step h2 { font-family: Fraunces, serif; font-size: 27px; font-weight: 300; line-height: 1.08; margin-top: 13px; }
+    .step p { color: #51435F; font-size: 14px; line-height: 1.55; margin-top: 14px; }
+    .connector { width: 42px; height: 1px; background: #7895A2; margin-top: 80px; position: relative; }
+    .connector:after { content: '›'; color: #7895A2; font-family: Fraunces, serif; font-size: 29px; position: absolute; right: -1px; top: -18px; }
+    .return { border-top-color: #C5A4A5; }
+    .return .n { color: #A6767B; }
+    .verified { position: relative; border-top: 0; padding-top: 0; min-height: 255px; }
+    .verified:before { content: ''; width: 102px; height: 102px; border: 1.5px solid #7895A2; border-radius: 50%; position: absolute; left: 0; top: -21px; }
+    .verified .n { margin-left: 126px; padding-top: 1px; }
+    .verified h2 { margin-left: 126px; margin-top: 14px; }
+    .verified p { margin-left: 126px; }
+    .authority { margin: 33px 110px 0; padding-top: 20px; border-top: 1px solid #B9C9CE; display: flex; gap: 18px; align-items: baseline; }
+    .authority b { color: #7895A2; font-size: 12px; letter-spacing: .15em; }
+    .authority span { font-family: Fraunces, serif; font-size: 24px; font-weight: 300; color: #4A3E5B; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="head">
+      <div class="eyebrow">CHECKOUT INITIATION</div>
+      <h1>Checkout is an intent—not access.</h1>
+      <p class="sub">The customer’s payment journey and the application’s entitlement decision are deliberately separate.</p>
+    </header>
+    <main class="journey">
+      <section class="step"><div class="n">01 · USER</div><h2>Selects a continuity plan</h2><p>The signed-in user chooses an optional plan and billing cadence.</p></section>
+      <i class="connector"></i>
+      <section class="step"><div class="n">02 · SERVER</div><h2>Creates a Checkout Session</h2><p>The server validates the plan and adds only user and plan metadata.</p></section>
+      <i class="connector"></i>
+      <section class="step"><div class="n">03 · STRIPE</div><h2>Hosts payment collection</h2><p>Payment details stay with Stripe; they never pass through the app.</p></section>
+      <i class="connector"></i>
+      <section class="step return"><div class="n">04 · RETURN</div><h2>Shows a confirmation state</h2><p>A browser redirect can reassure the user, but it cannot grant paid capabilities.</p></section>
+      <i class="connector"></i>
+      <section class="verified"><div class="n">05 · VERIFIED EVENT</div><h2>Projects the entitlement</h2><p>Only a signed webhook event updates the server-owned access record.</p></section>
+    </main>
+    <div class="authority"><b>AUTHORITY</b><span>Access begins with a verified event—not a URL parameter, button click, or client-side promise.</span></div>
+  </div>
+</body>
+</html>

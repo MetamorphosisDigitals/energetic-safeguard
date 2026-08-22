@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #E6E2F0; color: #3B2F4C; font-family: Manrope, sans-serif; display: grid; grid-template-rows: auto auto 1fr; overflow: hidden; }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 54px 74px 0; }
+    .kicker { color: #6B8E9B; font-size: 12px; font-weight: 600; letter-spacing: .18em; }
+    .page { color: #4A3F5A; font-size: 12px; }
+    .title-area { width: 1130px; margin: 44px auto 0; display: flex; justify-content: space-between; align-items: flex-end; }
+    h2 { font-family: Fraunces, serif; font-weight: 300; font-size: 50px; line-height: 1.05; letter-spacing: -.04em; max-width: 545px; }
+    .subtitle { max-width: 325px; font-family: Fraunces, serif; font-weight: 300; font-size: 20px; line-height: 1.42; font-style: italic; color: #4A3F5A; }
+    .journey { width: 1130px; margin: 0 auto; align-self: center; display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; position: relative; }
+    .journey:before { content: ''; position: absolute; left: 45px; right: 45px; top: 54px; height: 1px; background: rgba(107,142,155,.58); }
+    .step { min-height: 300px; display: grid; align-content: start; gap: 15px; position: relative; }
+    .marker { width: 108px; height: 108px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.43); color: #6B8E9B; font-family: Fraunces, serif; font-size: 34px; z-index: 1; }
+    .step:nth-child(4) .marker { background: rgba(107,142,155,.16); }
+    .step-label { color: #6B8E9B; font-size: 11px; letter-spacing: .16em; font-weight: 600; }
+    h3 { font-family: Fraunces, serif; font-weight: 300; font-size: 28px; line-height: 1.1; letter-spacing: -.02em; max-width: 205px; }
+    .step p { color: #4A3F5A; font-size: 14px; line-height: 1.58; max-width: 220px; }
+    .optional { color: #6B8E9B; font-size: 12px; letter-spacing: .08em; margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="header"><div class="kicker">FIRST-TIME USER JOURNEY</div><div class="page">08</div></header>
+    <section class="title-area"><h2>A welcoming first experience.</h2><p class="subtitle">Support, choice, and pace come before commitment.</p></section>
+    <main class="journey">
+      <article class="step"><div class="marker">01</div><div class="step-label">WELCOME</div><h3>Meet the promise.</h3><p>Ground your energy. Protect your peace. Return to yourself.</p></article>
+      <article class="step"><div class="marker">02</div><div class="step-label">ORIENT</div><h3>See the support.</h3><p>Discover short rituals for grounding, protection, transition, and release.</p></article>
+      <article class="step"><div class="marker">03</div><div class="step-label">CHOOSE</div><h3>Set your pace.</h3><p>Choose a practical, visual, or symbolic style without sharing sensitive details.</p></article>
+      <article class="step"><div class="marker">04</div><div class="step-label">CONTINUE</div><h3>Build when ready.</h3><p>Set up a Daily Routine or use a single ritual today.</p><div class="optional">OPTIONAL: SIGN IN TO BACK UP COMPLETED PLANS</div></article>
+    </main>
+  </div>
+</body>
+</html>

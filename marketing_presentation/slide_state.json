@@ -1,0 +1,122 @@
+{
+  "project_info": {
+    "title": "The Energetic Safeguard",
+    "created": 1787411716.218,
+    "last_updated": 1787411891.652,
+    "total_slides": 11
+  },
+  "slides": [
+    {
+      "id": "cover",
+      "state": "edited",
+      "pageNum": 1
+    },
+    {
+      "id": "moment",
+      "state": "edited",
+      "pageNum": 2
+    },
+    {
+      "id": "daily_rhythm",
+      "state": "edited",
+      "pageNum": 3
+    },
+    {
+      "id": "ritual_library",
+      "state": "edited",
+      "pageNum": 4
+    },
+    {
+      "id": "habit_milestones",
+      "state": "edited",
+      "pageNum": 5
+    },
+    {
+      "id": "reflection",
+      "state": "edited",
+      "pageNum": 6
+    },
+    {
+      "id": "safety",
+      "state": "edited",
+      "pageNum": 7
+    },
+    {
+      "id": "cloud_backup",
+      "state": "edited",
+      "pageNum": 8
+    },
+    {
+      "id": "onboarding",
+      "state": "edited",
+      "pageNum": 9
+    },
+    {
+      "id": "ecosystem",
+      "state": "edited",
+      "pageNum": 10
+    },
+    {
+      "id": "closing",
+      "state": "edited",
+      "pageNum": 11
+    }
+  ],
+  "outline": [
+    {
+      "id": "cover",
+      "title": "The Energetic Safeguard",
+      "summary": "Cover slide with the product name and brand tagline."
+    },
+    {
+      "id": "moment",
+      "title": "Support for the Moment",
+      "summary": "The core user problem and the product promise of one clear next step."
+    },
+    {
+      "id": "daily_rhythm",
+      "title": "A Steady Rhythm",
+      "summary": "The Morning Check-In, Energy Protection, and End-of-Day Cleaning routine."
+    },
+    {
+      "id": "ritual_library",
+      "title": "Built from 18 Rituals",
+      "summary": "The structured ritual library and optional symbolic supports."
+    },
+    {
+      "id": "habit_milestones",
+      "title": "A 21-Day Rhythm",
+      "summary": "The 7, 14, and 21-day opening milestones without pressure."
+    },
+    {
+      "id": "reflection",
+      "title": "Reflection Keeps It Personal",
+      "summary": "Private notes, Day 7 reflection, repeatable plans, and printable summaries."
+    },
+    {
+      "id": "safety",
+      "title": "Safety and Choice Shape Every Path",
+      "summary": "Consent-led language, guarded selection, and optional symbolism."
+    },
+    {
+      "id": "cloud_backup",
+      "title": "Privacy Is an Active Choice",
+      "summary": "Local-first plans and optional cloud backup with plan-level management."
+    },
+    {
+      "id": "onboarding",
+      "title": "A Welcoming First Experience",
+      "summary": "The value-led onboarding flow and optional setup choices."
+    },
+    {
+      "id": "ecosystem",
+      "title": "A Complete Support Ecosystem",
+      "summary": "The product ecosystem across rituals, routine, reflection, and continuity."
+    },
+    {
+      "id": "closing",
+      "title": "Return to Yourself",
+      "summary": "Closing tagline and product invitation."
+    }
+  ]
+}

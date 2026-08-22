@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F6F2EC; color: #382C49; font-family: Manrope, sans-serif; overflow: hidden; }
+    .head { padding: 52px 70px 0; }
+    .eyebrow { color: #7895A2; font-size: 12px; letter-spacing: .18em; font-weight: 700; }
+    .title { margin-top: 12px; font-family: Fraunces, serif; font-weight: 300; font-size: 48px; letter-spacing: -.035em; }
+    .subtitle { margin-top: 10px; font-size: 17px; color: #574965; }
+    .sequence { display: grid; grid-template-columns: 210px 58px 210px 58px 210px 58px 210px; justify-content: center; align-items: start; margin-top: 72px; }
+    .step { min-height: 292px; }
+    .num { width: 44px; height: 44px; border: 1px solid #7895A2; border-radius: 50%; display: grid; place-items: center; color: #7895A2; font-family: Fraunces, serif; font-size: 19px; }
+    .step h2 { margin-top: 18px; font-family: Fraunces, serif; font-weight: 300; font-size: 27px; line-height: 1.08; }
+    .step p { margin-top: 13px; max-width: 195px; color: #51435F; font-size: 14px; line-height: 1.58; }
+    .connector { height: 1px; background: #7895A2; margin-top: 22px; position: relative; opacity: .9; }
+    .connector:after { content: '›'; position: absolute; top: -17px; right: -1px; font-family: Fraunces, serif; font-size: 29px; color: #7895A2; }
+    .guardrails { margin: 0 70px; border-top: 1px solid #B9C9CE; padding-top: 23px; display: grid; grid-template-columns: 1fr 1fr; gap: 45px; }
+    .guardrail { display: flex; gap: 14px; align-items: flex-start; }
+    .bar { width: 4px; min-height: 51px; background: #7895A2; flex: none; }
+    .guardrail b { color: #7895A2; font-size: 11px; letter-spacing: .14em; }
+    .guardrail p { margin-top: 6px; font-size: 15px; color: #51435F; line-height: 1.43; }
+    .cite { margin: 24px 70px 0; color: #6D8490; font-size: 11px; letter-spacing: .04em; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="head">
+      <div class="eyebrow">WEBHOOK PROJECTION PATH</div>
+      <h1 class="title">Verified events project billing state.</h1>
+      <p class="subtitle">The payment return is informational. A signed provider event is the only trigger for a durable access change.</p>
+    </header>
+    <main class="sequence">
+      <section class="step"><div class="num">1</div><h2>Receive original bytes</h2><p>The dedicated endpoint reads the untouched request body before application JSON parsing consumes it.</p></section>
+      <i class="connector"></i>
+      <section class="step"><div class="num">2</div><h2>Verify signature</h2><p>The server combines raw payload, Stripe-Signature, and the endpoint secret before accepting any event.</p></section>
+      <i class="connector"></i>
+      <section class="step"><div class="num">3</div><h2>Ledger the event</h2><p>A unique provider event ID records receipt and prevents a duplicate delivery from creating a second projection.</p></section>
+      <i class="connector"></i>
+      <section class="step"><div class="num">4</div><h2>Project &amp; acknowledge</h2><p>A transaction updates customer mapping and entitlement state, marks the outcome, then returns a prompt 2xx response.</p></section>
+    </main>
+    <section class="guardrails">
+      <div class="guardrail"><i class="bar"></i><div><b>NO REDIRECT TRUST</b><p>Checkout success URLs never grant paid access by themselves.</p></div></div>
+      <div class="guardrail"><i class="bar"></i><div><b>NARROW SIDE EFFECTS</b><p>Only verified lifecycle changes can affect optional paid feature keys; rituals remain open.</p></div></div>
+    </section>
+    <div class="cite">SOURCE: STRIPE WEBHOOK AND SUBSCRIPTION LIFECYCLE DOCUMENTATION [1] [2]</div>
+  </div>
+</body>
+</html>

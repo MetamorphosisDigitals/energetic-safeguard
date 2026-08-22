@@ -235,3 +235,30 @@
 - [x] Add backend and browser coverage for cloud restore, status, organization, and deletion flows.
 - [x] Validate the integrated cloud-management feature.
 - [x] Save a checkpoint containing the cloud-management enhancement.
+- [x] Review the current product capabilities and define the landing-page, onboarding, and presentation narrative.
+- [x] Draft marketing landing-page copy highlighting the 21-day routine, milestones, and cloud backup.
+- [x] Outline the first-time-user onboarding flow and its key value propositions.
+- [x] Prepare product presentation content and approved visual assets.
+- [x] Generate a slide deck presenting The Energetic Safeguard and its core features.
+- [x] Export and deliver the complete marketing package.
+- [x] Review the unrestricted-access commitment and cloud/habit capabilities for a compatible pricing narrative.
+- [x] Draft subscription tiers and pricing principles for optional cloud backup and advanced habit features.
+- [x] Write a stakeholder presentation script for the product description, features, and monetization approach.
+- [x] Write email announcement copy and social media launch posts.
+- [x] Validate and deliver the pricing and launch communications package.
+- [x] Review the Day 21 milestone language, product voice, and privacy boundaries for lifecycle communication.
+- [x] Draft a privacy-conscious post-launch customer feedback survey for Day 21 users.
+- [x] Draft a supportive Day 21 retention email sequence with optional next steps.
+- [x] Validate and deliver the Day 21 lifecycle communications package.
+- [x] Review milestone language, lifecycle boundaries, and opt-out safeguards for pre-Day 14 re-engagement.
+- [x] Draft a consent-based re-engagement campaign and message sequence for users who pause before Day 14.
+- [x] Validate and deliver the pre-Day 14 re-engagement campaign outline.
+- [x] Review the existing billing integration state, entitlement model, webhook guidance, and access policy boundaries.
+- [x] Draft secure live subscription, billing, webhook, entitlement, and reconciliation architecture.
+- [x] Validate and export the live billing integration blueprint.
+- [x] Review billing router seams, existing entitlement tests, and the technical presentation narrative.
+- [x] Add simulated end-to-end webhook lifecycle tests for checkout completion, failed invoices, signature rejection, duplicate deliveries, and projection failures; subscription invoice and cancellation projections remain documented future billing work.
+- [x] Prepare the billing webhook architecture presentation content and assets.
+- [x] Generate a technical slide deck for the billing gateway and webhook flow.
+- [x] Validate and deliver the billing test suite and technical deck.
+- [x] Save a checkpoint containing the simulated billing webhook lifecycle suite and technical architecture deck.

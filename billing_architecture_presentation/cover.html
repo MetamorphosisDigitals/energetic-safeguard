@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #E9E5F1; color: #382C49; font-family: Manrope, sans-serif; display: grid; grid-template-rows: 1fr auto 1fr; overflow: hidden; }
+    .top { display: flex; justify-content: space-between; align-items: flex-start; padding: 54px 68px 0; }
+    .brand { display: flex; align-items: center; gap: 11px; font-size: 13px; letter-spacing: .1em; font-weight: 700; color: #4A3E5B; }
+    .mark { width: 26px; height: 26px; border: 1px solid #7895A2; border-radius: 50%; display: grid; place-items: center; color: #7895A2; font-family: Fraunces, serif; font-size: 17px; }
+    .type { font-size: 12px; color: #7895A2; letter-spacing: .16em; font-weight: 600; }
+    .hero { width: 930px; justify-self: center; align-self: center; text-align: center; display: grid; justify-items: center; gap: 22px; }
+    .eyebrow { color: #7895A2; font-size: 12px; letter-spacing: .2em; font-weight: 700; }
+    h1 { font-family: Fraunces, serif; font-weight: 300; font-size: 67px; line-height: 1.03; letter-spacing: -.04em; }
+    .subtitle { max-width: 690px; font-family: Fraunces, serif; font-size: 25px; font-weight: 300; font-style: italic; line-height: 1.42; color: #4A3E5B; }
+    .signal { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+    .signal i { width: 9px; height: 9px; border-radius: 50%; background: #7895A2; display: block; }
+    .signal b { width: 76px; height: 1px; background: #7895A2; display: block; opacity: .75; }
+    .bottom { display: flex; justify-content: center; align-items: flex-end; gap: 12px; margin-bottom: 44px; color: #5D7180; font-size: 12px; letter-spacing: .08em; }
+    .bottom span { width: 42px; height: 1px; background: #7895A2; opacity: .55; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="top">
+      <div class="brand"><div class="mark">✦</div> THE ENERGETIC SAFEGUARD</div>
+      <div class="type">TECHNICAL ARCHITECTURE</div>
+    </div>
+    <main class="hero">
+      <div class="eyebrow">LIVE BILLING &amp; WEBHOOK ARCHITECTURE</div>
+      <h1>Billing supports<br />continuity.</h1>
+      <p class="subtitle">A secure subscription architecture that never stands between a user and a ritual.</p>
+      <div class="signal"><b></b><i></i><b></b></div>
+    </main>
+    <div class="bottom"><span></span> STRIPE · ENTITLEMENTS · USER AGENCY <span></span></div>
+  </div>
+</body>
+</html>

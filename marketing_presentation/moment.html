@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #E6E2F0; color: #3B2F4C; font-family: Manrope, sans-serif; display: grid; grid-template-rows: auto 1fr auto; overflow: hidden; }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 54px 74px 0; }
+    .kicker { color: #6B8E9B; font-size: 12px; font-weight: 600; letter-spacing: .18em; }
+    .page { font-size: 12px; color: #4A3F5A; }
+    .content { width: 1130px; margin: 0 auto; align-self: center; display: grid; grid-template-columns: 1fr 86px 1fr 86px 1fr; align-items: center; }
+    .idea { min-height: 310px; display: grid; align-content: center; gap: 18px; }
+    .idea-label { color: #6B8E9B; font-size: 12px; letter-spacing: .16em; font-weight: 600; }
+    h2 { font-family: Fraunces, serif; font-weight: 300; font-size: 40px; line-height: 1.1; letter-spacing: -.03em; }
+    .lead { font-family: Fraunces, serif; font-style: italic; font-weight: 300; font-size: 23px; line-height: 1.4; color: #4A3F5A; }
+    .body { color: #4A3F5A; font-size: 16px; line-height: 1.65; max-width: 285px; }
+    .connector { height: 1px; background: #6B8E9B; opacity: .65; position: relative; }
+    .connector:after { content: '→'; position: absolute; right: -3px; top: -15px; color: #6B8E9B; font-size: 22px; }
+    .footer { margin: 0 74px 42px; display: flex; align-items: center; gap: 12px; color: #4A3F5A; font-size: 13px; }
+    .footer-mark { width: 25px; height: 1px; background: #6B8E9B; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="header"><div class="kicker">THE OPPORTUNITY</div><div class="page">01</div></header>
+    <main class="content">
+      <section class="idea"><div class="idea-label">THE DAY SHIFTS</div><h2>Energy rarely stays in one place.</h2><p class="lead">Morning, interaction, transition, release.</p><p class="body">When attention is scattered or the day has carried on, it can be difficult to know what will help now.</p></section>
+      <div class="connector"></div>
+      <section class="idea"><div class="idea-label">THE PRODUCT RESPONSE</div><h2>One clear next ritual.</h2><p class="lead">Short support, chosen with care.</p><p class="body">The app guides a user toward a grounded practice for the moment rather than another long list to manage.</p></section>
+      <div class="connector"></div>
+      <section class="idea"><div class="idea-label">THE USER OUTCOME</div><h2>A steadier return to self.</h2><p class="lead">A small step that is available now.</p><p class="body">The user can ground, protect their attention, or close the day with a supportive, consent-led ritual.</p></section>
+    </main>
+    <footer class="footer"><span class="footer-mark"></span><span>Support for the moment you are in</span></footer>
+  </div>
+</body>
+</html>

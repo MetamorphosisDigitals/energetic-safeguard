@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F6F2EC; color: #382C49; font-family: Manrope, sans-serif; overflow: hidden; }
+    .head { padding: 52px 70px 0; }
+    .eyebrow { color: #7895A2; font-size: 12px; letter-spacing: .18em; font-weight: 700; }
+    h1 { font-family: Fraunces, serif; font-weight: 300; font-size: 48px; letter-spacing: -.035em; margin-top: 12px; }
+    .sub { font-size: 17px; color: #5B4D69; margin-top: 10px; }
+    .model { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin: 62px 88px 0; border-top: 1px solid #B9C9CE; }
+    .tier { min-height: 362px; padding: 26px 34px 0; border-right: 1px solid #B9C9CE; display: flex; flex-direction: column; }
+    .tier:last-child { border-right: 0; }
+    .tier-index { color: #7895A2; font-size: 11px; letter-spacing: .16em; font-weight: 700; }
+    .tier h2 { font-family: Fraunces, serif; font-weight: 300; font-size: 33px; margin-top: 13px; }
+    .tier .status { color: #607983; font-size: 13px; letter-spacing: .08em; font-weight: 700; margin-top: 8px; }
+    .tier ul { list-style: none; display: grid; gap: 13px; margin-top: 27px; }
+    .tier li { display: flex; gap: 11px; font-size: 15px; line-height: 1.35; color: #51435F; }
+    .tier li:before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #7895A2; margin-top: 6px; flex: none; }
+    .tier.emphasis { background: #E9E5F1; }
+    .tier.emphasis li:before { background: #4A3E5B; }
+    .invariant { margin: 42px 88px 0; border-top: 2px solid #7895A2; padding-top: 17px; display: flex; align-items: baseline; gap: 20px; }
+    .invariant b { color: #7895A2; font-size: 12px; letter-spacing: .16em; }
+    .invariant p { font-family: Fraunces, serif; font-size: 23px; font-weight: 300; color: #4A3E5B; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="head">
+      <div class="eyebrow">ENTITLEMENT MODEL</div>
+      <h1>Entitlements separate support from billing.</h1>
+      <p class="sub">Feature keys are server-projected. Ritual access is never a paid key.</p>
+    </header>
+    <main class="model">
+      <section class="tier">
+        <div class="tier-index">01 · GROUNDED</div>
+        <h2>Core support</h2>
+        <div class="status">ALWAYS AVAILABLE</div>
+        <ul>
+          <li>All 18 guided rituals</li>
+          <li>Safety handoffs and grounding support</li>
+          <li>Local Daily Routine, notes, and milestones</li>
+          <li>One-Minute Reset and recommendations</li>
+        </ul>
+      </section>
+      <section class="tier emphasis">
+        <div class="tier-index">02 · CONTINUITY</div>
+        <h2>Account continuity</h2>
+        <div class="status">OPTIONAL PAID KEYS</div>
+        <ul>
+          <li>Cloud backup and restore</li>
+          <li>Cross-device routine history</li>
+          <li>Cloud plan management and organization</li>
+          <li>Account-owned recovery path</li>
+        </ul>
+      </section>
+      <section class="tier">
+        <div class="tier-index">03 · RHYTHM PLUS</div>
+        <h2>Advanced reflection</h2>
+        <div class="status">OPTIONAL PAID KEYS</div>
+        <ul>
+          <li>Continuity features included</li>
+          <li>Advanced habit insights</li>
+          <li>Expanded routine exports</li>
+          <li>Future analytical tools</li>
+        </ul>
+      </section>
+    </main>
+    <div class="invariant"><b>INVARIANT</b><p><strong>ritual_access = true</strong> in every billing state.</p></div>
+  </div>
+</body>
+</html>

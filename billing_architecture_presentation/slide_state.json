@@ -1,0 +1,133 @@
+{
+  "project_info": {
+    "title": "Live Billing & Webhook Architecture",
+    "created": 1787426730.424,
+    "last_updated": 1787426961.535,
+    "total_slides": 12
+  },
+  "slides": [
+    {
+      "id": "cover",
+      "state": "edited",
+      "pageNum": 1
+    },
+    {
+      "id": "boundary",
+      "state": "edited",
+      "pageNum": 2
+    },
+    {
+      "id": "systems",
+      "state": "edited",
+      "pageNum": 3
+    },
+    {
+      "id": "checkout",
+      "state": "edited",
+      "pageNum": 4
+    },
+    {
+      "id": "webhook",
+      "state": "edited",
+      "pageNum": 5
+    },
+    {
+      "id": "lifecycle",
+      "state": "edited",
+      "pageNum": 6
+    },
+    {
+      "id": "entitlements",
+      "state": "edited",
+      "pageNum": 7
+    },
+    {
+      "id": "reliability",
+      "state": "edited",
+      "pageNum": 8
+    },
+    {
+      "id": "privacy",
+      "state": "edited",
+      "pageNum": 9
+    },
+    {
+      "id": "tests",
+      "state": "edited",
+      "pageNum": 10
+    },
+    {
+      "id": "rollout",
+      "state": "edited",
+      "pageNum": 11
+    },
+    {
+      "id": "closing",
+      "state": "edited",
+      "pageNum": 12
+    }
+  ],
+  "outline": [
+    {
+      "id": "cover",
+      "title": "Live Billing & Webhook Architecture",
+      "summary": "Technical overview of secure subscription continuity for The Energetic Safeguard."
+    },
+    {
+      "id": "boundary",
+      "title": "Support remains free. Continuity is optional.",
+      "summary": "Clarifies the product boundary between unrestricted ritual support and optional paid continuity."
+    },
+    {
+      "id": "systems",
+      "title": "One source of truth for each concern",
+      "summary": "Maps the browser, app server, Stripe, and database roles."
+    },
+    {
+      "id": "checkout",
+      "title": "Checkout is an intent—not access",
+      "summary": "Explains the secure Stripe Checkout initiation path and why redirects do not provision access."
+    },
+    {
+      "id": "webhook",
+      "title": "Verified events project billing state",
+      "summary": "Shows raw-body webhook verification, event ledgering, entitlement projection, and prompt acknowledgment."
+    },
+    {
+      "id": "lifecycle",
+      "title": "Lifecycle events map to narrow feature changes",
+      "summary": "Maps checkout, payment, failure, cancellation, and refund events to user-visible paid keys."
+    },
+    {
+      "id": "entitlements",
+      "title": "Entitlements separate support from billing",
+      "summary": "Illustrates unconditional ritual access and optional Continuity and Rhythm Plus feature keys."
+    },
+    {
+      "id": "reliability",
+      "title": "Reliability is built for asynchronous delivery",
+      "summary": "Covers signatures, idempotency, state ordering, and reconciliation."
+    },
+    {
+      "id": "privacy",
+      "title": "Privacy and security stay narrow",
+      "summary": "Describes secrets, minimal metadata, ownership, and deletion controls."
+    },
+    {
+      "id": "tests",
+      "title": "Simulated tests verify the current boundary",
+      "summary": "Summarizes HTTP-level simulated webhook lifecycle coverage."
+    },
+    {
+      "id": "rollout",
+      "title": "Production rollout is deliberately staged",
+      "summary": "Presents the safe sequence from sandbox events to controlled availability."
+    },
+    {
+      "id": "closing",
+      "title": "Billing supports continuity.",
+      "summary": "Closing principle: billing must never stand between a user and a ritual.",
+      "image_plan": "Use a suitable image if needed"
+    }
+  ]
+}

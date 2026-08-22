@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #E6E2F0; color: #3B2F4C; font-family: Manrope, sans-serif; display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 54px 74px 0; }
+    .kicker { color: #6B8E9B; font-size: 12px; font-weight: 600; letter-spacing: .18em; }
+    .page { font-size: 12px; color: #4A3F5A; }
+    .frame { width: 1130px; margin: 0 auto; align-self: center; display: grid; grid-template-columns: 360px 1fr; gap: 90px; align-items: center; }
+    .intro { display: grid; gap: 22px; }
+    h2 { font-family: Fraunces, serif; font-size: 56px; line-height: 1.03; font-weight: 300; letter-spacing: -.04em; }
+    .intro p { color: #4A3F5A; font-family: Fraunces, serif; font-size: 23px; font-style: italic; line-height: 1.45; }
+    .progress { display: grid; grid-template-columns: 1fr 1fr 1.22fr; gap: 24px; align-items: end; position: relative; }
+    .progress:before { content: ''; position: absolute; left: 34px; right: 34px; height: 1px; top: 83px; background: #6B8E9B; opacity: .55; }
+    .milestone { display: grid; gap: 13px; position: relative; }
+    .number { width: 168px; height: 168px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.38); color: #3B2F4C; font-family: Fraunces, serif; font-size: 66px; font-weight: 300; letter-spacing: -.05em; z-index: 1; }
+    .milestone.final .number { width: 210px; height: 210px; background: rgba(255,255,255,.56); color: #6B8E9B; font-size: 82px; }
+    .day { color: #6B8E9B; font-size: 12px; font-weight: 600; letter-spacing: .17em; }
+    h3 { font-family: Fraunces, serif; font-size: 28px; font-weight: 300; line-height: 1.15; }
+    .milestone p { color: #4A3F5A; font-size: 15px; line-height: 1.6; max-width: 225px; }
+    .closing { grid-column: 1 / -1; border-top: 1px solid rgba(107,142,155,.4); margin-top: 20px; padding-top: 20px; color: #4A3F5A; font-size: 15px; line-height: 1.5; }
+    .closing strong { color: #3B2F4C; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="header"><div class="kicker">THE 21-DAY RHYTHM</div><div class="page">04</div></header>
+    <main class="frame">
+      <section class="intro"><h2>Consistency without pressure.</h2><p>Open the routine. Notice the return. Let the rhythm grow at its own pace.</p></section>
+      <section class="progress">
+        <article class="milestone"><div class="number">7</div><div class="day">DAY SEVEN</div><h3>A week of returning.</h3><p>Notice what has felt supportive and keep only what fits.</p></article>
+        <article class="milestone"><div class="number">14</div><div class="day">DAY FOURTEEN</div><h3>A growing rhythm.</h3><p>Two weeks of making room for yourself, one opening at a time.</p></article>
+        <article class="milestone final"><div class="number">21</div><div class="day">DAY TWENTY-ONE</div><h3>A new habit taking shape.</h3><p>A gentle celebration of the steady place the user has made to return to.</p></article>
+        <p class="closing"><strong>The counter recognizes return, not perfection.</strong> A missed day is information—not a failure.</p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

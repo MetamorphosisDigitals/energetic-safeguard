@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F6F2EC; color: #382C49; font-family: Manrope, sans-serif; overflow: hidden; }
+    .head { padding: 48px 68px 0; }
+    .eyebrow { color: #7895A2; font-size: 12px; letter-spacing: .18em; font-weight: 700; }
+    h1 { font-family: Fraunces, serif; font-size: 46px; line-height: 1.08; font-weight: 300; letter-spacing: -.03em; margin-top: 12px; }
+    .intro { color: #5A4D64; font-size: 16px; margin-top: 10px; }
+    /* Reduced top margin by 4px to eliminate 3px overflow */
+    .map { margin: 31px 68px 0; display: grid; grid-template-columns: 280px 1fr 295px; border-top: 1px solid #AABEC5; }
+    .headcell { color: #7895A2; font-size: 11px; letter-spacing: .16em; font-weight: 700; padding-top: 16px; padding-right: 22px; padding-left: 0; min-height: 52px; }
+    .headcell:nth-child(3n+2), .cell:nth-child(3n+2) { border-left: 1px solid #D1DDE0; padding-left: 22px; }
+    .headcell:nth-child(3n+3), .cell:nth-child(3n+3) { border-left: 1px solid #D1DDE0; padding-left: 22px; }
+    .cell { border-top: 1px solid #D1DDE0; padding-top: 16px; padding-right: 22px; min-height: 75px; font-size: 14px; line-height: 1.35; color: #50425B; }
+    .event { font-family: Fraunces, serif; color: #382C49; font-size: 19px; font-weight: 400; }
+    .project { color: #382C49; font-weight: 600; }
+    .muted { color: #627984; }
+    .guardrail { margin: 27px 68px 0; display: grid; grid-template-columns: 170px 1fr; gap: 24px; align-items: start; border-top: 2px solid #7895A2; padding-top: 18px; }
+    .guardrail b { color: #7895A2; letter-spacing: .14em; font-size: 11px; }
+    .guardrail p { font-family: Fraunces, serif; font-size: 23px; font-weight: 300; line-height: 1.25; color: #4A3E5B; }
+    .foot { margin: 21px 68px 0; color: #718B96; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="head">
+      <div class="eyebrow">SUBSCRIPTION EVENT PROJECTION</div>
+      <h1>Lifecycle events map to narrow feature changes.</h1>
+      <p class="intro">The webhook handler translates verified provider events into optional capability keys—not broad product access.</p>
+    </header>
+    <section class="map">
+      <div class="headcell">VERIFIED EVENT</div><div class="headcell">SERVER PROJECTION</div><div class="headcell">USER-VISIBLE EFFECT</div>
+      <div class="cell event">checkout.session.completed</div><div class="cell"><span class="project">Link user, customer, and subscription.</span><br><span class="muted">Do not infer access from the redirect.</span></div><div class="cell">Checkout can close; the dashboard waits for projected billing state.</div>
+      <div class="cell event">invoice.paid</div><div class="cell"><span class="project">Project active plan and current period.</span></div><div class="cell">Continuity or Rhythm Plus capability keys become available.</div>
+      <div class="cell event">invoice.payment_failed</div><div class="cell"><span class="project">Record payment issue and grace policy.</span></div><div class="cell">Optional paid keys follow policy; rituals remain available.</div>
+      <div class="cell event">customer.subscription.deleted</div><div class="cell"><span class="project">End paid projection and retain audit data.</span></div><div class="cell">Only optional cloud and advanced-habit keys are removed.</div>
+      <div class="cell event">charge.refunded</div><div class="cell"><span class="project">Reconcile refund against written policy.</span></div><div class="cell">A controlled, auditable change to paid capability state.</div>
+    </section>
+    <section class="guardrail"><b>NON-NEGOTIABLE</b><p>A billing failure must never block a guided ritual or safety handoff.</p></section>
+    <div class="foot">Recommended future subscription projection · Current simulated suite covers checkout, failure safety, signature rejection, duplicate delivery, and projection failure.</div>
+  </div>
+</body>
+</html>

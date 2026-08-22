@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #E6E2F0; color: #3B2F4C; font-family: Manrope, sans-serif; display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 54px 74px 0; }
+    .kicker { color: #6B8E9B; font-size: 12px; letter-spacing: .18em; font-weight: 600; }
+    .page { color: #4A3F5A; font-size: 12px; }
+    .content { width: 1130px; margin: 0 auto; align-self: center; display: grid; grid-template-columns: 430px 1fr; gap: 120px; align-items: center; }
+    .statement { display: grid; gap: 22px; }
+    h2 { font-family: Fraunces, serif; font-weight: 300; font-size: 54px; line-height: 1.04; letter-spacing: -.04em; }
+    .statement p { font-family: Fraunces, serif; font-weight: 300; font-style: italic; font-size: 25px; line-height: 1.43; color: #4A3F5A; }
+    .rule { width: 70px; height: 1px; background: #6B8E9B; }
+    .path { display: grid; gap: 26px; position: relative; }
+    .path:before { content: ''; position: absolute; left: 31px; top: 33px; bottom: 35px; width: 1px; background: rgba(107,142,155,.55); }
+    .step { display: grid; grid-template-columns: 64px 1fr; gap: 22px; align-items: start; position: relative; }
+    .number { width: 63px; height: 63px; border-radius: 50%; background: rgba(255,255,255,.47); display: grid; place-items: center; color: #6B8E9B; font-family: Fraunces, serif; font-size: 27px; z-index: 1; }
+    .copy { display: grid; gap: 7px; padding-top: 8px; }
+    h3 { font-family: Fraunces, serif; font-size: 27px; font-weight: 300; letter-spacing: -.02em; }
+    .copy p { max-width: 400px; color: #4A3F5A; font-size: 15px; line-height: 1.58; }
+    .note { margin-top: 18px; color: #6B8E9B; font-size: 13px; letter-spacing: .04em; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="header"><div class="kicker">THE PRODUCT PRINCIPLES</div><div class="page">06</div></header>
+    <main class="content">
+      <section class="statement">
+        <div class="rule"></div>
+        <h2>Safety and choice shape every path.</h2>
+        <p>Support should make more room for agency—not less.</p>
+        <div class="note">No diagnosis. No treatment claims. No forced commands.</div>
+      </section>
+      <section class="path">
+        <article class="step"><div class="number">01</div><div class="copy"><h3>Consent-led language</h3><p>Every ritual is offered as an invitation. Users choose their pace, their practice, and whether symbolic support belongs in the moment.</p></div></article>
+        <article class="step"><div class="number">02</div><div class="copy"><h3>Guarded selection</h3><p>When an input calls for more caution, the experience pauses before showing a ritual and offers a supportive orientation instead.</p></div></article>
+        <article class="step"><div class="number">03</div><div class="copy"><h3>Optional symbolism</h3><p>Rose Rays and crystals can enrich a ritual for users who want them. Nothing physical or symbolic is required to participate.</p></div></article>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

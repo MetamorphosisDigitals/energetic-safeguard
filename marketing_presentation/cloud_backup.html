@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #E6E2F0; color: #3B2F4C; font-family: Manrope, sans-serif; display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 54px 74px 0; }
+    .kicker { color: #6B8E9B; font-size: 12px; font-weight: 600; letter-spacing: .18em; }
+    .page { font-size: 12px; color: #4A3F5A; }
+    .layout { width: 1130px; margin: 0 auto; align-self: center; display: grid; grid-template-columns: 430px 1fr; gap: 105px; align-items: center; }
+    .thesis { display: grid; gap: 24px; }
+    h2 { font-family: Fraunces, serif; font-weight: 300; font-size: 54px; line-height: 1.04; letter-spacing: -.04em; }
+    .thesis p { font-family: Fraunces, serif; font-weight: 300; font-style: italic; font-size: 24px; line-height: 1.45; color: #4A3F5A; }
+    .rule { width: 80px; height: 1px; background: #6B8E9B; }
+    .micro { max-width: 360px; color: #4A3F5A; font-size: 15px; line-height: 1.65; }
+    .flow { display: grid; grid-template-columns: 120px 1fr; column-gap: 28px; row-gap: 0; align-items: start; }
+    .glyph { width: 98px; height: 98px; border-radius: 50%; background: rgba(255,255,255,.42); display: grid; place-items: center; color: #6B8E9B; font-family: Fraunces, serif; font-size: 39px; }
+    .stem { width: 1px; min-height: 78px; background: rgba(107,142,155,.62); margin-left: 49px; }
+    .entry { display: grid; gap: 9px; padding-top: 9px; }
+    .entry-label { font-size: 12px; letter-spacing: .16em; font-weight: 600; color: #6B8E9B; }
+    h3 { font-family: Fraunces, serif; font-weight: 300; font-size: 30px; line-height: 1.12; letter-spacing: -.02em; }
+    .entry p { font-size: 15px; line-height: 1.55; color: #4A3F5A; max-width: 400px; }
+    .choice { color: #3B2F4C; font-weight: 600; }
+    .accent-wash { width: 295px; height: 120px; background: rgba(107,142,155,.10); filter: blur(40px); margin-left: 155px; margin-top: -55px; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="header"><div class="kicker">PRIVACY & CONTINUITY</div><div class="page">07</div></header>
+    <main class="layout">
+      <section class="thesis">
+        <h2>Privacy is an active choice.</h2>
+        <p>Your routine stays close until you decide it should travel with you.</p>
+        <div class="rule"></div>
+        <div class="micro">Notes, reflections, and active routines remain on the device by default. Cloud continuity is an invitation—never an assumption.</div>
+      </section>
+      <section class="flow">
+        <div class="glyph">⌂</div>
+        <article class="entry"><div class="entry-label">LOCAL BY DEFAULT</div><h3>Keep the active rhythm on this device.</h3><p>Daily practices, active plans, and reflections begin as private device-level support.</p></article>
+        <div class="stem"></div><div></div>
+        <div class="glyph">↗</div>
+        <article class="entry"><div class="entry-label">EXPLICIT BACKUP</div><h3>Choose when a completed plan is saved.</h3><p>Users can back up manually or opt into automatic backup for future completed plans.</p></article>
+        <div class="stem"></div><div></div>
+        <div class="glyph">☁</div>
+        <article class="entry"><div class="entry-label">PLAN-LEVEL CONTROL</div><h3>Manage each cloud copy with care.</h3><p><span class="choice">Restore, label, pin, search, or delete</span> a cloud plan independently—without changing the local copy.</p></article>
+      </section>
+    </main>
+    <div class="accent-wash"></div>
+  </div>
+</body>
+</html>

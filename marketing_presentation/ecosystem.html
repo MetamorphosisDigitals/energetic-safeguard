@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #E6E2F0; color: #3B2F4C; font-family: Manrope, sans-serif; display: grid; grid-template-rows: auto 1fr auto; overflow: hidden; }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 54px 74px 0; }
+    .kicker { color: #6B8E9B; font-size: 12px; font-weight: 600; letter-spacing: .18em; }
+    .page { font-size: 12px; color: #4A3F5A; }
+    .intro { width: 1130px; margin: 38px auto 0; display: flex; justify-content: space-between; align-items: flex-end; }
+    h2 { font-family: Fraunces, serif; font-weight: 300; font-size: 50px; line-height: 1.04; letter-spacing: -.04em; max-width: 560px; }
+    .intro p { font-family: Fraunces, serif; font-weight: 300; font-style: italic; color: #4A3F5A; font-size: 21px; line-height: 1.4; max-width: 360px; }
+    .system { width: 1130px; margin: 0 auto; align-self: center; display: grid; grid-template-columns: 1fr 56px 1fr 56px 1fr 56px 1fr; align-items: start; }
+    .node { display: grid; gap: 15px; align-content: start; min-height: 285px; }
+    .orb { width: 82px; height: 82px; border-radius: 50%; background: rgba(255,255,255,.47); display: grid; place-items: center; color: #6B8E9B; font-family: Fraunces, serif; font-weight: 300; font-size: 30px; }
+    .node:nth-child(5) .orb { width: 96px; height: 96px; background: rgba(255,255,255,.60); }
+    .node-label { font-size: 11px; color: #6B8E9B; font-weight: 600; letter-spacing: .16em; }
+    h3 { font-family: Fraunces, serif; font-weight: 300; font-size: 27px; line-height: 1.13; letter-spacing: -.02em; }
+    .node p { color: #4A3F5A; font-size: 15px; line-height: 1.55; max-width: 195px; }
+    .connector { height: 1px; background: rgba(107,142,155,.62); margin-top: 41px; position: relative; }
+    .connector:after { content: '·'; color: #6B8E9B; position: absolute; right: -2px; top: -11px; font-size: 22px; }
+    .footer { width: 1130px; margin: 0 auto 42px; padding-top: 18px; border-top: 1px solid rgba(107,142,155,.42); color: #4A3F5A; font-size: 15px; line-height: 1.5; }
+    .footer strong { color: #3B2F4C; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="header"><div class="kicker">THE PRODUCT ECOSYSTEM</div><div class="page">09</div></header>
+    <section class="intro"><h2>A complete support ecosystem.</h2><p>A small ritual for now. A rhythm for the days ahead.</p></section>
+    <main class="system">
+      <article class="node"><div class="orb">01</div><div class="node-label">THE MOMENT</div><h3>Guided rituals</h3><p>One grounded next step for a morning, interaction, transition, reset, or release.</p></article>
+      <div class="connector"></div>
+      <article class="node"><div class="orb">02</div><div class="node-label">THE RHYTHM</div><h3>Daily Routine</h3><p>A personal morning, protection, and evening sequence with gentle 7, 14, and 21-day markers.</p></article>
+      <div class="connector"></div>
+      <article class="node"><div class="orb">03</div><div class="node-label">THE LEARNING</div><h3>Reflection</h3><p>Optional notes, completed-plan reflections, and a private record of what felt supportive.</p></article>
+      <div class="connector"></div>
+      <article class="node"><div class="orb">04</div><div class="node-label">THE CONTINUITY</div><h3>Cloud history</h3><p>Optional account-based backup for completed plans, with restore and plan-level management.</p></article>
+    </main>
+    <footer class="footer"><strong>One system, many ways to return:</strong> immediate support, a personal routine, private reflection, and continuity by choice.</footer>
+  </div>
+</body>
+</html>

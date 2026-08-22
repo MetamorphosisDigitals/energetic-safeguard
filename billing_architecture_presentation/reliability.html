@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #382C49; color: #F6F2EC; font-family: Manrope, sans-serif; overflow: hidden; }
+    .topline { display: flex; justify-content: space-between; padding: 52px 70px 0; color: #B9C9CE; font-size: 12px; letter-spacing: .17em; font-weight: 700; }
+    .layout { display: grid; grid-template-columns: 370px 1fr; gap: 58px; padding: 69px 92px 0; }
+    .eyebrow { color: #9DB6BE; font-size: 12px; letter-spacing: .18em; font-weight: 700; }
+    h1 { font-family: Fraunces, serif; font-size: 51px; line-height: 1.03; font-weight: 300; letter-spacing: -.035em; margin-top: 17px; }
+    .intro { color: #D5CCDF; font-size: 16px; line-height: 1.55; margin-top: 23px; max-width: 325px; }
+    .rail { border-top: 1px solid #7895A2; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; padding-top: 25px; }
+    .stage { min-height: 230px; position: relative; }
+    .stage:before { content: ''; display: block; width: 9px; height: 9px; background: #9DB6BE; border-radius: 50%; margin-bottom: 20px; }
+    .stage:not(:last-child):after { content: ''; position: absolute; height: 1px; background: #7895A2; width: 26px; top: 4px; right: -25px; }
+    .number { color: #9DB6BE; font-size: 11px; letter-spacing: .14em; font-weight: 700; }
+    h2 { font-family: Fraunces, serif; font-weight: 300; font-size: 26px; line-height: 1.1; margin-top: 10px; }
+    .stage p { font-size: 14px; line-height: 1.52; color: #D5CCDF; margin-top: 13px; }
+    .foot { margin: 41px 92px 0 520px; border-top: 1px solid rgba(185,201,206,.45); padding-top: 16px; display: flex; gap: 18px; }
+    .foot b { color: #9DB6BE; font-size: 11px; letter-spacing: .14em; white-space: nowrap; }
+    .foot p { color: #F6F2EC; font-family: Fraunces, serif; font-size: 20px; font-weight: 300; line-height: 1.25; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="topline"><span>THE ENERGETIC SAFEGUARD</span><span>ASYNC EVENT CONTROL</span></div>
+    <main class="layout">
+      <section>
+        <div class="eyebrow">RELIABILITY MODEL</div>
+        <h1>Reliability is built for asynchronous delivery.</h1>
+        <p class="intro">Payment events can arrive late, twice, or out of sequence. The billing boundary treats each delivery as untrusted until it is verified, recorded, and safely projected.</p>
+      </section>
+      <section class="rail">
+        <article class="stage"><div class="number">01 · VERIFY</div><h2>Check the signature</h2><p>Use original request bytes, the Stripe signature, and the endpoint secret before any business logic runs.</p></article>
+        <article class="stage"><div class="number">02 · LEDGER</div><h2>Record the event</h2><p>A unique provider event ID makes duplicate delivery visible and prevents repeated projection.</p></article>
+        <article class="stage"><div class="number">03 · PROJECT</div><h2>Protect state order</h2><p>Subscription timestamps and current provider status stop stale events from replacing newer access state.</p></article>
+        <article class="stage"><div class="number">04 · RECONCILE</div><h2>Compare intentionally</h2><p>A controlled daily comparison flags mismatches between provider subscriptions and local entitlements.</p></article>
+      </section>
+    </main>
+    <div class="foot"><b>DESIGN INTENT</b><p>Every retry is safe. Every change is auditable. Every repair is controlled.</p></div>
+  </div>
+</body>
+</html>

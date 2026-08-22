@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #F6F2EC; color: #382C49; font-family: Manrope, sans-serif; overflow: hidden; }
+    .head { padding: 50px 70px 0; }
+    .eyebrow { color: #7895A2; font-size: 12px; letter-spacing: .18em; font-weight: 700; }
+    h1 { font-family: Fraunces, serif; font-size: 47px; font-weight: 300; letter-spacing: -.035em; margin-top: 12px; }
+    .sub { margin-top: 10px; color: #5A4D65; font-size: 17px; }
+    /* Reduced vertical gaps to bring total height below 720px */
+    .matrix { margin: 30px 70px 0; border-top: 1px solid #B9C9CE; display: grid; grid-template-columns: 90px 315px 1fr 190px; }
+    .th { min-height: 53px; padding-top: 16px; color: #7895A2; font-size: 11px; letter-spacing: .14em; font-weight: 700; }
+    .th:not(:first-child), .td:not(:first-child) { border-left: 1px solid #D1DDE0; padding-left: 19px; }
+    .td { min-height: 67px; border-top: 1px solid #D1DDE0; padding-top: 14px; padding-right: 18px; font-size: 14px; color: #51435F; line-height: 1.42; }
+    .id { font-family: Fraunces, serif; font-size: 22px; color: #4A3E5B; }
+    .case { font-family: Fraunces, serif; font-size: 19px; color: #382C49; }
+    .outcome { color: #382C49; font-weight: 600; }
+    .status { color: #607983; font-size: 12px; letter-spacing: .07em; font-weight: 700; }
+    /* Slightly reduced top margin and padding in the scope to save vertical space */
+    .scope { margin: 18px 70px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; border-top: 2px solid #7895A2; padding-top: 12px; }
+    .scope h2 { font-size: 11px; letter-spacing: .15em; color: #7895A2; }
+    .scope p { margin-top: 8px; font-family: Fraunces, serif; font-size: 20px; font-weight: 300; color: #4A3E5B; line-height: 1.28; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="head">
+      <div class="eyebrow">HTTP-LEVEL LIFECYCLE SUITE</div>
+      <h1>Simulated tests verify the current boundary.</h1>
+      <p class="sub">Events are constructed in-process: no live gateway request, no live customer data, and no browser redirect assumption.</p>
+    </header>
+    <section class="matrix">
+      <div class="th">CASE</div><div class="th">SIMULATED EVENT</div><div class="th">ASSERTED SAFETY OR OUTCOME</div><div class="th">RESULT</div>
+      <div class="td id">01</div><div class="td case">Paid checkout completion</div><div class="td"><span class="outcome">Projects the existing lifetime entitlement record</span> with user, customer, payment intent, and checkout IDs.</div><div class="td status">PASS</div>
+      <div class="td id">02</div><div class="td case">invoice.payment_failed</div><div class="td"><span class="outcome">Creates no entitlement side effect</span> and never alters unrestricted ritual access.</div><div class="td status">PASS</div>
+      <div class="td id">03</div><div class="td case">Invalid signature</div><div class="td"><span class="outcome">Returns 400 before any projection</span>; the persistence mock remains untouched.</div><div class="td status">PASS</div>
+      <div class="td id">04</div><div class="td case">Duplicate checkout delivery</div><div class="td"><span class="outcome">Exercises the stable database upsert path</span> using the same Checkout Session identifier.</div><div class="td status">PASS</div>
+      <div class="td id">05</div><div class="td case">Projection failure</div><div class="td"><span class="outcome">Returns a retryable 500 response</span> so a provider retry can safely re-attempt delivery.</div><div class="td status">PASS</div>
+    </section>
+    <section class="scope">
+      <div><h2>CURRENT COVERAGE</h2><p>Signature, checkout projection, failed-invoice safety, duplicate delivery, and server failure are verified at the webhook HTTP boundary.</p></div>
+      <div><h2>NEXT SUBSCRIPTION PHASE</h2><p>`invoice.paid`, cancellation, refund, event-ledger persistence, and subscription ordering become projection tests when live subscription entitlements are introduced.</p></div>
+    </section>
+  </div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #E6E2F0; color: #3B2F4C; font-family: Manrope, sans-serif; display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 54px 74px 0; }
+    .kicker { color: #6B8E9B; font-size: 12px; font-weight: 600; letter-spacing: .18em; }
+    .page { font-size: 12px; color: #4A3F5A; }
+    .frame { width: 1130px; margin: 0 auto; align-self: center; display: grid; grid-template-columns: 330px 1fr; gap: 90px; align-items: center; }
+    .intro { display: grid; gap: 23px; }
+    h2 { font-family: Fraunces, serif; font-size: 56px; line-height: 1.02; font-weight: 300; letter-spacing: -.04em; }
+    .intro p { font-family: Fraunces, serif; font-size: 24px; font-style: italic; line-height: 1.45; color: #4A3F5A; }
+    .timeline { display: grid; grid-template-columns: 1fr 1fr 1fr; position: relative; align-items: start; gap: 30px; }
+    .timeline:before { content: ''; position: absolute; height: 1px; background: #6B8E9B; opacity: .6; left: 30px; right: 30px; top: 48px; }
+    .stop { position: relative; display: grid; gap: 17px; }
+    .orb { width: 96px; height: 96px; border-radius: 50%; background: rgba(255,255,255,.46); display: grid; place-items: center; color: #6B8E9B; font-family: Fraunces, serif; font-size: 34px; z-index: 1; }
+    .time { font-size: 12px; font-weight: 600; letter-spacing: .15em; color: #6B8E9B; }
+    h3 { font-family: Fraunces, serif; font-size: 29px; font-weight: 300; line-height: 1.13; letter-spacing: -.02em; }
+    .stop p { font-size: 15px; color: #4A3F5A; line-height: 1.6; max-width: 185px; }
+    .choice { grid-column: 2 / 3; margin-top: 42px; padding-top: 22px; border-top: 1px solid rgba(107,142,155,.45); color: #4A3F5A; font-size: 15px; line-height: 1.5; }
+    .choice strong { color: #3B2F4C; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="header"><div class="kicker">THE DAILY ROUTINE</div><div class="page">02</div></header>
+    <main class="frame">
+      <section class="intro"><h2>A steady rhythm across the day.</h2><p>Three small places to begin, protect, and release.</p></section>
+      <section class="timeline">
+        <article class="stop"><div class="orb">↗</div><div class="time">MORNING</div><h3>Check In</h3><p>Arrive in your body and set a gentle direction for the day.</p></article>
+        <article class="stop"><div class="orb">◌</div><div class="time">INTERACTION</div><h3>Protect</h3><p>Create a little more room around your attention before an exchange.</p></article>
+        <article class="stop"><div class="orb">↘</div><div class="time">EVENING</div><h3>Clean</h3><p>Mark a supportive transition out of the day and into rest.</p></article>
+        <p class="choice"><strong>Personal by design:</strong> users choose the ritual in each slot and can reshape the rhythm as life changes.</p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

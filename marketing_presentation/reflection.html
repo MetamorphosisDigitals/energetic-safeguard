@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; box-sizing: border-box; }
+    .slide-container { width: 1280px; min-height: 720px; background: #E6E2F0; color: #3B2F4C; font-family: Manrope, sans-serif; display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 54px 74px 0; }
+    .kicker { color: #6B8E9B; font-size: 12px; font-weight: 600; letter-spacing: .18em; }
+    .page { color: #4A3F5A; font-size: 12px; }
+    .main { width: 1130px; margin: 0 auto; align-self: center; display: grid; grid-template-columns: 470px 1fr; gap: 120px; align-items: center; }
+    .lead { display: grid; gap: 26px; }
+    h2 { font-family: Fraunces, serif; font-size: 56px; line-height: 1.02; letter-spacing: -.04em; font-weight: 300; }
+    .quote { font-family: Fraunces, serif; font-style: italic; font-size: 27px; line-height: 1.42; color: #4A3F5A; max-width: 430px; }
+    .rule { width: 76px; height: 1px; background: #6B8E9B; }
+    .detail { color: #4A3F5A; font-size: 16px; line-height: 1.65; max-width: 390px; }
+    .sequence { display: grid; position: relative; gap: 0; }
+    .sequence:before { content: ''; position: absolute; left: 26px; top: 20px; bottom: 20px; width: 1px; background: rgba(107,142,155,.65); }
+    .step { min-height: 92px; display: grid; grid-template-columns: 54px 1fr; gap: 24px; align-items: center; position: relative; }
+    .number { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,.48); color: #6B8E9B; display: grid; place-items: center; font-family: Fraunces, serif; font-size: 22px; z-index: 1; }
+    .copy { display: grid; gap: 6px; }
+    .copy h3 { font-family: Fraunces, serif; font-size: 25px; line-height: 1.1; font-weight: 300; letter-spacing: -.02em; }
+    .copy p { color: #4A3F5A; font-size: 15px; line-height: 1.5; max-width: 390px; }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <header class="header"><div class="kicker">PRIVATE REFLECTION</div><div class="page">05</div></header>
+    <main class="main">
+      <section class="lead">
+        <h2>Reflection keeps the routine personal.</h2>
+        <div class="rule"></div>
+        <p class="quote">“Keep what you learn— not just what you complete.”</p>
+        <p class="detail">The routine can hold a small record of what felt supportive, then offer a gentle way to return, adapt, or share a print-ready summary.</p>
+      </section>
+      <section class="sequence">
+        <article class="step"><div class="number">01</div><div class="copy"><h3>Optional day notes</h3><p>Capture a brief private observation after a completed check-in.</p></div></article>
+        <article class="step"><div class="number">02</div><div class="copy"><h3>Day 7 reflection</h3><p>Bring together the selected ritual, completed days, and the insights that matter.</p></div></article>
+        <article class="step"><div class="number">03</div><div class="copy"><h3>Repeat or adapt</h3><p>Start a fresh cycle with the same ritual or try a different supportive rhythm.</p></div></article>
+        <article class="step"><div class="number">04</div><div class="copy"><h3>Print a summary</h3><p>Create a simple record of a completed plan when a tangible reflection is useful.</p></div></article>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

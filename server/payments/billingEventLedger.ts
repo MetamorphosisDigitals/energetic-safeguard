@@ -9,29 +9,6 @@ type BillingEventInput = {
   providerCreatedAt: Date | null;
 };
 
-function affectedRows(result: unknown) {
-  if (result && typeof result === "object" && "affectedRows" in result && typeof (result as { affectedRows?: unknown }).affectedRows === "number") {
-    return (result as { affectedRows: number }).affectedRows;
-  }
-  if (Array.isArray(result)) {
-    for (const item of result) {
-      if (item && typeof item === "object" && "affectedRows" in item && typeof (item as { affectedRows?: unknown }).affectedRows === "number") {
-        return (item as { affectedRows: number }).affectedRows;
-      }
-    }
-  }
-  return 0;
-}
-
-function isDuplicateEntryError(error: unknown) {
-  const candidates = [error, error && typeof error === "object" && "cause" in error ? (error as { cause?: unknown }).cause : null];
-  return candidates.some((candidate) => {
-    if (!candidate || typeof candidate !== "object") return false;
-    const details = candidate as { code?: unknown; errno?: unknown };
-    return details.code === "ER_DUP_ENTRY" || details.errno === 1062;
-  });
-}
-
 async function readBillingWebhookEvent(providerEventId: string) {
   const db = await getDb();
   if (!db) throw new Error("Database is unavailable while reading the billing event.");
@@ -42,7 +19,7 @@ async function readBillingWebhookEvent(providerEventId: string) {
 async function reclaimFailedBillingWebhookEvent(input: BillingEventInput) {
   const db = await getDb();
   if (!db) throw new Error("Database is unavailable while reclaiming the billing event.");
-  const result = await db
+  const reclaimed = await db
     .update(billingWebhookEvents)
     .set({
       eventType: input.eventType,
@@ -52,9 +29,10 @@ async function reclaimFailedBillingWebhookEvent(input: BillingEventInput) {
       providerCreatedAt: input.providerCreatedAt,
       processedAt: null,
     })
-    .where(and(eq(billingWebhookEvents.providerEventId, input.providerEventId), eq(billingWebhookEvents.outcome, "failed")));
+    .where(and(eq(billingWebhookEvents.providerEventId, input.providerEventId), eq(billingWebhookEvents.outcome, "failed")))
+    .returning({ id: billingWebhookEvents.id });
 
-  if (affectedRows(result) !== 1) {
+  if (reclaimed.length !== 1) {
     const event = await readBillingWebhookEvent(input.providerEventId);
     return { claimed: false, event };
   }
@@ -65,8 +43,8 @@ async function reclaimFailedBillingWebhookEvent(input: BillingEventInput) {
 
 /**
  * Claims a verified provider event exactly once while allowing a previously failed
- * projection to be retried. Processed/ignored events and an in-flight processing
- * event remain idempotent duplicates.
+ * projection to be retried. PostgreSQL's unique constraint plus ON CONFLICT makes
+ * concurrent first deliveries safe without relying on vendor-specific error codes.
  */
 export async function claimBillingWebhookEvent(input: BillingEventInput) {
   const db = await getDb();
@@ -78,10 +56,13 @@ export async function claimBillingWebhookEvent(input: BillingEventInput) {
     return { claimed: false, event: existing };
   }
 
-  try {
-    await db.insert(billingWebhookEvents).values({ ...input, outcome: "processing" });
-  } catch (error) {
-    if (!isDuplicateEntryError(error)) throw error;
+  const inserted = await db
+    .insert(billingWebhookEvents)
+    .values({ ...input, outcome: "processing" })
+    .onConflictDoNothing({ target: billingWebhookEvents.providerEventId })
+    .returning({ id: billingWebhookEvents.id });
+
+  if (inserted.length === 0) {
     const concurrent = await readBillingWebhookEvent(input.providerEventId);
     if (concurrent?.outcome === "failed") return reclaimFailedBillingWebhookEvent(input);
     return { claimed: false, event: concurrent };
@@ -101,5 +82,6 @@ export async function completeBillingWebhookEvent(
   await db
     .update(billingWebhookEvents)
     .set({ outcome, errorCode, processedAt: new Date() })
-    .where(eq(billingWebhookEvents.providerEventId, providerEventId));
+    .where(eq(billingWebhookEvents.providerEventId, providerEventId))
+    .returning({ id: billingWebhookEvents.id });
 }

@@ -1,17 +1,21 @@
 import { and, desc, eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
-import { billingWebhookEvents, InsertUser, practiceFavorites, practiceHistory, practiceSavedFilterViews, premiumEntitlements, routinePlanArchives, subscriptionEntitlements, userLibraryPreferences, users } from "../drizzle/schema";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
+import { InsertUser, practiceFavorites, practiceHistory, practiceSavedFilterViews, premiumEntitlements, routinePlanArchives, subscriptionEntitlements, userLibraryPreferences, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import type { PremiumOfferKey } from "./payments/products";
 
+let pool: Pool | null = null;
 let database: ReturnType<typeof drizzle> | null = null;
 
 export async function getDb() {
   if (!database && process.env.DATABASE_URL) {
     try {
-      database = drizzle(process.env.DATABASE_URL);
+      pool = new Pool({ connectionString: process.env.DATABASE_URL });
+      database = drizzle({ client: pool });
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
+      pool = null;
       database = null;
     }
   }
@@ -24,7 +28,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   if (!db) return;
 
   const values: InsertUser = { openId: user.openId, lastSignedIn: user.lastSignedIn ?? new Date() };
-  const updateSet: Record<string, unknown> = { lastSignedIn: values.lastSignedIn };
+  const updateSet: Partial<InsertUser> = { lastSignedIn: values.lastSignedIn };
   for (const field of ["name", "email", "loginMethod"] as const) {
     if (user[field] !== undefined) {
       values[field] = user[field] ?? null;
@@ -38,7 +42,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     values.role = "admin";
     updateSet.role = "admin";
   }
-  await db.insert(users).values(values).onDuplicateKeyUpdate({ set: updateSet });
+  await db.insert(users).values(values).onConflictDoUpdate({ target: users.openId, set: updateSet });
 }
 
 export async function getUserByOpenId(openId: string) {
@@ -64,7 +68,8 @@ export async function savePremiumEntitlement(input: {
 }) {
   const db = await getDb();
   if (!db) throw new Error("Database is unavailable while granting premium access.");
-  await db.insert(premiumEntitlements).values(input).onDuplicateKeyUpdate({
+  await db.insert(premiumEntitlements).values(input).onConflictDoUpdate({
+    target: premiumEntitlements.userId,
     set: {
       offerKey: input.offerKey,
       stripeCustomerId: input.stripeCustomerId,
@@ -88,23 +93,7 @@ export async function saveSubscriptionEntitlement(input: {
 }) {
   const db = await getDb();
   if (!db) throw new Error("Database is unavailable while projecting subscription state.");
-  await db.insert(subscriptionEntitlements).values(input).onDuplicateKeyUpdate({ set: input });
-}
-
-export async function claimBillingWebhookEvent(input: { providerEventId: string; eventType: string; userId: number | null; providerCreatedAt: Date | null }) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is unavailable while recording the billing event.");
-  const existing = await db.select().from(billingWebhookEvents).where(eq(billingWebhookEvents.providerEventId, input.providerEventId)).limit(1);
-  if (existing[0]) return { claimed: false, event: existing[0] };
-  await db.insert(billingWebhookEvents).values({ ...input, outcome: "processing" });
-  const rows = await db.select().from(billingWebhookEvents).where(eq(billingWebhookEvents.providerEventId, input.providerEventId)).limit(1);
-  return { claimed: true, event: rows[0] };
-}
-
-export async function completeBillingWebhookEvent(providerEventId: string, outcome: "processed" | "ignored" | "failed", errorCode: string | null = null) {
-  const db = await getDb();
-  if (!db) return;
-  await db.update(billingWebhookEvents).set({ outcome, errorCode, processedAt: new Date() }).where(eq(billingWebhookEvents.providerEventId, providerEventId));
+  await db.insert(subscriptionEntitlements).values(input).onConflictDoUpdate({ target: subscriptionEntitlements.userId, set: input });
 }
 
 export async function recordPracticeCompletion(userId: number, practiceId: string) {
@@ -196,7 +185,7 @@ export async function setPinnedCustomTags(userId: number, requestedTags: string[
   const availableTags = await listUserCustomTags(userId);
   const availableByKey = new Map(availableTags.map((tag) => [tag.toLocaleLowerCase(), tag]));
   const pinnedTags = uniqueTags(requestedTags.map((tag) => availableByKey.get(tag.toLocaleLowerCase())).filter((tag): tag is string => Boolean(tag)));
-  await db.insert(userLibraryPreferences).values({ userId, pinnedCustomTags: pinnedTags.length ? JSON.stringify(pinnedTags) : null }).onDuplicateKeyUpdate({ set: { pinnedCustomTags: pinnedTags.length ? JSON.stringify(pinnedTags) : null } });
+  await db.insert(userLibraryPreferences).values({ userId, pinnedCustomTags: pinnedTags.length ? JSON.stringify(pinnedTags) : null }).onConflictDoUpdate({ target: userLibraryPreferences.userId, set: { pinnedCustomTags: pinnedTags.length ? JSON.stringify(pinnedTags) : null } });
   return pinnedTags;
 }
 
@@ -211,7 +200,7 @@ export async function listSavedPracticeFilterViews(userId: number) {
 export async function savePracticeFilterView(userId: number, input: SavedPracticeFilterInput) {
   const db = await getDb();
   if (!db) throw new Error("Database is unavailable while saving a filter view.");
-  await db.insert(practiceSavedFilterViews).values({ userId, ...input }).onDuplicateKeyUpdate({ set: { keyword: input.keyword, customTag: input.customTag, startDate: input.startDate, endDate: input.endDate } });
+  await db.insert(practiceSavedFilterViews).values({ userId, ...input }).onConflictDoUpdate({ target: [practiceSavedFilterViews.userId, practiceSavedFilterViews.name], set: { keyword: input.keyword, customTag: input.customTag, startDate: input.startDate, endDate: input.endDate } });
 }
 
 export async function deletePracticeFilterView(userId: number, viewId: number) {
@@ -240,7 +229,7 @@ export async function setDefaultPracticeFilterView(userId: number, viewId: numbe
     const view = await db.select({ id: practiceSavedFilterViews.id }).from(practiceSavedFilterViews).where(and(eq(practiceSavedFilterViews.id, viewId), eq(practiceSavedFilterViews.userId, userId))).limit(1);
     if (!view[0]) throw new Error("The selected filter view is unavailable.");
   }
-  await db.insert(userLibraryPreferences).values({ userId, defaultSavedFilterViewId: viewId }).onDuplicateKeyUpdate({ set: { defaultSavedFilterViewId: viewId } });
+  await db.insert(userLibraryPreferences).values({ userId, defaultSavedFilterViewId: viewId }).onConflictDoUpdate({ target: userLibraryPreferences.userId, set: { defaultSavedFilterViewId: viewId } });
 }
 
 export async function getDailyDefaultPracticeId(userId: number) {
@@ -257,7 +246,7 @@ export async function setDailyDefaultPractice(userId: number, practiceId: string
     const favorite = await db.select({ id: practiceFavorites.id }).from(practiceFavorites).where(and(eq(practiceFavorites.userId, userId), eq(practiceFavorites.practiceId, practiceId))).limit(1);
     if (!favorite[0]) throw new Error("A daily default must be one of your saved favorites.");
   }
-  await db.insert(userLibraryPreferences).values({ userId, dailyDefaultPracticeId: practiceId }).onDuplicateKeyUpdate({ set: { dailyDefaultPracticeId: practiceId } });
+  await db.insert(userLibraryPreferences).values({ userId, dailyDefaultPracticeId: practiceId }).onConflictDoUpdate({ target: userLibraryPreferences.userId, set: { dailyDefaultPracticeId: practiceId } });
 }
 
 export async function listPracticeFavorites(userId: number) {
@@ -269,7 +258,7 @@ export async function listPracticeFavorites(userId: number) {
 export async function savePracticeFavorite(userId: number, practiceId: string) {
   const db = await getDb();
   if (!db) throw new Error("Database is unavailable while saving a favorite.");
-  await db.insert(practiceFavorites).values({ userId, practiceId }).onDuplicateKeyUpdate({ set: { practiceId } });
+  await db.insert(practiceFavorites).values({ userId, practiceId }).onConflictDoNothing({ target: [practiceFavorites.userId, practiceFavorites.practiceId] });
 }
 
 export async function removePracticeFavorite(userId: number, practiceId: string) {
@@ -328,7 +317,7 @@ export async function getRoutineArchiveAutoBackup(userId: number) {
 export async function setRoutineArchiveAutoBackup(userId: number, enabled: boolean) {
   const db = await getDb();
   if (!db) throw new Error("Database is unavailable while saving your backup preference.");
-  await db.insert(userLibraryPreferences).values({ userId, routineArchiveAutoBackup: enabled }).onDuplicateKeyUpdate({ set: { routineArchiveAutoBackup: enabled } });
+  await db.insert(userLibraryPreferences).values({ userId, routineArchiveAutoBackup: enabled }).onConflictDoUpdate({ target: userLibraryPreferences.userId, set: { routineArchiveAutoBackup: enabled } });
   return enabled;
 }
 
@@ -400,4 +389,11 @@ export async function updateRoutinePlanArchiveOrganization(userId: number, archi
   if (!db) throw new Error("Database is unavailable while organizing your archived plan.");
   await db.update(routinePlanArchives).set({ label: input.label, pinned: input.pinned }).where(and(eq(routinePlanArchives.id, archiveId), eq(routinePlanArchives.userId, userId)));
   return getRoutinePlanArchiveById(userId, archiveId);
+}
+
+
+export async function closeDb() {
+  if (pool) await pool.end();
+  pool = null;
+  database = null;
 }

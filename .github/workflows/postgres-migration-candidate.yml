@@ -25,7 +25,9 @@ jobs:
           cache: pnpm
 
       - name: Prepare PostgreSQL candidate
-        run: node scripts/prepare-postgres-migration.mjs
+        run: |
+          node scripts/repair-postgres-prep.mjs
+          node scripts/prepare-postgres-migration.mjs
 
       - name: Refresh lockfile
         run: pnpm install --no-frozen-lockfile

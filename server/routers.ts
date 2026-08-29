@@ -1,13 +1,12 @@
 import { z } from "zod";
-import Stripe from "stripe";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { deletePracticeFilterView, deleteRoutinePlanArchive, getDailyDefaultPracticeId, getDefaultPracticeFilterView, getPinnedCustomTags, getPremiumEntitlement, getRoutineArchiveAutoBackup, getRoutinePlanArchiveById, getRoutinePlanArchiveSummary, importRoutinePlanArchives, listPracticeFavorites, listPracticeHistory, listRoutinePlanArchives, listSavedPracticeFilterViews, listUserCustomTags, recordPracticeCompletion, removePracticeFavorite, replaceUserCustomTag, savePracticeFavorite, savePracticeFilterView, setDailyDefaultPractice, setDefaultPracticeFilterView, setPinnedCustomTags, setRoutineArchiveAutoBackup, updatePracticeHistoryNote, updatePracticeHistoryReflection, updateRoutinePlanArchiveOrganization } from "./db";
+import { getCheckoutReturnOrigin, getStripeClient } from "./payments/checkoutConfig";
 import { premiumOffers } from "./payments/products";
 import { isCanonicalRitualId } from "@shared/canonicalRitualIds";
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 const dateKeySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const routineArchiveInputSchema = z.object({
@@ -49,9 +48,8 @@ export const appRouter = router({
         if (existing) return { alreadyPremium: true as const, checkoutUrl: null };
 
         const offer = premiumOffers[input.offerKey];
-        const origin = ctx.req.headers.origin;
-        if (!origin) throw new Error("Checkout requires a browser origin.");
-        const session = await stripe.checkout.sessions.create({
+        const origin = getCheckoutReturnOrigin(ctx.req.headers.origin);
+        const session = await getStripeClient().checkout.sessions.create({
           mode: "payment",
           line_items: [{ price: offer.stripePriceId, quantity: 1 }],
           customer_email: ctx.user.email ?? undefined,

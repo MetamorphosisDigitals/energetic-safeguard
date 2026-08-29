@@ -1,10 +1,18 @@
 import type { Express, Request, Response } from "express";
 import Stripe from "stripe";
-import { claimBillingWebhookEvent, completeBillingWebhookEvent, getSubscriptionEntitlementByStripeId, savePremiumEntitlement, saveSubscriptionEntitlement } from "../db";
+import { getSubscriptionEntitlementByStripeId, savePremiumEntitlement, saveSubscriptionEntitlement } from "../db";
+import { claimBillingWebhookEvent, completeBillingWebhookEvent } from "./billingEventLedger";
 import { isPremiumOfferKey } from "./products";
 import { gracePeriodEndsAt, isSubscriptionOfferKey } from "./subscriptionPolicy";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+class RetryableWebhookDependencyError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "RetryableWebhookDependencyError";
+  }
+}
 
 function stripeId(value: unknown) {
   return typeof value === "string" ? value : typeof value === "object" && value && "id" in value && typeof value.id === "string" ? value.id : null;
@@ -32,11 +40,18 @@ async function handleSubscriptionCheckout(session: Stripe.Checkout.Session) {
   return userId;
 }
 
+async function requireSubscriptionEntitlement(stripeSubscriptionId: string) {
+  const existing = await getSubscriptionEntitlementByStripeId(stripeSubscriptionId);
+  if (!existing) {
+    throw new RetryableWebhookDependencyError(`Subscription projection ${stripeSubscriptionId} is not available yet.`);
+  }
+  return existing;
+}
+
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
   const stripeSubscriptionId = stripeId((invoice as unknown as { subscription?: unknown }).subscription);
   if (!stripeSubscriptionId) return null;
-  const existing = await getSubscriptionEntitlementByStripeId(stripeSubscriptionId);
-  if (!existing) return null;
+  const existing = await requireSubscriptionEntitlement(stripeSubscriptionId);
   const line = invoice.lines.data[0] as unknown as { period?: { end?: number }; price?: { id?: string } } | undefined;
   await saveSubscriptionEntitlement({ userId: existing.userId, offerKey: existing.offerKey, stripeCustomerId: existing.stripeCustomerId, stripeSubscriptionId, stripePriceId: line?.price?.id ?? existing.stripePriceId, status: "active", currentPeriodEnd: unixDate(line?.period?.end), graceEndsAt: null, lastInvoiceId: invoice.id, lastPaidAt: new Date(), canceledAt: null });
   return existing.userId;
@@ -45,15 +60,13 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
 async function handleInvoiceFailure(invoice: Stripe.Invoice) {
   const stripeSubscriptionId = stripeId((invoice as unknown as { subscription?: unknown }).subscription);
   if (!stripeSubscriptionId) return null;
-  const existing = await getSubscriptionEntitlementByStripeId(stripeSubscriptionId);
-  if (!existing) return null;
+  const existing = await requireSubscriptionEntitlement(stripeSubscriptionId);
   await saveSubscriptionEntitlement({ userId: existing.userId, offerKey: existing.offerKey, stripeCustomerId: existing.stripeCustomerId, stripeSubscriptionId, stripePriceId: existing.stripePriceId, status: "past_due", currentPeriodEnd: existing.currentPeriodEnd, graceEndsAt: gracePeriodEndsAt(), lastInvoiceId: invoice.id, lastPaidAt: existing.lastPaidAt, canceledAt: null });
   return existing.userId;
 }
 
 async function handleSubscriptionCanceled(subscription: Stripe.Subscription) {
-  const existing = await getSubscriptionEntitlementByStripeId(subscription.id);
-  if (!existing) return null;
+  const existing = await requireSubscriptionEntitlement(subscription.id);
   await saveSubscriptionEntitlement({ userId: existing.userId, offerKey: existing.offerKey, stripeCustomerId: existing.stripeCustomerId, stripeSubscriptionId: subscription.id, stripePriceId: existing.stripePriceId, status: "canceled", currentPeriodEnd: existing.currentPeriodEnd, graceEndsAt: null, lastInvoiceId: existing.lastInvoiceId, lastPaidAt: existing.lastPaidAt, canceledAt: new Date() });
   return existing.userId;
 }
@@ -80,7 +93,12 @@ export function registerStripeWebhook(app: Express) {
       return res.json({ received: true });
     } catch (error) {
       console.error("[Stripe] Webhook processing failed", error);
-      await completeBillingWebhookEvent(event.id, "failed", "projection_failed");
+      const errorCode = error instanceof RetryableWebhookDependencyError ? "dependency_missing" : "projection_failed";
+      try {
+        await completeBillingWebhookEvent(event.id, "failed", errorCode);
+      } catch (ledgerError) {
+        console.error("[Stripe] Failed to record webhook failure", ledgerError);
+      }
       return res.status(500).json({ error: "Webhook processing failed" });
     }
   });

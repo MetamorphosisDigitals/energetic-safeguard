@@ -13,6 +13,20 @@ jobs:
   validate:
     name: Type, safety, test, build, and browser E2E
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: energetic_safeguard
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d energetic_safeguard"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -28,6 +42,16 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Apply PostgreSQL migrations
+        run: pnpm db:migrate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/energetic_safeguard
+
+      - name: PostgreSQL persistence integration
+        run: pnpm exec vitest run server/postgres.integration.test.ts
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/energetic_safeguard
 
       - name: Type check
         run: pnpm check

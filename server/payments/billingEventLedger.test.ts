@@ -19,26 +19,30 @@ function createFakeDb() {
       }),
     }),
     insert: () => ({
-      values: async (values: Record<string, unknown>) => {
-        if (fake.row) {
-          const error = Object.assign(new Error("duplicate"), { code: "ER_DUP_ENTRY", errno: 1062 });
-          throw error;
-        }
-        fake.row = { id: 1, ...values, errorCode: null, processedAt: null };
-        return [{ affectedRows: 1 }];
-      },
+      values: (values: Record<string, unknown>) => ({
+        onConflictDoNothing: () => ({
+          returning: async () => {
+            if (fake.row) return [];
+            fake.row = { id: 1, ...values, errorCode: null, processedAt: null };
+            return [{ id: 1 }];
+          },
+        }),
+      }),
     }),
     update: () => ({
       set: (values: Record<string, unknown>) => ({
-        where: async () => {
-          if (values.outcome === "processing") {
-            if (fake.forceLostReclaim || fake.row?.outcome !== "failed") return [{ affectedRows: 0 }];
+        where: () => ({
+          returning: async () => {
+            if (values.outcome === "processing") {
+              if (fake.forceLostReclaim || fake.row?.outcome !== "failed") return [];
+              fake.row = { ...fake.row, ...values };
+              return [{ id: 1 }];
+            }
+            if (!fake.row) return [];
             fake.row = { ...fake.row, ...values };
-            return [{ affectedRows: 1 }];
-          }
-          if (fake.row) fake.row = { ...fake.row, ...values };
-          return [{ affectedRows: fake.row ? 1 : 0 }];
-        },
+            return [{ id: 1 }];
+          },
+        }),
       }),
     }),
   };
@@ -85,6 +89,11 @@ describe("billing webhook event ledger", () => {
   it("does not double-claim when another delivery wins a failed-event reclaim", async () => {
     fake.row = { id: 1, ...input, outcome: "failed", errorCode: "projection_failed", processedAt: new Date() };
     fake.forceLostReclaim = true;
+    await expect(claimBillingWebhookEvent(input)).resolves.toMatchObject({ claimed: false });
+  });
+
+  it("treats a concurrent first insert as an idempotent duplicate", async () => {
+    fake.row = { id: 1, ...input, outcome: "processing", errorCode: null, processedAt: null };
     await expect(claimBillingWebhookEvent(input)).resolves.toMatchObject({ claimed: false });
   });
 });

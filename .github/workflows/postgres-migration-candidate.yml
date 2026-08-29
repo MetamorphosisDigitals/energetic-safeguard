@@ -1,0 +1,69 @@
+name: PostgreSQL Migration Candidate
+
+on:
+  push:
+    branches: [migration/postgres]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Prepare and validate PostgreSQL migration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Prepare PostgreSQL candidate
+        run: node scripts/prepare-postgres-migration.mjs
+
+      - name: Refresh lockfile
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Generate PostgreSQL baseline
+        run: pnpm db:generate
+
+      - name: Upload generated candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: postgres-migration-candidate
+          path: |
+            package.json
+            pnpm-lock.yaml
+            drizzle.config.ts
+            drizzle/schema.ts
+            drizzle/postgres
+            server/db.ts
+            server/payments/billingEventLedger.ts
+            server/payments/billingEventLedger.test.ts
+            POSTGRES_MIGRATION.md
+
+      - name: Type check
+        run: pnpm check
+
+      - name: Safety selection-engine test matrix
+        run: pnpm test:safety-engine
+
+      - name: Full automated suite
+        run: pnpm test
+
+      - name: Production build
+        run: pnpm build
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Browser E2E suite
+        run: pnpm exec playwright test --workers=1
+        env:
+          STRIPE_SECRET_KEY: sk_test_ci_placeholder

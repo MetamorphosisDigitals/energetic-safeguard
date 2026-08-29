@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   validate:
-    name: Type, safety, test, and build
+    name: Type, safety, test, build, and browser E2E
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
@@ -40,3 +40,11 @@ jobs:
 
       - name: Production build
         run: pnpm build
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Browser E2E suite
+        run: pnpm exec playwright test --workers=1
+        env:
+          STRIPE_SECRET_KEY: sk_test_ci_placeholder

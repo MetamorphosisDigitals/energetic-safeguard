@@ -10,10 +10,6 @@ export default defineConfig({
     baseURL,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
-    launchOptions: {
-      executablePath: "/usr/bin/chromium",
-      args: ["--no-sandbox"],
-    },
   },
   webServer: {
     command: "PORT=4173 pnpm dev",

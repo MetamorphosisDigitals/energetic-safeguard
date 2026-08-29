@@ -8,10 +8,12 @@ const stripeMocks = vi.hoisted(() => ({
 }));
 const dbMocks = vi.hoisted(() => ({
   savePremiumEntitlement: vi.fn(),
-  claimBillingWebhookEvent: vi.fn(),
-  completeBillingWebhookEvent: vi.fn(),
   getSubscriptionEntitlementByStripeId: vi.fn(),
   saveSubscriptionEntitlement: vi.fn(),
+}));
+const ledgerMocks = vi.hoisted(() => ({
+  claimBillingWebhookEvent: vi.fn(),
+  completeBillingWebhookEvent: vi.fn(),
 }));
 
 vi.mock("stripe", () => ({
@@ -22,10 +24,13 @@ vi.mock("stripe", () => ({
 
 vi.mock("../db", () => ({
   savePremiumEntitlement: dbMocks.savePremiumEntitlement,
-  claimBillingWebhookEvent: dbMocks.claimBillingWebhookEvent,
-  completeBillingWebhookEvent: dbMocks.completeBillingWebhookEvent,
   getSubscriptionEntitlementByStripeId: dbMocks.getSubscriptionEntitlementByStripeId,
   saveSubscriptionEntitlement: dbMocks.saveSubscriptionEntitlement,
+}));
+
+vi.mock("./billingEventLedger", () => ({
+  claimBillingWebhookEvent: ledgerMocks.claimBillingWebhookEvent,
+  completeBillingWebhookEvent: ledgerMocks.completeBillingWebhookEvent,
 }));
 
 import { registerStripeWebhook } from "./stripeWebhook";
@@ -49,6 +54,22 @@ function checkoutEvent(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function invoiceEvent(type: "invoice.paid" | "invoice.payment_failed", id: string, subscription: string) {
+  return {
+    id,
+    type,
+    created: 1_787_422_401,
+    data: {
+      object: {
+        id: `in_${id}`,
+        customer: "cus_001",
+        subscription,
+        lines: { data: [{ price: { id: "price_rhythm" }, period: { end: 1_787_500_000 } }] },
+      },
+    },
+  };
+}
+
 describe("Stripe webhook lifecycle integration", () => {
   let server: Server;
   let baseUrl: string;
@@ -57,13 +78,13 @@ describe("Stripe webhook lifecycle integration", () => {
     process.env.STRIPE_WEBHOOK_SECRET = "whsec_simulated";
     stripeMocks.constructEvent.mockReset();
     dbMocks.savePremiumEntitlement.mockReset();
-    dbMocks.claimBillingWebhookEvent.mockReset();
-    dbMocks.completeBillingWebhookEvent.mockReset();
     dbMocks.getSubscriptionEntitlementByStripeId.mockReset();
     dbMocks.saveSubscriptionEntitlement.mockReset();
+    ledgerMocks.claimBillingWebhookEvent.mockReset();
+    ledgerMocks.completeBillingWebhookEvent.mockReset();
     dbMocks.savePremiumEntitlement.mockResolvedValue(undefined);
-    dbMocks.claimBillingWebhookEvent.mockResolvedValue({ claimed: true, event: {} });
-    dbMocks.completeBillingWebhookEvent.mockResolvedValue(undefined);
+    ledgerMocks.claimBillingWebhookEvent.mockResolvedValue({ claimed: true, event: {} });
+    ledgerMocks.completeBillingWebhookEvent.mockResolvedValue(undefined);
     dbMocks.getSubscriptionEntitlementByStripeId.mockResolvedValue(null);
     dbMocks.saveSubscriptionEntitlement.mockResolvedValue(undefined);
 
@@ -109,17 +130,44 @@ describe("Stripe webhook lifecycle integration", () => {
     });
   });
 
-  it("accepts a simulated invoice.payment_failed event without granting or removing unrestricted ritual access", async () => {
-    const response = await postSimulatedEvent({
-      id: "evt_live_invoice_failed_001",
-      type: "invoice.payment_failed",
-      created: 1_787_422_401,
-      data: { object: { id: "in_001", customer: "cus_001", subscription: "sub_001" } },
-    });
+  it("returns a retryable error when an invoice event arrives before its subscription projection", async () => {
+    const response = await postSimulatedEvent(invoiceEvent("invoice.payment_failed", "evt_live_invoice_failed_001", "sub_001"));
 
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ received: true });
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toEqual({ error: "Webhook processing failed" });
     expect(dbMocks.savePremiumEntitlement).not.toHaveBeenCalled();
+    expect(dbMocks.saveSubscriptionEntitlement).not.toHaveBeenCalled();
+    expect(ledgerMocks.completeBillingWebhookEvent).toHaveBeenCalledWith("evt_live_invoice_failed_001", "failed", "dependency_missing");
+  });
+
+  it("retries an out-of-order paid invoice after the subscription projection becomes available", async () => {
+    const event = invoiceEvent("invoice.paid", "evt_live_invoice_paid_reordered", "sub_reordered");
+    dbMocks.getSubscriptionEntitlementByStripeId
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        userId: 42,
+        offerKey: "rhythm_plus_monthly",
+        stripeCustomerId: "cus_001",
+        stripeSubscriptionId: "sub_reordered",
+        stripePriceId: "price_old",
+        currentPeriodEnd: null,
+        lastPaidAt: null,
+      });
+
+    const first = await postSimulatedEvent(event);
+    const second = await postSimulatedEvent(event);
+
+    expect(first.status).toBe(500);
+    expect(second.status).toBe(200);
+    await expect(second.json()).resolves.toEqual({ received: true });
+    expect(dbMocks.saveSubscriptionEntitlement).toHaveBeenCalledTimes(1);
+    expect(dbMocks.saveSubscriptionEntitlement).toHaveBeenCalledWith(expect.objectContaining({
+      status: "active",
+      stripeSubscriptionId: "sub_reordered",
+      stripePriceId: "price_rhythm",
+    }));
+    expect(ledgerMocks.completeBillingWebhookEvent).toHaveBeenCalledWith("evt_live_invoice_paid_reordered", "failed", "dependency_missing");
+    expect(ledgerMocks.completeBillingWebhookEvent).toHaveBeenCalledWith("evt_live_invoice_paid_reordered", "processed");
   });
 
   it("projects recurring paid invoices, grace status, and cancellation into the subscription ledger", async () => {
@@ -127,8 +175,8 @@ describe("Stripe webhook lifecycle integration", () => {
       .mockResolvedValueOnce({ userId: 42, offerKey: "rhythm_plus_monthly", stripeCustomerId: "cus_001", stripeSubscriptionId: "sub_paid", stripePriceId: "price_old", currentPeriodEnd: null, lastPaidAt: null })
       .mockResolvedValueOnce({ userId: 42, offerKey: "cloud_continuity_monthly", stripeCustomerId: "cus_001", stripeSubscriptionId: "sub_001", stripePriceId: "price_cloud", currentPeriodEnd: null, lastPaidAt: null })
       .mockResolvedValueOnce({ userId: 42, offerKey: "cloud_continuity_monthly", stripeCustomerId: "cus_001", stripeSubscriptionId: "sub_cancel", stripePriceId: "price_cloud", currentPeriodEnd: null, lastInvoiceId: null, lastPaidAt: null });
-    await postSimulatedEvent({ id: "evt_live_invoice_paid_001", type: "invoice.paid", created: 1_787_422_402, data: { object: { id: "in_paid_001", subscription: "sub_paid", lines: { data: [{ price: { id: "price_rhythm" }, period: { end: 1_787_500_000 } }] } } } });
-    await postSimulatedEvent({ id: "evt_live_invoice_failed_002", type: "invoice.payment_failed", created: 1_787_422_403, data: { object: { id: "in_failed_002", subscription: "sub_001" } } });
+    await postSimulatedEvent(invoiceEvent("invoice.paid", "evt_live_invoice_paid_001", "sub_paid"));
+    await postSimulatedEvent(invoiceEvent("invoice.payment_failed", "evt_live_invoice_failed_002", "sub_001"));
     await postSimulatedEvent({ id: "evt_live_cancel_001", type: "customer.subscription.deleted", created: 1_787_422_404, data: { object: { id: "sub_cancel" } } });
     expect(dbMocks.saveSubscriptionEntitlement).toHaveBeenCalledWith(expect.objectContaining({ status: "active", stripePriceId: "price_rhythm", graceEndsAt: null }));
     expect(dbMocks.saveSubscriptionEntitlement).toHaveBeenCalledWith(expect.objectContaining({ status: "past_due", stripeSubscriptionId: "sub_001" }));
@@ -173,7 +221,7 @@ describe("Stripe webhook lifecycle integration", () => {
   it("acknowledges replayed checkout deliveries without re-projecting a claimed event", async () => {
     const event = checkoutEvent({ id: "cs_live_duplicate_001" });
     const first = await postSimulatedEvent({ ...event, id: "evt_live_duplicate_001" });
-    dbMocks.claimBillingWebhookEvent.mockResolvedValueOnce({ claimed: false, event: {} });
+    ledgerMocks.claimBillingWebhookEvent.mockResolvedValueOnce({ claimed: false, event: {} });
     const second = await postSimulatedEvent({ ...event, id: "evt_live_duplicate_001" });
 
     expect(first.status).toBe(200);
@@ -183,12 +231,18 @@ describe("Stripe webhook lifecycle integration", () => {
     expect(dbMocks.savePremiumEntitlement).toHaveBeenCalledWith(expect.objectContaining({ stripeCheckoutSessionId: "cs_live_duplicate_001" }));
   });
 
-  it("returns a retryable server error when entitlement projection fails", async () => {
+  it("retries the same event after a projection failure instead of losing it as a duplicate", async () => {
+    const event = checkoutEvent({ id: "cs_live_projection_failure" });
     dbMocks.savePremiumEntitlement.mockRejectedValueOnce(new Error("database unavailable"));
 
-    const response = await postSimulatedEvent(checkoutEvent({ id: "cs_live_projection_failure" }));
+    const first = await postSimulatedEvent(event);
+    const second = await postSimulatedEvent(event);
 
-    expect(response.status).toBe(500);
-    await expect(response.json()).resolves.toEqual({ error: "Webhook processing failed" });
+    expect(first.status).toBe(500);
+    expect(second.status).toBe(200);
+    await expect(second.json()).resolves.toEqual({ received: true });
+    expect(dbMocks.savePremiumEntitlement).toHaveBeenCalledTimes(2);
+    expect(ledgerMocks.completeBillingWebhookEvent).toHaveBeenCalledWith("evt_live_checkout_001", "failed", "projection_failed");
+    expect(ledgerMocks.completeBillingWebhookEvent).toHaveBeenCalledWith("evt_live_checkout_001", "processed");
   });
 });

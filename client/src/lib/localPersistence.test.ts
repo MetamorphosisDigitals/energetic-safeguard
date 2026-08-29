@@ -1,11 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
-  archiveDailyHygienePlan, completeDailyHygieneForToday, createDailyHygieneReminder, createDailyRoutine, createSevenDayCommitment, dismissDailyHygieneReminderForToday, duplicateDailyHygienePlan,
+  archiveDailyHygienePlan, calendarDayKey, completeDailyHygieneForToday, createDailyHygieneReminder, createDailyRoutine, createSevenDayCommitment, dismissDailyHygieneReminderForToday, duplicateDailyHygienePlan,
   getDailyHygienePlanProgress,
   hasCompletedDailyHygienePlan, hasCompletedOnboarding, isDailyHygieneReminderDue, loadArchivedDailyHygienePlans, loadDailyHygieneReminder, loadFreePracticeUsage,
   loadDailyRoutine, loadPreferences, loadSevenDayCommitment, recordCompletedFreePractice, recordDailyRoutineOpening, reorderEnergyHygieneShortcuts, saveDailyHygieneReminder,
   restoreArchivedDailyHygienePlan, saveDailyRoutine, saveOnboardingCompleted, savePreferences, saveSevenDayCommitment, setDailyHygieneNoteForToday, setDailyHygieneReflection, setDailyRoutineRitual,
 } from "./localPersistence";
+
+const originalTimezone = process.env.TZ;
 
 function createMemoryStorage() {
   const values = new Map<string, string>();
@@ -17,10 +19,13 @@ function createMemoryStorage() {
 }
 
 beforeEach(() => {
+  process.env.TZ = "UTC";
   Object.defineProperty(globalThis, "window", { configurable: true, value: { localStorage: createMemoryStorage() } });
 });
 
 afterEach(() => {
+  if (originalTimezone === undefined) delete process.env.TZ;
+  else process.env.TZ = originalTimezone;
   Reflect.deleteProperty(globalThis, "window");
 });
 
@@ -61,9 +66,35 @@ describe("local persistence", () => {
     const reminder = { startedAt: "2026-08-20T09:00:00.000Z", endsAt: "2026-08-27T09:00:00.000Z", lastPromptDate: null, completedDayKeys: ["2026-08-20"], selectedPracticeId: "energy-conservation-pause", completionNotes: {}, reflectionNote: "" };
     const progress = getDailyHygienePlanProgress(reminder, new Date("2026-08-22T12:00:00.000Z"));
     expect(progress).toEqual({ currentDay: 3, completedDays: [1], completedCount: 1 });
-    const completedToday = completeDailyHygieneForToday({ ...reminder, completedDayKeys: [] });
+    const completedToday = completeDailyHygieneForToday({ ...reminder, completedDayKeys: [] }, new Date("2026-08-22T12:00:00.000Z"));
     expect(completedToday.completedDayKeys).toHaveLength(1);
-    expect(completeDailyHygieneForToday(completedToday).completedDayKeys).toHaveLength(1);
+    expect(completeDailyHygieneForToday(completedToday, new Date("2026-08-22T18:00:00.000Z")).completedDayKeys).toHaveLength(1);
+  });
+
+  it("advances at local midnight even when less than 24 hours have elapsed", () => {
+    process.env.TZ = "America/Los_Angeles";
+    const reminder = { startedAt: "2026-08-21T06:50:00.000Z", endsAt: "2026-08-28T06:50:00.000Z", lastPromptDate: null, completedDayKeys: ["2026-08-20", "2026-08-21"], selectedPracticeId: "transition-pause", completionNotes: {}, reflectionNote: "" };
+    const twentyMinutesLater = new Date("2026-08-21T07:10:00.000Z");
+    expect(calendarDayKey(twentyMinutesLater)).toBe("2026-08-21");
+    expect(getDailyHygienePlanProgress(reminder, twentyMinutesLater)).toEqual({ currentDay: 2, completedDays: [1, 2], completedCount: 2 });
+  });
+
+  it("uses the user's local day instead of the UTC date for routine streaks", () => {
+    process.env.TZ = "Atlantic/Madeira";
+    const routine = { ...createDailyRoutine(), openedDayCount: 6, lastOpenedDate: "2026-08-20" };
+    const result = recordDailyRoutineOpening(routine, new Date("2026-08-20T23:10:00.000Z"));
+    expect(result).toMatchObject({ milestone: 7, routine: { openedDayCount: 7, lastOpenedDate: "2026-08-21" } });
+
+    process.env.TZ = "America/Los_Angeles";
+    const sameLocalDay = recordDailyRoutineOpening({ ...createDailyRoutine(), openedDayCount: 6, lastOpenedDate: "2026-08-20" }, new Date("2026-08-21T06:50:00.000Z"));
+    expect(sameLocalDay).toMatchObject({ milestone: null, routine: { openedDayCount: 6, lastOpenedDate: "2026-08-20" } });
+  });
+
+  it("counts calendar days correctly across the spring daylight-saving transition", () => {
+    process.env.TZ = "America/New_York";
+    const reminder = { startedAt: "2026-03-07T17:00:00.000Z", endsAt: "2026-03-14T16:00:00.000Z", lastPromptDate: null, completedDayKeys: ["2026-03-07", "2026-03-09"], selectedPracticeId: "transition-pause", completionNotes: {}, reflectionNote: "" };
+    const progress = getDailyHygienePlanProgress(reminder, new Date("2026-03-09T16:00:00.000Z"));
+    expect(progress).toEqual({ currentDay: 3, completedDays: [1, 3], completedCount: 2 });
   });
 
   it("keeps the selected ritual, optional day note, and final reflection private to the local daily plan", () => {

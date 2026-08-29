@@ -103,6 +103,7 @@ jobs:
       - name: Commit validated PostgreSQL migration
         run: |
           rm -f scripts/prepare-postgres-migration.mjs scripts/repair-postgres-prep.mjs scripts/augment-postgres-candidate.mjs
+          git restore .github/workflows/ci.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A

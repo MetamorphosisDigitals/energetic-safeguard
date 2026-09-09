@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { ArrowLeft, Check, Cloud, CreditCard, ShieldCheck, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -12,6 +13,18 @@ export default function Membership() {
   const checkout = trpc.subscription.createCheckoutSession.useMutation();
   const portal = trpc.subscription.createPortalSession.useMutation();
   const isPlus = status.data?.plan === "plus";
+
+  useEffect(() => {
+    const result = new URLSearchParams(window.location.search).get("checkout");
+    if (result === "success") {
+      toast.success("Payment received. Sanctuary Plus will update as soon as Stripe confirms the subscription.");
+      void status.refetch();
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (result === "cancelled") {
+      toast.message("Checkout was cancelled. Your Foundation support remains available.");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
 
   function beginCheckout(offerKey: PlusOfferKey) {
     if (!isAuthenticated) {

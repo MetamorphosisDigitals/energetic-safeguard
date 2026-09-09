@@ -1,0 +1,440 @@
+/*
+ * Soft Sovereignty polish layer.
+ * Keeps the existing warm editorial identity while adding stronger hierarchy,
+ * calmer density, and more distinctive account, membership, and ritual surfaces.
+ */
+
+:root {
+  --ss-plum: #4d314b;
+  --ss-plum-deep: #3e263c;
+  --ss-rose: #a46575;
+  --ss-blush: #eeddd8;
+  --ss-lilac: #e9ddf2;
+  --ss-gold: #d9b56d;
+  --ss-paper: #fff9f4;
+  --ss-paper-soft: #fbf4ed;
+  --ss-ink-soft: #735a70;
+  --ss-line: rgba(77, 49, 75, .13);
+  --ss-shadow: 0 24px 60px rgba(77, 49, 75, .10);
+  --ss-shadow-soft: 0 14px 36px rgba(77, 49, 75, .075);
+}
+
+html,
+body {
+  background:
+    radial-gradient(circle at 8% 0%, rgba(233, 221, 242, .58), transparent 30rem),
+    radial-gradient(circle at 96% 18%, rgba(238, 221, 216, .62), transparent 34rem),
+    #f7f0e8;
+}
+
+.app-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 52% 12%, rgba(255, 255, 255, .42), transparent 22rem),
+    linear-gradient(180deg, rgba(255, 249, 244, .18), transparent 38%);
+}
+
+.app-header {
+  height: 82px;
+}
+
+.wordmark {
+  letter-spacing: -.35px;
+}
+
+.icon-button,
+.primary-button,
+.secondary-button,
+.pathway-card,
+.one-minute-bar {
+  -webkit-font-smoothing: antialiased;
+}
+
+.icon-button {
+  box-shadow: 0 8px 22px rgba(77, 49, 75, .055);
+}
+
+/* Homepage: preserve the editorial hero, but give it more depth and breathing room. */
+.home-hero {
+  min-height: 458px;
+  border: 1px solid rgba(77, 49, 75, .09);
+  box-shadow: var(--ss-shadow);
+}
+
+.home-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(125deg, rgba(255,255,255,.34), transparent 34%, transparent 70%, rgba(164,101,117,.06));
+}
+
+.hero-copy {
+  padding-top: 70px;
+  padding-bottom: 66px;
+}
+
+.home-hero h1 {
+  text-wrap: balance;
+}
+
+.hero-description {
+  max-width: 455px;
+}
+
+.hero-art img {
+  filter: saturate(.88) contrast(1.02);
+  transform: scale(1.015);
+}
+
+.hero-art__overlay .rose-mark {
+  filter: drop-shadow(0 16px 28px rgba(77,49,75,.18));
+}
+
+.pathways-section {
+  margin-top: 2px;
+}
+
+.pathway-card {
+  border-color: rgba(77, 49, 75, .10);
+  box-shadow: 0 12px 28px rgba(77, 49, 75, .055);
+}
+
+.pathway-card:hover {
+  box-shadow: 0 22px 42px rgba(77, 49, 75, .13);
+}
+
+.pathway-card h3 {
+  text-wrap: balance;
+}
+
+.daily-guidance,
+.home-daily-default,
+.remembered-commitment,
+.daily-hygiene-progress,
+.routine-cloud-backup,
+.routine-cloud-sync-status,
+.energy-hygiene-shortcuts {
+  border-color: rgba(77,49,75,.10) !important;
+  box-shadow: var(--ss-shadow-soft);
+}
+
+/* Deep-flow surfaces: make recommendations and rituals feel more ceremonial without adding clutter. */
+.recommendation-card,
+.guided-card,
+.complete-card,
+.safety-card,
+.settings-card,
+.paywall-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(77, 49, 75, .11);
+  box-shadow: var(--ss-shadow);
+}
+
+.recommendation-card::before,
+.guided-card::before,
+.complete-card::before,
+.settings-card::before,
+.paywall-card::before {
+  content: "";
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  right: -150px;
+  top: -150px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(233, 221, 242, .58), rgba(233, 221, 242, 0) 68%);
+}
+
+.safety-card::before {
+  content: "";
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  right: -150px;
+  top: -150px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(223, 231, 220, .72), rgba(223, 231, 220, 0) 68%);
+}
+
+.recommendation-card > *,
+.guided-card > *,
+.complete-card > *,
+.safety-card > *,
+.settings-card > *,
+.paywall-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.recommendation-card h1,
+.guided-card h1,
+.complete-card h1,
+.safety-card h1,
+.settings-card h1,
+.paywall-card h1 {
+  text-wrap: balance;
+}
+
+.practice-meta {
+  gap: 9px;
+}
+
+.practice-meta > span {
+  border: 1px solid rgba(77,49,75,.09);
+  background: rgba(255,249,244,.72);
+  border-radius: 999px;
+  padding: 8px 11px;
+}
+
+.guided-orb,
+.recommendation-orb,
+.completion-flower,
+.safety-symbol,
+.paywall-mark,
+.energy-hygiene-mark {
+  box-shadow: 0 12px 30px rgba(77,49,75,.09);
+}
+
+/* Account: turn stacked settings groups into a clearer profile dashboard. */
+.account-card {
+  width: min(100% - 42px, 820px);
+  padding: 38px;
+  background:
+    linear-gradient(180deg, rgba(255,249,244,.98), rgba(251,244,237,.96)),
+    var(--ss-paper);
+}
+
+.account-card .settings-heading {
+  margin-bottom: 18px;
+  padding: 2px 2px 22px;
+  border-bottom: 1px solid var(--ss-line);
+}
+
+.account-identity {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(233,221,242,.72), transparent 16rem),
+    linear-gradient(145deg, #fffaf7, #f7eee8);
+  border: 1px solid rgba(77,49,75,.10);
+}
+
+.account-identity h2 {
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(26px, 4vw, 36px);
+  font-weight: 560;
+  letter-spacing: -1px;
+  margin-bottom: 4px;
+}
+
+.account-card .setting-group {
+  border-radius: 22px;
+  padding: 24px;
+  margin-top: 14px;
+  border: 1px solid rgba(77,49,75,.09);
+  background: rgba(255,249,244,.72);
+}
+
+.account-card .setting-group > .eyebrow {
+  margin-bottom: 8px;
+}
+
+.account-card .setting-group h2 {
+  margin-top: 0;
+}
+
+.account-card .wellness-note {
+  margin-top: 18px;
+}
+
+/* Membership: annual Plus should feel like the hero offer, without making Free feel second-class. */
+.membership-screen {
+  max-width: 1100px;
+}
+
+.membership-card {
+  width: min(100% - 42px, 960px);
+  padding: 42px;
+  background:
+    radial-gradient(circle at 78% 3%, rgba(233,221,242,.72), transparent 22rem),
+    linear-gradient(180deg, rgba(255,249,244,.99), rgba(250,242,235,.97));
+}
+
+.membership-card > h1 {
+  max-width: 760px;
+  font-size: clamp(34px, 5vw, 52px);
+  line-height: 1.02;
+  letter-spacing: -1.8px;
+}
+
+.membership-card .paywall-intro {
+  max-width: 720px;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.membership-card .offer-stack {
+  gap: 18px;
+  align-items: stretch;
+  margin-top: 28px;
+}
+
+.membership-card .offer-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 28px;
+  border: 1px solid rgba(77,49,75,.11);
+  background: rgba(255,249,244,.86);
+  box-shadow: 0 14px 34px rgba(77,49,75,.07);
+}
+
+.membership-card .offer-card--featured {
+  color: #fff9f4;
+  border-color: rgba(77,49,75,.15);
+  background:
+    radial-gradient(circle at 95% 0%, rgba(217,181,109,.22), transparent 15rem),
+    linear-gradient(150deg, #4d314b 0%, #674760 100%);
+  box-shadow: 0 24px 46px rgba(77,49,75,.22);
+}
+
+.membership-card .offer-card--featured h2,
+.membership-card .offer-card--featured strong,
+.membership-card .offer-card--featured p,
+.membership-card .offer-card--featured small,
+.membership-card .offer-card--featured .practice-meta span {
+  color: #fff9f4;
+}
+
+.membership-card .offer-card--featured .practice-meta span {
+  border-color: rgba(255,249,244,.16);
+  background: rgba(255,249,244,.08);
+}
+
+.membership-card .offer-card--featured .offer-kicker {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 7px 10px;
+  color: #4d314b;
+  background: #f2e3bf;
+}
+
+.membership-card .offer-card--featured .primary-button {
+  color: #4d314b;
+  background: #fff9f4;
+  box-shadow: 0 12px 24px rgba(20,10,20,.18);
+}
+
+.membership-card .offer-card--featured .primary-button:hover {
+  background: #f7eee8;
+}
+
+.membership-card .offer-card strong {
+  font-family: "Fraunces", Georgia, serif;
+  letter-spacing: -1px;
+}
+
+/* Settings: make utility surfaces feel calmer and less like a generic form. */
+.settings-card .setting-group {
+  border-radius: 20px;
+}
+
+.settings-card .setting-choice,
+.settings-card .switch-row,
+.settings-card .text-size-row {
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+
+.settings-card .setting-choice:hover {
+  transform: translateY(-1px);
+}
+
+/* Button hierarchy. */
+.primary-button {
+  box-shadow: 0 10px 24px rgba(77,49,75,.17);
+}
+
+.primary-button:hover {
+  box-shadow: 0 15px 28px rgba(77,49,75,.23);
+}
+
+.secondary-button {
+  background: rgba(255,249,244,.38);
+}
+
+/* Mobile: keep the visual refinement without increasing cognitive load. */
+@media (max-width: 720px) {
+  .app-header {
+    height: 72px;
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .home-hero {
+    margin-left: 16px;
+    margin-right: 16px;
+    margin-bottom: 58px;
+    border-radius: 26px;
+  }
+
+  .hero-copy {
+    padding: 42px 25px 36px;
+  }
+
+  .pathways-section {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .pathway-card {
+    box-shadow: 0 10px 22px rgba(77,49,75,.055);
+  }
+
+  .account-card,
+  .membership-card {
+    width: calc(100% - 28px);
+    padding: 24px 20px;
+    border-radius: 25px;
+  }
+
+  .account-card .setting-group,
+  .membership-card .offer-card {
+    padding: 20px;
+  }
+
+  .membership-card > h1 {
+    font-size: clamp(32px, 11vw, 43px);
+  }
+
+  .membership-card .offer-stack {
+    gap: 12px;
+  }
+
+  .recommendation-card,
+  .guided-card,
+  .complete-card,
+  .safety-card,
+  .settings-card,
+  .paywall-card {
+    box-shadow: 0 18px 38px rgba(77,49,75,.09);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pathway-card,
+  .icon-button,
+  .primary-button,
+  .secondary-button,
+  .settings-card .setting-choice,
+  .hero-art img {
+    transition: none !important;
+    transform: none !important;
+  }
+}

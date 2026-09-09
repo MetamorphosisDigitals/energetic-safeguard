@@ -8,6 +8,7 @@ import App from "./App";
 import { startLogin } from "./const";
 import { getManagedRoot } from "./lib/rootRegistry";
 import "./index.css";
+import "./soft-sovereignty-polish.css";
 
 const queryClient = new QueryClient();
 

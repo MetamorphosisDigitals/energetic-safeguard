@@ -4,8 +4,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { deletePracticeFilterView, deleteRoutinePlanArchive, getDailyDefaultPracticeId, getDefaultPracticeFilterView, getPinnedCustomTags, getPremiumEntitlement, getRoutineArchiveAutoBackup, getRoutinePlanArchiveById, getRoutinePlanArchiveSummary, importRoutinePlanArchives, listPracticeFavorites, listPracticeHistory, listRoutinePlanArchives, listSavedPracticeFilterViews, listUserCustomTags, recordPracticeCompletion, removePracticeFavorite, replaceUserCustomTag, savePracticeFavorite, savePracticeFilterView, setDailyDefaultPractice, setDefaultPracticeFilterView, setPinnedCustomTags, setRoutineArchiveAutoBackup, updatePracticeHistoryNote, updatePracticeHistoryReflection, updateRoutinePlanArchiveOrganization } from "./db";
-import { getCheckoutReturnOrigin, getStripeClient } from "./payments/checkoutConfig";
-import { premiumOffers } from "./payments/products";
+import { subscriptionRouter } from "./payments/subscriptionRouter";
 import { isCanonicalRitualId } from "@shared/canonicalRitualIds";
 
 const dateKeySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -43,31 +42,13 @@ export const appRouter = router({
     }),
     createCheckoutSession: protectedProcedure
       .input(z.object({ offerKey: z.enum(["current_app_lifetime", "future_updates_lifetime"]) }))
-      .mutation(async ({ ctx, input }) => {
-        const existing = await getPremiumEntitlement(ctx.user.id);
-        if (existing) return { alreadyPremium: true as const, checkoutUrl: null };
-
-        const offer = premiumOffers[input.offerKey];
-        const origin = getCheckoutReturnOrigin(ctx.req.headers.origin);
-        const session = await getStripeClient().checkout.sessions.create({
-          mode: "payment",
-          line_items: [{ price: offer.stripePriceId, quantity: 1 }],
-          customer_email: ctx.user.email ?? undefined,
-          client_reference_id: String(ctx.user.id),
-          metadata: {
-            user_id: String(ctx.user.id),
-            customer_email: ctx.user.email ?? "",
-            customer_name: ctx.user.name ?? "",
-            offer_key: offer.key,
-          },
-          allow_promotion_codes: true,
-          success_url: `${origin}/?checkout=success`,
-          cancel_url: `${origin}/?checkout=cancelled`,
-        });
-        if (!session.url) throw new Error("Stripe did not return a checkout URL.");
-        return { alreadyPremium: false as const, checkoutUrl: session.url };
-      }),
+      .mutation(async () => ({
+        alreadyPremium: false as const,
+        checkoutUrl: null as string | null,
+        retired: true as const,
+      })),
   }),
+  subscription: subscriptionRouter,
   library: router({
     history: protectedProcedure
       .input(z.object({ limit: z.number().int().min(1).max(50).optional() }).optional())

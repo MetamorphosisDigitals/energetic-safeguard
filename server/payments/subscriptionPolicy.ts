@@ -1,8 +1,8 @@
 export const SUBSCRIPTION_GRACE_PERIOD_DAYS = 7;
 
 export const subscriptionOffers = {
-  cloud_continuity_monthly: ["cloud_continuity"],
-  rhythm_plus_monthly: ["cloud_continuity", "advanced_habit_tools"],
+  sanctuary_plus_monthly: ["cloud_continuity", "advanced_habit_tools"],
+  sanctuary_plus_annual: ["cloud_continuity", "advanced_habit_tools"],
 } as const;
 
 export type SubscriptionOfferKey = keyof typeof subscriptionOffers;
@@ -29,7 +29,7 @@ export function getSubscriptionFeatureAccess(
   const subscribed = Boolean(entitlement && (entitlement.status === "active" || entitlement.status === "trialing" || inGrace));
 
   return {
-    // A non-negotiable product boundary: rituals and safety never depend on billing.
+    // Foundation rituals, quick orientation and safety handoffs are never billing-gated.
     guidedRituals: true,
     safetyHandoffs: true,
     cloudContinuity: subscribed && paidFeatures.has("cloud_continuity"),

@@ -12,7 +12,7 @@ function formatDate(value: Date | string | null | undefined) {
 
 export default function Account() {
   const { user, isAuthenticated, loading, logout } = useAuth();
-  const premiumStatus = trpc.premium.status.useQuery(undefined, {
+  const subscriptionStatus = trpc.subscription.status.useQuery(undefined, {
     enabled: isAuthenticated,
     retry: false,
   });
@@ -68,7 +68,7 @@ export default function Account() {
   }
 
   const displayName = user.name?.trim() || "Energetic Safeguard member";
-  const membershipLabel = premiumStatus.data?.hasAccess ? "Premium" : "Free";
+  const membershipLabel = subscriptionStatus.data?.plan === "plus" ? "Sanctuary Plus" : "Free";
 
   return (
     <main className="flow-screen settings-screen account-screen">
@@ -90,12 +90,13 @@ export default function Account() {
 
         <div className="setting-group">
           <p className="eyebrow">MEMBERSHIP</p>
-          <h2>{membershipLabel} membership</h2>
-          <p>{premiumStatus.data?.hasAccess ? "Your account has paid access recorded." : "Your account is currently using the free experience. Guided rituals and safety support remain available."}</p>
+          <h2>{membershipLabel}</h2>
+          <p>{subscriptionStatus.data?.plan === "plus" ? "Your optional Plus continuity and habit features are connected to this account." : "You are using the complete Foundation experience. Guided rituals and safety support remain free."}</p>
           <div className="practice-meta">
             <span><ShieldCheck size={17} /> {membershipLabel}</span>
             <span><Sparkles size={17} /> Last signed in {formatDate(user.lastSignedIn)}</span>
           </div>
+          <a className="primary-button primary-button--wide" href="/membership">{subscriptionStatus.data?.plan === "plus" ? "Manage membership" : "View Free + Plus"}</a>
         </div>
 
         <div className="setting-group">

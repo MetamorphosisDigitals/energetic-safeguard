@@ -42,9 +42,11 @@ export const appRouter = router({
     }),
     createCheckoutSession: protectedProcedure
       .input(z.object({ offerKey: z.enum(["current_app_lifetime", "future_updates_lifetime"]) }))
-      .mutation(async () => {
-        throw new Error("Lifetime purchases are no longer offered. Choose Sanctuary Plus instead.");
-      }),
+      .mutation(async () => ({
+        alreadyPremium: false as const,
+        checkoutUrl: null as string | null,
+        retired: true as const,
+      })),
   }),
   subscription: subscriptionRouter,
   library: router({

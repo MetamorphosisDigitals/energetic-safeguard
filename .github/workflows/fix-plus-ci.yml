@@ -1,0 +1,27 @@
+name: One-shot Plus CI compatibility fix
+
+on:
+  push:
+    branches: [launch/free-plus-membership]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: launch/free-plus-membership
+      - name: Apply compatibility transform
+        run: |
+          if [ -f scripts/fix-plus-ci.mjs ]; then
+            node scripts/fix-plus-ci.mjs
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add server/routers.ts
+            git rm scripts/fix-plus-ci.mjs
+            git commit -m "Fix retired lifetime checkout typing"
+            git push origin HEAD:launch/free-plus-membership
+          fi

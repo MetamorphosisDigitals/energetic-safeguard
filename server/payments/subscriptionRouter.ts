@@ -16,7 +16,6 @@ export const subscriptionRouter = router({
       offerKey: entitlement?.offerKey ?? null,
       status: entitlement?.status ?? null,
       currentPeriodEnd: entitlement?.currentPeriodEnd ?? null,
-      graceEndsAt: entitlement?.graceEndsAt ?? null,
       ...access,
     };
   }),

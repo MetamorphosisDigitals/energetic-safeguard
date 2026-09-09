@@ -78,6 +78,7 @@ export default function Membership() {
             <span className="offer-kicker">RECOMMENDED</span>
             <h2>Sanctuary Plus</h2>
             <strong>$49 <small>USD / year</small></strong>
+            <span className="offer-value-note">About $4.08/month · save about 42% vs monthly</span>
             <p>Keep your support connected across devices and unlock advanced habit tools.</p>
             <div className="practice-meta">
               <span><Cloud size={15} /> Cloud continuity</span>

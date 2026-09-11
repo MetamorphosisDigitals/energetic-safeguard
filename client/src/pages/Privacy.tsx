@@ -19,7 +19,6 @@ export default function Privacy() {
         <section><h2>Retention and deletion</h2><p>You can permanently delete your account from the Account screen. Account deletion removes your profile and user-owned app data and cancels an active Sanctuary Plus subscription before deletion. Minimal payment-event identifiers may be retained without a user association where needed for payment integrity, fraud prevention, accounting, or legal obligations.</p></section>
         <section><h2>Your choices</h2><p>You can use the Foundation ritual and safety-support experience without purchasing Sanctuary Plus. You may sign out at any time and may delete your account from the Account screen.</p></section>
         <section><h2>Changes</h2><p>We may update this policy as the product or its service providers change. The date above will be updated when material revisions are made.</p></section>
-        <p className="legal-note">This product policy is intended to describe the app's current data practices. Production legal copy should be reviewed for the jurisdictions in which the service is offered.</p>
       </section>
     </main>
   );

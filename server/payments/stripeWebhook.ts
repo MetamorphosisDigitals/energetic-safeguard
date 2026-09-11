@@ -5,8 +5,6 @@ import { claimBillingWebhookEvent, completeBillingWebhookEvent } from "./billing
 import { isPremiumOfferKey } from "./products";
 import { gracePeriodEndsAt, isSubscriptionOfferKey } from "./subscriptionPolicy";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
 class RetryableWebhookDependencyError extends Error {
   constructor(message: string) {
     super(message);
@@ -20,6 +18,12 @@ function stripeId(value: unknown) {
 
 function unixDate(value: unknown) {
   return typeof value === "number" ? new Date(value * 1000) : null;
+}
+
+function getWebhookStripeClient() {
+  const apiKey = process.env.STRIPE_SECRET_KEY?.trim();
+  if (!apiKey) throw new Error("STRIPE_SECRET_KEY is required to process Stripe webhooks.");
+  return new Stripe(apiKey);
 }
 
 async function handleCompletedCheckout(session: Stripe.Checkout.Session) {
@@ -74,9 +78,9 @@ async function handleSubscriptionCanceled(subscription: Stripe.Subscription) {
 export function registerStripeWebhook(app: Express) {
   app.post("/api/stripe/webhook", async (req: Request, res: Response) => {
     const signature = req.headers["stripe-signature"];
-    if (typeof signature !== "string" || !process.env.STRIPE_WEBHOOK_SECRET) return res.status(400).json({ error: "Missing Stripe signature or webhook configuration" });
+    if (typeof signature !== "string" || !process.env.STRIPE_WEBHOOK_SECRET || !process.env.STRIPE_SECRET_KEY) return res.status(400).json({ error: "Missing Stripe signature or webhook configuration" });
     let event: Stripe.Event;
-    try { event = stripe.webhooks.constructEvent(req.body, signature, process.env.STRIPE_WEBHOOK_SECRET); }
+    try { event = getWebhookStripeClient().webhooks.constructEvent(req.body, signature, process.env.STRIPE_WEBHOOK_SECRET); }
     catch (error) { console.error("[Stripe] Webhook signature verification failed", error); return res.status(400).json({ error: "Invalid Stripe signature" }); }
     try {
       const candidateUserId = event.type === "checkout.session.completed" ? Number((event.data.object as Stripe.Checkout.Session).client_reference_id) : null;

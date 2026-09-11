@@ -21,7 +21,6 @@ export default function Terms() {
         <section><h2>Responsible use</h2><p>Do not attempt to interfere with the service, bypass security controls, misuse another person's account, or use the service in a way that violates applicable law.</p></section>
         <section><h2>Limitations</h2><p>The service is provided as a wellness tool and may not be suitable for every person or situation. You remain responsible for deciding when to stop a practice and when to seek qualified human support.</p></section>
         <section><h2>Changes to these Terms</h2><p>We may revise these Terms as the service changes. The date above will be updated when material revisions are made.</p></section>
-        <p className="legal-note">These product terms are a launch-ready baseline, not jurisdiction-specific legal advice. They should be reviewed before broad commercial release in each target market.</p>
       </section>
     </main>
   );

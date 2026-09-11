@@ -12,6 +12,21 @@ function formatDate(value: Date | string | null | undefined) {
   return date.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
 }
 
+function clearDeviceAccountData() {
+  try {
+    sessionStorage.removeItem("manus-cookie");
+  } catch {
+    // Storage can be unavailable in restricted browser contexts.
+  }
+  try {
+    for (const key of Object.keys(localStorage)) {
+      if (key.startsWith("energetic-safeguard:")) localStorage.removeItem(key);
+    }
+  } catch {
+    // Server-side deletion has already succeeded; local storage cleanup is best-effort.
+  }
+}
+
 export default function Account() {
   const { user, isAuthenticated, loading, logout } = useAuth();
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
@@ -41,7 +56,10 @@ export default function Account() {
   function permanentlyDeleteAccount() {
     if (deleteConfirmation !== "DELETE") return;
     deleteAccount.mutate({ confirmation: "DELETE" }, {
-      onSuccess: () => window.location.assign("/?account=deleted"),
+      onSuccess: () => {
+        clearDeviceAccountData();
+        window.location.assign("/?account=deleted");
+      },
       onError: (error) => toast.error(error.message || "Your account could not be deleted. Nothing was removed."),
     });
   }
@@ -147,7 +165,7 @@ export default function Account() {
 
         <div className="setting-group danger-zone">
           <div className="danger-zone__heading"><AlertTriangle size={20} /><div><p className="eyebrow">DANGER ZONE</p><h2>Delete account permanently</h2></div></div>
-          <p>This permanently removes your profile, saved rituals, history, private notes, preferences, saved filters, and cloud routine backups.</p>
+          <p>This permanently removes your profile, saved rituals, history, private notes, preferences, saved filters, cloud routine backups, and Energetic Safeguard data stored on this device.</p>
           <p>{isPlus ? "Your active Sanctuary Plus subscription will be canceled first so it cannot renew after your account is removed." : "If a recurring Plus subscription is connected to this account, it will be canceled before deletion."}</p>
           <label className="delete-confirmation">Type <b>DELETE</b> to confirm<input value={deleteConfirmation} onChange={(event) => setDeleteConfirmation(event.target.value)} autoComplete="off" spellCheck={false} /></label>
           <button className="danger-button" disabled={deleteConfirmation !== "DELETE" || deleteAccount.isPending} onClick={permanentlyDeleteAccount}><Trash2 size={17} /> {deleteAccount.isPending ? "Deleting account…" : "Delete my account"}</button>

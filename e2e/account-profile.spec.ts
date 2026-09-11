@@ -18,14 +18,16 @@ async function mockAccountApi(page: Parameters<typeof test>[0] extends never ? n
 test.describe("Account profile", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test("offers sign in when the account route is opened signed out", async ({ page }) => {
+  test("offers sign in and legal links when the account route is opened signed out", async ({ page }) => {
     await mockAccountApi(page, false);
     await page.goto("/account");
     await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Privacy Policy" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Terms of Use" })).toBeVisible();
   });
 
-  test("shows identity, Free membership and saved-data summary for a signed-in member", async ({ page }) => {
+  test("shows identity, membership, saved data, and guarded account deletion", async ({ page }) => {
     await mockAccountApi(page, true);
     await page.goto("/account");
     await expect(page.getByRole("heading", { name: "Account Browser User" })).toBeVisible();
@@ -36,5 +38,12 @@ test.describe("Account profile", () => {
     await expect(page.getByText("1 recent practices")).toBeVisible();
     await expect(page.getByText("2 cloud routine backups")).toBeVisible();
     await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Privacy Policy" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Terms of Use" })).toBeVisible();
+
+    const deleteButton = page.getByRole("button", { name: "Delete my account" });
+    await expect(deleteButton).toBeDisabled();
+    await page.getByLabel(/Type DELETE to confirm/i).fill("DELETE");
+    await expect(deleteButton).toBeEnabled();
   });
 });

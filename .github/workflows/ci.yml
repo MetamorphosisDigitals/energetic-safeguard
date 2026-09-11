@@ -65,6 +65,15 @@ jobs:
       - name: Production build
         run: pnpm build
 
+      - name: Netlify function bundle check
+        run: |
+          mkdir -p .ci
+          pnpm exec esbuild netlify/functions/api.ts --platform=node --packages=external --bundle --format=esm --outfile=.ci/netlify-api.mjs
+          node -e "import('./.ci/netlify-api.mjs').then((m) => { if (typeof m.handler !== 'function') process.exit(1); })"
+        env:
+          STRIPE_SECRET_KEY: sk_test_ci_placeholder
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/energetic_safeguard
+
       - name: Install Playwright Chromium
         run: |
           sudo rm -f /etc/apt/sources.list.d/google-chrome.list

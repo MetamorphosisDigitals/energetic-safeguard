@@ -75,6 +75,7 @@ describe("Stripe webhook lifecycle integration", () => {
   let baseUrl: string;
 
   beforeEach(async () => {
+    process.env.STRIPE_SECRET_KEY = "sk_test_simulated";
     process.env.STRIPE_WEBHOOK_SECRET = "whsec_simulated";
     stripeMocks.constructEvent.mockReset();
     dbMocks.savePremiumEntitlement.mockReset();
@@ -100,6 +101,7 @@ describe("Stripe webhook lifecycle integration", () => {
 
   afterEach(async () => {
     await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+    delete process.env.STRIPE_SECRET_KEY;
     delete process.env.STRIPE_WEBHOOK_SECRET;
   });
 

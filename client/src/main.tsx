@@ -9,6 +9,7 @@ import { startLogin } from "./const";
 import { getManagedRoot } from "./lib/rootRegistry";
 import "./index.css";
 import "./soft-sovereignty-polish.css";
+import "./legal-account.css";
 
 const queryClient = new QueryClient();
 

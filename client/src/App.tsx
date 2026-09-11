@@ -3,6 +3,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Account from "@/pages/Account";
 import Membership from "@/pages/Membership";
 import NotFound from "@/pages/NotFound";
+import Privacy from "@/pages/Privacy";
+import Terms from "@/pages/Terms";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -17,6 +19,8 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/account" component={Account} />
       <Route path="/membership" component={Membership} />
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/terms" component={Terms} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

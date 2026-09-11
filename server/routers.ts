@@ -3,6 +3,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { deleteUserAccount } from "./accountDeletion";
 import { deletePracticeFilterView, deleteRoutinePlanArchive, getDailyDefaultPracticeId, getDefaultPracticeFilterView, getPinnedCustomTags, getPremiumEntitlement, getRoutineArchiveAutoBackup, getRoutinePlanArchiveById, getRoutinePlanArchiveSummary, importRoutinePlanArchives, listPracticeFavorites, listPracticeHistory, listRoutinePlanArchives, listSavedPracticeFilterViews, listUserCustomTags, recordPracticeCompletion, removePracticeFavorite, replaceUserCustomTag, savePracticeFavorite, savePracticeFilterView, setDailyDefaultPractice, setDefaultPracticeFilterView, setPinnedCustomTags, setRoutineArchiveAutoBackup, updatePracticeHistoryNote, updatePracticeHistoryReflection, updateRoutinePlanArchiveOrganization } from "./db";
 import { subscriptionRouter } from "./payments/subscriptionRouter";
 import { isCanonicalRitualId } from "@shared/canonicalRitualIds";
@@ -34,6 +35,13 @@ export const appRouter = router({
       ctx.res.clearCookie(COOKIE_NAME, { ...getSessionCookieOptions(ctx.req), maxAge: -1 });
       return { success: true } as const;
     }),
+    deleteAccount: protectedProcedure
+      .input(z.object({ confirmation: z.literal("DELETE") }))
+      .mutation(async ({ ctx }) => {
+        await deleteUserAccount(ctx.user.id);
+        ctx.res.clearCookie(COOKIE_NAME, { ...getSessionCookieOptions(ctx.req), maxAge: -1 });
+        return { success: true } as const;
+      }),
   }),
   premium: router({
     status: protectedProcedure.query(async ({ ctx }) => {

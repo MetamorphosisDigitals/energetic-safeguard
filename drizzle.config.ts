@@ -1,6 +1,6 @@
 import { defineConfig } from "drizzle-kit";
 
-const databaseUrl = process.env.DATABASE_URL;
+const databaseUrl = process.env.DATABASE_URL ?? process.env.NETLIFY_DB_URL;
 
 export default defineConfig({
   schema: "./drizzle/schema.ts",
